@@ -23,7 +23,7 @@ object Macros {
         case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
           parseStatement(expr)
         case q"$variable $method[..$tparams](...$tparamss)" =>
-          println(s"Method $method accessed via variable: $variable, type: ${variableType(variable).fullName}")
+          println(s"Variable $variable: ${variableType(variable).fullName}; method: $method")
         case q"$mods val $variable: $tpt = $expr" =>
         case stat =>
       }
@@ -34,9 +34,21 @@ object Macros {
 
 
     reify {
-      println(s"hello ${s.splice}!")
+      println(s"getTypes ${s.splice}!")
     }
   }
 
-  def hello(s: Any): Unit = macro impl
+  def getTypes(s: Any): Unit = macro impl
+}
+
+@compileTimeOnly("enable macro paradise to expand macro annotations")
+class noop extends StaticAnnotation {
+  def macroTransform(annottees: Any*): Any = macro linkMacro.impl
+}
+
+object linkMacro {
+  def impl(c: blackbox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
+    import c.universe._
+    c.Expr[Any](q"{..$annottees}")
+  }
 }
