@@ -1,0 +1,5 @@
+package vistas
+
+trait Vista {
+
+}
