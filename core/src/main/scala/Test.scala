@@ -54,4 +54,28 @@ object Test extends App {
 //  @noop
 //  case class Foo(a: String, b: Int)
 
+  import scala.reflect.runtime.{universe => ru}
+
+  class B {
+    def sayHi(a: Int): Unit = {
+      println("Hi!")
+    }
+  }
+
+  trait Vista {
+    private val allowed = Seq("sayHi")
+    def isAllowed[A : ru.TypeTag](func: String): Boolean = {
+      val method: ru.MethodSymbol = ru.typeOf[A].member(ru.TermName(func)).asMethod
+      true
+    }
+  }
+
+
+  def checker[A : ru.TypeTag, B, FuncType : Function](instance: A, function: FuncType, args: AnyRef*): Unit = {
+
+    println(ru.typeOf[A])
+  }
+
+  val b = new B with Vista
+  checker(b, b.sayHi)
 }
