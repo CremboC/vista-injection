@@ -1,3 +1,4 @@
+import classes.B
 import vistas.Vista
 
 /**
@@ -5,15 +6,10 @@ import vistas.Vista
   */
 object Test extends App {
 
-  class A {
-    def doA(list: Seq[Int]): Boolean = {
-      list.contains(1)
-    }
-  }
-
-//  val a = Macros.interceptNew {
-//    val a = new A
-//    a.doA(Seq(1, 2, 3))
+//  class A {
+//    def doA(list: Seq[Int]): Boolean = {
+//      list.contains(1)
+//    }
 //  }
 //
 //  println(a)
@@ -55,94 +51,84 @@ object Test extends App {
 //  case class Foo(a: String, b: Int)
 
 
+  class AA {
+    def m(): Unit = {
 
-  class B {
-    def sayHi(a: Int): Unit = {
-      println("Hi with param!")
-    }
-
-    def sayHi(): Unit = {
-      println("Hi without param!")
     }
   }
 
-
-  trait Vista {
-    import scala.reflect.runtime.{universe => ru}
-
-    private lazy val allowed: Seq[ru.MethodSymbol] = {
-      // find the sayHi which takes an Int
-      val head = ru.typeOf[B]
-        .members
-        .filter(_.isInstanceOf[ru.MethodSymbol])
-        .filter(_.asTerm.fullName.contains("sayHi"))
-        .filter {
-          _.typeSignature match {
-            case p: ru.MethodType =>
-              p.params.exists(_.typeSignature.resultType =:= ru.typeOf[Int])
-            case _ => false
-          }
-        }
-        .head.asInstanceOf[ru.MethodSymbol]
-
-      Seq(head)
-    }
-
-    private def getType[T: ru.TypeTag](obj: T) = ru.typeOf[T]
-
-    def isAllowed[A : ru.TypeTag](func: ru.MethodSymbol): Boolean = allowed.contains(func)
+  class BB extends AA {
+    override def m(): Unit = super.m()
   }
 
-  object Vista {
-    import scala.reflect.runtime.{universe => ru}
-    def isAllowed[T : ru.TypeTag](instance: T with Vista, funcName: String, params: List[(ru.Type, Any)]): Boolean = {
-      findMethod[T](funcName, params) match {
-        case Some(m) => instance.isAllowed[A](m)
-        case None => false
-      }
-    }
-
-    private def findMethod[T : ru.TypeTag](funcName: String, params: List[(ru.Type, Any)]): Option[ru.MethodSymbol] = {
-      val ret = ru.typeOf[T]
-        .members
-        .filter(_.isInstanceOf[ru.MethodSymbol])
-        .map(_.asInstanceOf[ru.MethodSymbol])
-        .filter(_.name == ru.TermName(funcName))
-        .filter { m =>
-          // get the signature of the method
-          // get its parameters types, since overloads mustn't match in their parameters
-          // check if the method we're looking for is the same as this one
-          val methodType = m.typeSignature.asInstanceOf[ru.MethodType]
-          val paramsTypes = methodType.params.map(_.typeSignature)
-          paramsTypes == params.map(_._1)
-        }
-
-      ret.headOption
-    }
-
+  class C extends BB {
+    override def m(): Unit = super.m()
   }
+
+  val c = new C
+  c.m() // check .members
+
+
+
+
+
+
 
   import scala.reflect.runtime.{universe => ru}
 
 
 
-//  def checker[A : ru.TypeTag, B, FuncType : Function[_, _]](instance: A, function: FuncType, args: AnyRef*): Unit = {
+//  def checker[A : ru.TypeTag, classes.B, FuncType : Function[_, _]](instance: A, function: FuncType, args: AnyRef*): Unit = {
 //
 //    println(ru.typeOf[A])
 //  }
 
 //  Macros.getTypes {
-    val b = new B with Vista
-//    if (b.isAllowed[B](""))
-    if (Vista.isAllowed[B](b, "sayHi", List((ru.typeOf[Int], 5)))) {
-      b.sayHi(5)
-    } else {
-      b.sayHi()
-    }
+
+//  Macros.getTypes {
+//    val b = new B
+//    b.sayHi(5)
+//  }
+
+
+  @interceptNew
+  def func(): Unit = {
+    val b = new B
+    b.sayHi()
+  }
+
+//  val ret = Macros.interceptNew {
+//
+//  }
+
+//  println(ret)
+
+//  import scala.reflect.runtime.{universe => ru}
+//  def getType[T: ru.TypeTag](obj: T) = ru.typeOf[T]
+
+//  val b = new classes.B with Vista
+//  if (Vista.isAllowed[classes.B](b, "sayHi", List((ru.typeOf[Int], 5)))) {
+//    b.sayHi(5)
+//  }
+
+//  val hi = Vista.check(b, b.sayHi(_: Int))
+//  val bye = Vista.check(b, b.sayBye(_: Int))
 
 
 
-//    b.isAllowed[B]("sayHi")
+
+
+
+
+
+//    if (b.isAllowed[classes.B](""))
+// else {
+//      b.sayHi()
+//    }
+
+
+
+//    b.isAllowed[classes.B]("sayHi")
 
 
 
@@ -150,3 +136,4 @@ object Test extends App {
 //  }
 
 }
+

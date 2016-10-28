@@ -7,7 +7,7 @@ name := "vista-injection"
 
 lazy val commonSettings = Seq(
   version := "1.0",
-  scalaVersion := "2.11.8",
+  scalaVersion := "2.12.0-RC2",
   scalacOptions := Seq("-Xplugin-require:macroparadise", "-unchecked", "-deprecation", "-language:experimental.macros", "-Xlog-free-terms"),
   resolvers += Resolver.sonatypeRepo("releases"),
   addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)

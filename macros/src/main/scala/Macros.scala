@@ -5,51 +5,33 @@ import scala.reflect.macros.blackbox
 //noinspection UnitMethodIsParameterless
 object Macros {
 
-  def interceptNewImpl(c: blackbox.Context)(s: c.Tree): c.Expr[Any] = {
+  def interceptNewImpl(c: blackbox.Context)(annottees: c.Tree*): c.Tree = {
     import c.universe._
 
-    val ret = s.children.map {
+    val ret = annottees.head.children.map {
       case ValDef(mods, name, tyt, rhs) =>
-        println(name, tyt, rhs)
-        ValDef(mods, name, tyt, rhs)
-      case New(s) =>
-        New(s)
-      case Literal(s) =>
-        Literal(s)
-      case s =>
-        s
+//        println(name, tyt, rhs)
+        ValDef(mods, name, tyt, q"new classes.B with vistas.Vista")
+//        q"{ $v }"
+      case New(stat) =>
+        New(stat)
+      case Literal(stat) =>
+        Literal(stat)
+      case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
+        println(tname)
+        q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr"
     }
 
-    println(ret)
+//    println(ret)
 
-//    val a = reify(ret:_*)
-
-//    c match {
-//      case q"$left = $right" => println(left, right)
-//    }
-//    s
-
-//    val a = ret.reduceLeft[c.Tree] {
-//      case (t, stat) => q"$t $stat"
-//    }
-//    println(a)
-//    ret.reduce[c.Tree] {
-//      case (t, s) =>
-//    }
-
-
-//    Block(ret.head)
-//    ValDef(Modifiers(), TermName("a"), TypeN)
-    q"""
-       { ..$ret }
-      """
-    reify {
-
-    }
-    c.Expr[Any](ret.head)
+    val r = q"""{ ..$ret }"""
+//    println(showCode(annottees.head))
+//    println(showCode(r))
+//    r
+    q"{..$annottees}"
   }
 
-  def interceptNew(s: Any): Any = macro interceptNewImpl
+
 
   def typesImpl(c: blackbox.Context)(s: c.Expr[Any]): c.Expr[Any] = {
     import c.universe._
@@ -62,20 +44,22 @@ object Macros {
     }
     def getType[T: TypeTag](obj: T) = typeOf[T]
 
-    var found = 0
-
     def parseStatement(t: c.universe.Tree): Unit = {
       t.foreach {
         case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
-
           stats.foreach(parseStatement)
         case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
           parseStatement(expr)
+        case q"new ..$parents { ..$body }" =>
+          println(parents)
         case q"$variable $method[..$tparams](...$tparamss)" =>
-          found += 1
-          println(getType(method))
-          println(s"$found: Variable $variable: ${}; method: $method")
+          variableType(variable) match {
+            case Some(typ) =>
+              println(s"Variable $variable: ${typ.fullName}; method: $method")
+            case None => println("Error")
+          }
         case q"$mods val $variable: $tpt = $expr" =>
+          parseStatement(expr)
         case stat =>
       }
     }
@@ -116,6 +100,13 @@ object Macros {
 class noop extends StaticAnnotation {
   def macroTransform(annottees: Any*): Any = macro linkMacro.impl
 }
+
+@compileTimeOnly("enable macro paradise to expand macro annotations")
+class interceptNew extends StaticAnnotation {
+  def macroTransform(annottees: Any*): Any = macro Macros.interceptNewImpl
+}
+
+//def interceptNew[A](s: Any): A = macro interceptNewImpl
 
 object linkMacro {
   def impl(c: blackbox.Context)(annottees: c.Expr[Any]*): c.Expr[Any] = {
