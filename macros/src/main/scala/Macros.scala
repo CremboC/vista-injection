@@ -54,19 +54,27 @@ object Macros {
   def typesImpl(c: blackbox.Context)(s: c.Expr[Any]): c.Expr[Any] = {
     import c.universe._
 
-    def variableType(tree: c.universe.Tree): TypeSymbol = {
-      tree.tpe.typeSymbol.asInstanceOf[ClassSymbol].asType
+    def variableType(tree: c.universe.Tree): Option[TypeSymbol] = {
+      tree.tpe.typeSymbol match {
+        case cs: ClassSymbol => Option(cs.asType)
+        case _ => None
+      }
     }
     def getType[T: TypeTag](obj: T) = typeOf[T]
+
+    var found = 0
 
     def parseStatement(t: c.universe.Tree): Unit = {
       t.foreach {
         case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
+
           stats.foreach(parseStatement)
         case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
           parseStatement(expr)
         case q"$variable $method[..$tparams](...$tparamss)" =>
-          println(s"Variable $variable: ${variableType(variable).fullName}; method: $method")
+          found += 1
+          println(getType(method))
+          println(s"$found: Variable $variable: ${}; method: $method")
         case q"$mods val $variable: $tpt = $expr" =>
         case stat =>
       }
@@ -96,6 +104,7 @@ object Macros {
 //    println(result)
 
     val statements = s.tree
+//    println(showCode(statements))
     parseStatement(statements)
     s
   }
