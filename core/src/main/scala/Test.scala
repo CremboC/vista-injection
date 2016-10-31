@@ -95,8 +95,14 @@ object Test extends App {
   def func(): Unit = {
     val b = new B
     b.sayHi()
+    b.sayHi(5)
+    println(b.isInstanceOf[B with Vista[B]])
   }
 
+
+  println(classOf[B].getMethod("sayHi", classOf[Int]))
+
+  func()
 //  val ret = Macros.interceptNew {
 //
 //  }

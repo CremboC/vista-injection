@@ -1,9 +1,11 @@
 package vistas
 
-trait Vista {
-  import scala.reflect.runtime.{universe => ru}
+import java.lang.reflect.Method
+import scala.reflect.runtime.{universe => ru}
 
-  private lazy val allowed: Seq[ru.MethodSymbol] = {
+trait Vista[A] {
+
+  private lazy val allowed: Seq[Method] = {
     // find the sayHi which takes an Int
 //    val head = ru.typeOf[]
 //      .members
@@ -18,19 +20,22 @@ trait Vista {
 //      }
 //      .head.asInstanceOf[ru.MethodSymbol]
 
-    Seq()
+
+    Seq(classOf[classes.B].getMethod("sayHi", classOf[Int]))
   }
 
-  def isAllowed[A : ru.TypeTag](func: ru.MethodSymbol): Boolean = allowed.contains(func)
+  def isAllowed(func: Method): Boolean = allowed.contains(func)
 }
 
 object Vista {
   import scala.reflect.runtime.{universe => ru}
-  def isAllowed[T : ru.TypeTag](instance: T with Vista, funcName: String, params: List[(ru.Type, Any)]): Boolean = {
-    findMethod[T](funcName, params) match {
-      case Some(m) => instance.isAllowed[T](m)
-      case None => false
-    }
+  def isAllowed[T : ru.TypeTag](instance: T with Vista[T], funcName: String, params: List[(ru.Type, Any)]): Boolean = {
+//    findMethod[T](funcName, params) match {
+//      case Some(m) => instance.isAllowed[T](m)
+//      case None => false
+//    }
+
+    false
   }
 
   private def getType[T: ru.TypeTag](obj: T) = ru.typeOf[T]

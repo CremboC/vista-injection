@@ -8,27 +8,34 @@ object Macros {
   def interceptNewImpl(c: blackbox.Context)(annottees: c.Tree*): c.Tree = {
     import c.universe._
 
-    val ret = annottees.head.children.map {
-      case ValDef(mods, name, tyt, rhs) =>
-//        println(name, tyt, rhs)
-        ValDef(mods, name, tyt, q"new classes.B with vistas.Vista")
-//        q"{ $v }"
-      case New(stat) =>
-        New(stat)
-      case Literal(stat) =>
-        Literal(stat)
-      case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
-        println(tname)
-        q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr"
+    def variableType(tree: c.universe.Tree): Option[TypeSymbol] = {
+      tree.tpe.typeSymbol match {
+        case cs: ClassSymbol => Option(cs.asType)
+        case _ => None
+      }
     }
 
-//    println(ret)
+    def parseTree(tree: c.Tree): c.Tree = tree match {
+      case ValDef(mods, name, tyt, rhs) =>
+        println(showCode(rhs))
+        val regex = """new ([A-Za-z]+)\(\)""".r
+        val regex(clazz) = showCode(rhs)
+        ValDef(mods, name, tyt, q"new $clazz with vistas.Vista[$clazz]")
+      case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
+        val parsed = expr.children.map(ex => parseTree(ex))
+        q"$mods def $tname[..$tparams](...$paramss): $tpt = {..$parsed}"
+      case q"$variable $method[..$tparams](...$tparamss)" =>
+        println(variable, method, tparamss)
+        q"$variable $method[..$tparams](...$tparamss)"
+      case q"{..$stats}" =>
+        q"{..$stats}"
+    }
 
-    val r = q"""{ ..$ret }"""
-//    println(showCode(annottees.head))
-//    println(showCode(r))
-//    r
-    q"{..$annottees}"
+    val ret = parseTree(annottees.head)
+
+    println(showCode(ret))
+
+    q"""{ ..$ret }"""
   }
 
 
@@ -55,6 +62,8 @@ object Macros {
         case q"$variable $method[..$tparams](...$tparamss)" =>
           variableType(variable) match {
             case Some(typ) =>
+              println(typ.asClass.isSynthetic)
+              println(typ.asClass.baseClasses(2).fullName)
               println(s"Variable $variable: ${typ.fullName}; method: $method")
             case None => println("Error")
           }

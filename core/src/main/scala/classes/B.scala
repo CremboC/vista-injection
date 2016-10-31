@@ -12,7 +12,6 @@ class B {
     println("Bye!")
   }
 
-
   def sayHi(): Unit = {
     println("Hi without param!")
   }
