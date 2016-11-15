@@ -17,16 +17,20 @@ object Macros {
 
     def parseTree(tree: c.Tree): c.Tree = tree match {
       case ValDef(mods, name, tyt, rhs) =>
-        println(showCode(rhs))
+//        println(showCode(rhs))
         val regex = """new ([A-Za-z]+)\(\)""".r
         val regex(clazz) = showCode(rhs)
-        ValDef(mods, name, tyt, q"new $clazz with vistas.Vista[$clazz]")
+        ValDef(mods, name, tyt, q"new ${TypeName(clazz)} with vistas.Vista")
       case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
         val parsed = expr.children.map(ex => parseTree(ex))
         q"$mods def $tname[..$tparams](...$paramss): $tpt = {..$parsed}"
       case q"$variable $method[..$tparams](...$tparamss)" =>
-        println(variable, method, tparamss)
+//        println(variable, method, tparamss)
         q"$variable $method[..$tparams](...$tparamss)"
+      case Block(stats, expr) =>
+        val ss = stats.map { s => parseTree(s) }
+//        println(expr)
+        q"{..$ss}"
       case q"{..$stats}" =>
         q"{..$stats}"
     }

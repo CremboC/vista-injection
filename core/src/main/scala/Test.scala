@@ -94,9 +94,12 @@ object Test extends App {
   @interceptNew
   def func(): Unit = {
     val b = new B
-    b.sayHi()
-    b.sayHi(5)
-    println(b.isInstanceOf[B with Vista[B]])
+
+    Macros.getTypes {
+      b.sayHi()
+      b.sayHi(5)
+    }
+    println(b.isInstanceOf[B with Vista])
   }
 
 

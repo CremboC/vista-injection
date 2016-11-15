@@ -3,7 +3,7 @@ package vistas
 import java.lang.reflect.Method
 import scala.reflect.runtime.{universe => ru}
 
-trait Vista[A] {
+trait Vista {
 
   private lazy val allowed: Seq[Method] = {
     // find the sayHi which takes an Int
@@ -29,7 +29,7 @@ trait Vista[A] {
 
 object Vista {
   import scala.reflect.runtime.{universe => ru}
-  def isAllowed[T : ru.TypeTag](instance: T with Vista[T], funcName: String, params: List[(ru.Type, Any)]): Boolean = {
+  def isAllowed[T : ru.TypeTag](instance: T with Vista, funcName: String, params: List[(ru.Type, Any)]): Boolean = {
 //    findMethod[T](funcName, params) match {
 //      case Some(m) => instance.isAllowed[T](m)
 //      case None => false
