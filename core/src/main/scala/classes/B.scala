@@ -8,7 +8,7 @@ class B {
     println("Hi with param!")
   }
 
-  def sayBye(a: Int): Unit = {
+  def sayBye[A](a: Int): Unit = {
     println("Bye!")
   }
 

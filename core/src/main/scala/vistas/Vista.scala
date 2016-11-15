@@ -30,10 +30,12 @@ trait Vista {
 object Vista {
   import scala.reflect.runtime.{universe => ru}
   def isAllowed[T : ru.TypeTag](instance: T with Vista, funcName: String, params: List[(ru.Type, Any)]): Boolean = {
+    println("Hello")
 //    findMethod[T](funcName, params) match {
-//      case Some(m) => instance.isAllowed[T](m)
+//      case Some(m) => instance.isAllowed(m)
 //      case None => false
 //    }
+
 
     false
   }

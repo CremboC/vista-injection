@@ -94,10 +94,10 @@ object Test extends App {
   @interceptNew
   def func(): Unit = {
     val b = new B
-
     Macros.getTypes {
       b.sayHi()
       b.sayHi(5)
+      b.sayBye[Int](5)
     }
     println(b.isInstanceOf[B with Vista])
   }
@@ -115,7 +115,7 @@ object Test extends App {
 //  import scala.reflect.runtime.{universe => ru}
 //  def getType[T: ru.TypeTag](obj: T) = ru.typeOf[T]
 
-//  val b = new classes.B with Vista
+//  val b = new classes.B
 //  if (Vista.isAllowed[classes.B](b, "sayHi", List((ru.typeOf[Int], 5)))) {
 //    b.sayHi(5)
 //  }
