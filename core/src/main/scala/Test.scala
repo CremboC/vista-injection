@@ -6,44 +6,42 @@ import vistas.Vista
   */
 object Test extends App {
 
-//  class A {
-//    def doA(list: Seq[Int]): Boolean = {
-//      list.contains(1)
-//    }
-//  }
-//
+  class A {
+    def doA(list: Seq[Int]): Boolean = {
+      list.contains(1)
+    }
+  }
+
 //  println(a)
 
 
 
-//  Macros.getTypes {
-//
-//
-//    def test(lst: Seq[Int]): Int = {
-//      val a = lst.map(_ + 5).sum
-//      a + 5
-//    }
-//    val s = Seq(1, 2, 3)
-//    val filtered = s.filter(_ == 1)
-//    val f2 = s.map(_ + 1)
-//    val f3 = f2 map { _ + 2 }
-//    val nonEmpty = filtered.nonEmpty
-//
-//    val a = new A
-//
-//    a.doA(f3)
-//    test(f3)
-//
-//    def thing(a: A): Unit = {
-//
-//
-//    }
-//
-//
-//    thing(a)
-//
-//    println(1)
-//  }
+  Macros.getTypes {
+
+
+    def test(lst: Seq[Int]): Int = {
+      val a = lst.map(_ + 5).sum
+      a + 5
+    }
+    val s = Seq(1, 2, 3)
+    val filtered = s.filter(_ == 1)
+    val f2 = s.map(_ + 1)
+    val f3 = f2 map { _ + 2 }
+    val nonEmpty = filtered.nonEmpty
+
+    val a = new A
+
+    a.doA(f3)
+    test(f3)
+
+    def thing(a: A): Unit = {
+    }
+
+
+    thing(a)
+
+    println(1)
+  }
 
 
 
@@ -101,9 +99,6 @@ object Test extends App {
     }
     println(b.isInstanceOf[B with Vista])
   }
-
-
-  println(classOf[B].getMethod("sayHi", classOf[Int]))
 
   func()
 //  val ret = Macros.interceptNew {

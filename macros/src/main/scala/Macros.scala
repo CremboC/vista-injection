@@ -48,19 +48,15 @@ class VistaMacros(val c: blackbox.Context) {
 
   def baseClassesContainsVista(tree: c.universe.Tree): Boolean = {
     val typ = variableType(tree)
-//    variableType(tree) match {
-//      case Some(typ) =>
-    println(typ.asClass.baseClasses.map(_.asClass.fullName))
     typ.asClass.baseClasses.map(_.asClass).exists(_.fullName.contains("Vista"))
-//      case None => false
-//    }
   }
 
   def typesImpl(s: c.Tree): c.Tree = {
     def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
       case Block(stats, expr) =>
         val sstats = stats.map { s => parseStatement(s)}
-        q"{ ..$sstats }"
+//        println(stats, expr)
+        q"{ ..${sstats :+ parseStatement(expr) } }"
       //      case ClassDef(mods, tpname, tparams, impl) =>
       //        val ret = impl.body.map { tb => parseStatement(tb) }
       //        ClassDef(mods, tpname, tparams, q"{ ..$ret }")
@@ -77,25 +73,66 @@ class VistaMacros(val c: blackbox.Context) {
             if (baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree])) {
               val varName = c.freshName(TermName("temp"))
               val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
-
-              println(args)
               val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
 
               q"""
                 val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
-                if (Vista.isAllowed[classes.B](b, "sayHi", List((ru.typeOf[Int], 5)))) {
+                if ($variable.isAllowed($varName)) {
                   ${Apply(func, args)}
+                } else {
+                  println("Attempted to run a non-allowed function")
                 }
               """
             } else {
               Apply(func, args)
             }
+          case _ =>
+            println("Not matched")
+
+//            c.untypecheck()
+            Apply(func, args.map(arg => c.untypecheck(arg)))
         }
+//        Apply(func, args)
+      case TypeApply(func, args) =>
+        println(func, args)
+        TypeApply(func, args)
+//      case q"$varr $method[..$tparams](...$args)" =>
+////        println(variable, method, tparams, args)
+//
+//        val variable = varr.asInstanceOf[c.universe.Tree]
+//        if (baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree])) {
+//          val argsAsTree = args.head.asInstanceOf[List[c.universe.Tree]]
+//
+//          println(argsAsTree)
+//
+//          val varName = c.freshName(TermName("temp"))
+//          val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
+//          val arrgs = argsAsTree.map(t => q"classOf[${variableType(t).name}]")
+//
+//          val funcCall = q"$variable.$method[..$tparams](..${args.head})"
+//          q"""
+//                val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
+//                if ($variable.isAllowed($varName)) {
+//                  $funcCall
+//                } else {
+//                  println("Attempted to run a non-allowed function")
+//                }
+//              """
+//        } else {
+//          q"$varr $method[..$tparams](...${args.head})"
+////          if (args.nonEmpty) q"$varr.$method[..$tparams](..${args.head})"
+////          else q"$varr.$method[..$tparams]()"
+//        }
+
+
+//      case Apply(func, args) =>
+//        func match {
+//          case q"$variable.$method[..$tparams]" =>
+//
+//        }
       case ValDef(mods, variable, tpt, expr) =>
         ValDef(mods, variable, tpt, parseStatement(expr))
-      case stat =>
-        println(stat)
-        stat
+      case tt: c.universe.Tree => tt
     }
 
     val ret = parseStatement(s)
@@ -104,104 +141,6 @@ class VistaMacros(val c: blackbox.Context) {
   }
 }
 
-//noinspection UnitMethodIsParameterless
 object Macros {
-
-  def typesImpl(c: blackbox.Context)(s: c.Tree): c.Tree = {
-    import c.universe._
-
-    def variableType(tree: c.universe.Tree): Option[TypeSymbol] = {
-      tree.tpe.typeSymbol match {
-        case cs: ClassSymbol => Option(cs.asType)
-        case _ => None
-      }
-    }
-
-    def getType[T: TypeTag](obj: T) = typeOf[T]
-
-    def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
-      case Block(stats, expr) =>
-        val sstats = stats.map { s => parseStatement(s)}
-        q"{ ..$sstats }"
-      //      case ClassDef(mods, tpname, tparams, impl) =>
-      //        val ret = impl.body.map { tb => parseStatement(tb) }
-      //        ClassDef(mods, tpname, tparams, q"{ ..$ret }")
-
-      //        case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
-      //          stats.foreach(parseStatement)
-      case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
-        //        case q"$mods def $tname[..$tparams](...$paramss): $tpt = $expr" =>
-
-        DefDef(mods, tname, tparams, paramss, tpt, parseStatement(expr))
-      case q"new ..$parents { ..$body }" =>
-        q"new ..$parents { ..$body }"
-      case Apply(func, args) =>
-        println(func, args)
-        if (func.children.nonEmpty) {
-          func match {
-            case q"$variable.$method[..$tparams]" =>
-              println(variable, method, tparams)
-          }
-          println(func)
-          val variable = func.children.head
-          val method = func.children(1)
-          //            println(variableType(variable), method)
-          Apply(func, args)
-        } else {
-          println(func, args)
-          Apply(func, args)
-        }
-
-      //        case q"$variable $method[..$tparams](...$tparamss)" =>
-      //          variableType(variable) match {
-      //            case Some(typ) =>
-      //              println(typ.asClass.isSynthetic)
-      //              println(typ.asClass.baseClasses)
-      //              println(typ.asClass.baseClasses(2).fullName)
-
-      //              println(getType(typ.asClass.baseClasses))
-
-      //              typ.asClass.baseClasses.contains(ts: ClassSymbol => ts == TermName("vistas.Vista"))
-
-      //              println(s"Variable $variable: ${typ.fullName}; method: $method")
-      //            case None => println("Error")
-      //          }
-      case ValDef(mods, variable, tpt, expr) =>
-        ValDef(mods, variable, tpt, parseStatement(expr))
-      case stat =>
-        println(stat)
-        stat
-    }
-
-    //    val result = s.tree.children.map {
-    //      case q"$variable $method[..$tparams](...$tparamss)" =>
-    ////        println(s"Variable $variable: ${variableType(variable).fullName}; method: $method")
-    //        q"$variable $method[..$tparams](...$tparamss)"
-    //      case q"$mods val $variable: $tpt = $expr" =>
-    ////        println(expr)
-    //
-    //        q"$mods val $variable: $tpt = $expr"
-    //      case stats =>
-    //        q"$stats"
-    //    }.asInstanceOf[List[c.universe.Tree]]
-    //
-    //    s.tree.children.foreach {
-    //      case Apply(a, b) =>
-    //        println(a, b)
-    //      case Select(a, b) =>
-    //        println(a, b)
-    //      case _ =>
-    //    }
-
-
-    //    println(result)
-
-    //    val statements = s.tree
-    //    println(showCode(statements))
-    showCode(s)
-    parseStatement(s)
-    //    s
-  }
-
   def getTypes(s: Any): Any = macro VistaMacros.typesImpl
 }
