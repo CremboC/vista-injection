@@ -26,23 +26,28 @@ class VistaMacros(val c: blackbox.Context) {
         val newClassRegex(clazz) = showCode(rhs)
         ValDef(mods, name, tyt, q"new ${TypeName(clazz)} with vistas.Vista")
       case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
-        val parsed = expr.children.map(ex => parseTree(ex))
+        val parsed = parseTree(expr)
         q"$mods def $tname[..$tparams](...$paramss): $tpt = {..$parsed}"
-      case Apply(func, args) =>
-        Apply(func, args)
-      case q"$variable $method[..$tparams](...$tparamss)" =>
-        q"$variable $method[..$tparams](...$tparamss)"
-      case q"{ case ..$cases }" =>
-        q"{ case ..$cases }"
+//      case Apply(func, args) =>
+//        Apply(func, args)
+//      case q"$variable $method[..$tparams](...$tparamss)" =>
+//        q"$variable $method[..$tparams](...$tparamss)"
+//      case q"{ case ..$cases }" =>
+//        q"{ case ..$cases }"
+//      case Block(stats, expr) =>
+//        val ss = stats.map { s => parseTree(s) }
+//        q"{..$ss}"
+//      case
       case Block(stats, expr) =>
-        val ss = stats.map { s => parseTree(s) }
-        q"{..$ss}"
-      case _ => tree
+        Block(stats.map(s => parseTree(s)), parseTree(expr))
+      case _ =>
+        tree
     }
 
     val ret = parseTree(annottees.head)
 
-//    println(showCode(ret))
+//    println(showCode(annottees.head))
+    println(ret)
 
     q"""{ ..$ret }"""
   }
@@ -54,18 +59,8 @@ class VistaMacros(val c: blackbox.Context) {
 
   def typesImpl(s: c.Tree): c.Tree = {
     def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
-//      case q"{ ..$stats }" =>
-//        println(stats.head)
-//        val sstats = stats.asInstanceOf[Seq[c.universe.Tree]].map { s => parseStatement(s)}
-//        println(sstats)
-//        q"{ ..$sstats }"
-      case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
-//        stats.asInstanceOf
-        t
       case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
         DefDef(mods, tname, tparams, paramss, tpt, parseStatement(expr))
-      case q"new ..$parents { ..$body }" =>
-        t
       case Apply(func, args) =>
         func match {
           case q"$variable.$method[..$tparams]" if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
@@ -84,44 +79,6 @@ class VistaMacros(val c: blackbox.Context) {
           case _ =>
             t
         }
-//        Apply(func, args)
-      case TypeApply(func, args) =>
-        println(func, args)
-        t
-//      case q"$varr $method[..$tparams](...$args)" =>
-////        println(variable, method, tparams, args)
-//
-//        val variable = varr.asInstanceOf[c.universe.Tree]
-//        if (baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree])) {
-//          val argsAsTree = args.head.asInstanceOf[List[c.universe.Tree]]
-//
-//          println(argsAsTree)
-//
-//          val varName = c.freshName(TermName("temp"))
-//          val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
-//          val arrgs = argsAsTree.map(t => q"classOf[${variableType(t).name}]")
-//
-//          val funcCall = q"$variable.$method[..$tparams](..${args.head})"
-//          q"""
-//                val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
-//                if ($variable.isAllowed($varName)) {
-//                  $funcCall
-//                } else {
-//                  println("Attempted to run a non-allowed function")
-//                }
-//              """
-//        } else {
-//          q"$varr $method[..$tparams](...${args.head})"
-////          if (args.nonEmpty) q"$varr.$method[..$tparams](..${args.head})"
-////          else q"$varr.$method[..$tparams]()"
-//        }
-
-
-//      case Apply(func, args) =>
-//        func match {
-//          case q"$variable.$method[..$tparams]" =>
-//
-//        }
       case ValDef(mods, variable, tpt, expr) =>
         ValDef(mods, variable, tpt, parseStatement(expr))
       case _ => t
