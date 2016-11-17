@@ -1,6 +1,6 @@
-//import scala.annotation.{StaticAnnotation, compileTimeOnly}
-//import scala.language.experimental.macros
-//import scala.reflect.macros.blackbox
+import scala.annotation.{StaticAnnotation, compileTimeOnly}
+import scala.language.experimental.macros
+import scala.reflect.macros.blackbox
 //
 //
 //@compileTimeOnly("enable macro paradise to expand macro annotations")
@@ -8,16 +8,16 @@
 //  def macroTransform(annottees: Any*): Any = macro VistaMacros.interceptNew
 //}
 //
-//class VistaMacros(val c: blackbox.Context) {
-//
-//  import c.universe._
-//
-//  def getType[T: TypeTag](obj: T) = typeOf[T]
-//
-//  def variableType(tree: c.universe.Tree): TypeSymbol = {
-//    tree.tpe.typeSymbol.asInstanceOf[ClassSymbol].asType
-//  }
-//
+class VistaMacros(val c: blackbox.Context) {
+
+  import c.universe._
+
+  def getType[T: TypeTag](obj: T) = typeOf[T]
+
+  def variableType(tree: c.universe.Tree): TypeSymbol = {
+    tree.tpe.typeSymbol.asInstanceOf[ClassSymbol].asType
+  }
+
 //  def interceptNew(annottees: c.Tree*): c.Tree = {
 //    val newClassRegex = """new ([A-Za-z]+)\(\)""".r
 //
@@ -51,47 +51,47 @@
 //
 //    q"""{ ..$ret }"""
 //  }
-//
-//  def baseClassesContainsVista(tree: c.universe.Tree): Boolean = {
-//    val typ = variableType(tree)
-//    typ.asClass.baseClasses.map(_.asClass).exists(_.fullName.contains("Vista"))
-//  }
-//
-//  def typesImpl(s: c.Tree): c.Tree = {
-//    def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
-//      case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
-//        DefDef(mods, tname, tparams, paramss, tpt, parseStatement(expr))
-//      case Apply(func, args) =>
-//        func match {
-//          case q"$variable.$method[..$tparams]" if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
-//            val varName = c.freshName(TermName("temp"))
-//            val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
-//            val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
-//
-//            q"""
-//              val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
-//              if ($variable.isAllowed($varName)) {
-//                ${Apply(func, args)}
-//              } else {
-//                println("Attempted to run a non-allowed function")
-//              }
-//            """
-//          case _ =>
-//            t
-//        }
-//      case ValDef(mods, variable, tpt, expr) =>
-//        ValDef(mods, variable, tpt, parseStatement(expr))
-//      case _ => t
-//    }
-//
-////    println(showCode())
-//
-//    val ret = s.children.map(stat => parseStatement(stat))
-////    println(showCode(ret))
-//    q"{ ..$ret }"
-//  }
-//}
-//
-//object Macros {
-//  def getTypes(s: Any): Any = macro VistaMacros.typesImpl
-//}
+
+  def baseClassesContainsVista(tree: c.universe.Tree): Boolean = {
+    val typ = variableType(tree)
+    typ.asClass.baseClasses.map(_.asClass).exists(_.fullName.contains("Vista"))
+  }
+
+  def typesImpl(s: c.Tree): c.Tree = {
+    def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
+      case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
+        DefDef(mods, tname, tparams, paramss, tpt, parseStatement(expr))
+      case Apply(func, args) =>
+        func match {
+          case q"$variable.$method[..$tparams]" if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
+            val varName = c.freshName(TermName("temp"))
+            val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
+            val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
+
+            q"""
+              val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
+              if ($variable.isAllowed($varName)) {
+                ${Apply(func, args)}
+              } else {
+                println("Attempted to run a non-allowed function")
+              }
+            """
+          case _ =>
+            t
+        }
+      case ValDef(mods, variable, tpt, expr) =>
+        ValDef(mods, variable, tpt, parseStatement(expr))
+      case _ => t
+    }
+
+//    println(showCode())
+
+    val ret = s.children.map(stat => parseStatement(stat))
+//    println(showCode(ret))
+    q"{ ..$ret }"
+  }
+}
+
+object Macros {
+  def getTypes(s: Any): Any = macro VistaMacros.typesImpl
+}

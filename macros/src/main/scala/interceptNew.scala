@@ -43,14 +43,15 @@ class interceptNew extends StaticAnnotation {
 
 
 //            val $vrr = classOf[classes.B].getMethod($methodName, $intType)
-            q"""
-                val $vrr = Vista.determineMethod($variable, ${methodName}, ..$params)
-                if ($variable.isAllowed(${vrr.name})) {
-                  $stat
-                } else {
-                  println("No")
-                }
-             """
+//            q"""
+//                val $vrr = Vista.determineMethod($variable, $methodName, ..$params)
+//                if ($variable.isAllowed(${vrr.name})) {
+//                  $stat
+//                } else {
+//                  println("No")
+//                }
+//             """
+            stat
           case _ => stat
         }
       case stat => stat

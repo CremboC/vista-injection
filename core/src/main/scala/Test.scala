@@ -10,17 +10,12 @@ object Test extends App {
   def func(): Unit = {
     def funcc(): (Int, Int) = (1, 2)
 
-//    val b = new B
     val b = new B
-//    Macros.getTypes {
-
+    Macros.getTypes {
       b.sayHi()
       b.sayHi(5)
       b.sayBye[Int](5)
-
-
-      val (x, y) = funcc()
-//    }
+    }
     println(b.isInstanceOf[B with Vista])
   }
 
@@ -29,7 +24,12 @@ object Test extends App {
 
 
 
-//  val b = new B
-//  Vista.determineMethod(b, "sayHi", 3)
+//  val b = new B with Vista
+
+//  println(classOf[B].getMethod("multi", classOf[Int], classOf[Int]))
+//  println(Vista.determineMethod(b, "say", Seq(Seq(1))))
+//  b.proxyMethod {
+//    b.sayHi(5)
+//  }
 }
 

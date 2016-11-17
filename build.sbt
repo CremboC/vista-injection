@@ -1,3 +1,5 @@
+import sbt.Keys.libraryDependencies
+
 name := "vista-injection"
 // scala.meta macros are at the moment only supported in 2.11.
 scalaVersion in ThisBuild := "2.11.8"
@@ -19,7 +21,9 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // temporary workaround for https://github.com/scalameta/paradise/issues/10
   scalacOptions in (Compile, console) := Seq(), // macroparadise plugin doesn't work in repl yet.
   // temporary workaround for https://github.com/scalameta/paradise/issues/55
-  sources in (Compile, doc) := Nil // macroparadise doesn't work with scaladoc yet.
+  sources in (Compile, doc) := Nil, // macroparadise doesn't work with scaladoc yet.
+
+  libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 )
 
 // Define macros in this project.
@@ -34,9 +38,5 @@ lazy val macros = (project in file("macros")).settings(
 // Use macros in this project.
 //lazy val app = project.settings(metaMacroSettings).dependsOn(macros)
 lazy val core = (project in file("core"))
-  .settings(
-    metaMacroSettings,
-
-    libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
-  )
+  .settings(metaMacroSettings)
   .dependsOn(macros)
