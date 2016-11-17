@@ -22,7 +22,7 @@ class VistaMacros(val c: blackbox.Context) {
     val newClassRegex = """new ([A-Za-z]+)\(\)""".r
 
     def parseTree(tree: c.Tree): c.Tree = tree match {
-      case ValDef(mods, name, tyt, rhs) =>
+      case ValDef(mods, name, tyt, rhs) if showCode(rhs).contains("new") =>
         val newClassRegex(clazz) = showCode(rhs)
         ValDef(mods, name, tyt, q"new ${TypeName(clazz)} with vistas.Vista")
       case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
@@ -37,6 +37,7 @@ class VistaMacros(val c: blackbox.Context) {
       case Block(stats, expr) =>
         val ss = stats.map { s => parseTree(s) }
         q"{..$ss}"
+      case _ => tree
     }
 
     val ret = parseTree(annottees.head)
@@ -53,49 +54,40 @@ class VistaMacros(val c: blackbox.Context) {
 
   def typesImpl(s: c.Tree): c.Tree = {
     def parseStatement(t: c.universe.Tree): c.universe.Tree = t match {
-      case Block(stats, expr) =>
-        val sstats = stats.map { s => parseStatement(s)}
-//        println(stats, expr)
-        q"{ ..${sstats :+ parseStatement(expr) } }"
-      //      case ClassDef(mods, tpname, tparams, impl) =>
-      //        val ret = impl.body.map { tb => parseStatement(tb) }
-      //        ClassDef(mods, tpname, tparams, q"{ ..$ret }")
-
-      //        case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
-      //          stats.foreach(parseStatement)
+//      case q"{ ..$stats }" =>
+//        println(stats.head)
+//        val sstats = stats.asInstanceOf[Seq[c.universe.Tree]].map { s => parseStatement(s)}
+//        println(sstats)
+//        q"{ ..$sstats }"
+      case q"$mods class $tpname[..$tparams] { $self => ..$stats }" =>
+//        stats.asInstanceOf
+        t
       case DefDef(mods, tname, tparams, paramss, tpt, expr) =>
         DefDef(mods, tname, tparams, paramss, tpt, parseStatement(expr))
       case q"new ..$parents { ..$body }" =>
-        q"new ..$parents { ..$body }"
+        t
       case Apply(func, args) =>
         func match {
-          case q"$variable.$method[..$tparams]" =>
-            if (baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree])) {
-              val varName = c.freshName(TermName("temp"))
-              val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
-              val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
+          case q"$variable.$method[..$tparams]" if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
+            val varName = c.freshName(TermName("temp"))
+            val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
+            val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
 
-              q"""
-                val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
-                if ($variable.isAllowed($varName)) {
-                  ${Apply(func, args)}
-                } else {
-                  println("Attempted to run a non-allowed function")
-                }
-              """
-            } else {
-              Apply(func, args)
-            }
+            q"""
+              val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
+              if ($variable.isAllowed($varName)) {
+                ${Apply(func, args)}
+              } else {
+                println("Attempted to run a non-allowed function")
+              }
+            """
           case _ =>
-            println("Not matched")
-
-//            c.untypecheck()
-            Apply(func, args.map(arg => c.untypecheck(arg)))
+            t
         }
 //        Apply(func, args)
       case TypeApply(func, args) =>
         println(func, args)
-        TypeApply(func, args)
+        t
 //      case q"$varr $method[..$tparams](...$args)" =>
 ////        println(variable, method, tparams, args)
 //
@@ -132,12 +124,14 @@ class VistaMacros(val c: blackbox.Context) {
 //        }
       case ValDef(mods, variable, tpt, expr) =>
         ValDef(mods, variable, tpt, parseStatement(expr))
-      case tt: c.universe.Tree => tt
+      case _ => t
     }
 
-    val ret = parseStatement(s)
-    println(showCode(ret))
-    ret
+//    println(showCode())
+
+    val ret = s.children.map(stat => parseStatement(stat))
+//    println(showCode(ret))
+    q"{ ..$ret }"
   }
 }
 
