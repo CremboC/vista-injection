@@ -1,4 +1,3 @@
-import scala.annotation.{StaticAnnotation, compileTimeOnly}
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox
 
@@ -12,46 +11,45 @@ class VistaMacros(val c: blackbox.Context) {
     tree.tpe.typeSymbol.asInstanceOf[ClassSymbol].asType
   }
 
+  def baseClasses(tree: c.universe.Tree): Seq[ClassSymbol] = {
+    variableType(tree).asClass.baseClasses.map(_.asClass)
+  }
+
   def baseClassesContainsVista(tree: c.universe.Tree): Boolean = {
-    val typ = variableType(tree)
-    typ.asClass.baseClasses.map(_.asClass).exists(_.fullName.contains("Vista"))
+    baseClasses(tree).exists(_.fullName.contains("Vista"))
   }
 
   def typesImpl(s: c.Tree): c.Tree = {
+
     val transformer = new Transformer {
       override def transformStats(stats: List[c.universe.Tree], exprOwner: c.universe.Symbol): List[c.universe.Tree] = stats.map {
         case stat@Apply(func, args) =>
           func match {
-            case q"$variable.$method[..$tparams]" if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
-              val varName = c.freshName(TermName("temp"))
+            case q"$variable.$method[..$tparams]"
+              if baseClassesContainsVista(variable.asInstanceOf[c.universe.Tree]) =>
+
               val simpleMethodName = Literal(Constant(method.asInstanceOf[TermName].toString))
               val arrgs = args.map(t => q"classOf[${variableType(t).name}]")
 
+              // hopefully get original class
+              val originalClass = baseClasses(variable.asInstanceOf[c.universe.Tree])(2)
+              val originalClassCons = q"classOf[${originalClass.asType}]"
+
               q"""
-              val $varName = classOf[classes.B].getMethod($simpleMethodName, ..$arrgs)
-              if ($variable.isAllowed($varName)) {
-                $stat
-              } else {
-                println("Attempted to run a non-allowed function")
-              }
-              """
+                  if ($variable.isAllowed(classOf[${originalClass.asType}].getMethod($simpleMethodName, ..$arrgs))) $stat else println("Method is forbidden")
+               """
             case _ => stat
           }
         case stat => stat
       }
     }
 
-    println(showCode(s))
 
     val transformed = transformer.transform(s)
 
-//    println(showCode(transformed))
-
-    //    val ret = s.children.map(stat => parseStatement(stat))
-    //    println(showCode(ret))
-    //    q"{ ..$ret }"
-    //    q"..$collected"
-    transformed
+    // without this, the transformer makes everything explode
+    // http://stackoverflow.com/questions/20936509/scala-macros-what-is-the-difference-between-typed-aka-typechecked-an-untyped
+    c.untypecheck(transformed)
   }
 }
 

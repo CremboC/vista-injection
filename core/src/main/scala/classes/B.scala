@@ -1,9 +1,12 @@
 package classes
 
+
+class A
+
 /**
   * @author paulius
   */
-class B {
+class B extends A {
 
 
   def sayHi(a: Int): Unit = {
