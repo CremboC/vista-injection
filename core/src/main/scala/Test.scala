@@ -1,35 +1,53 @@
 import classes.B
+import vista.{inspect, vistacise}
 import vistas.Vista
 
 /**
   * @author paulius
   */
+@vista.vistacise
 object Test extends App {
 
-  @interceptNew
   def func(): Unit = {
-    def funcc(): (Int, Int) = (1, 2)
-
     val b = new B
-    Macros.getTypes {
-      b.sayHi()
-      b.sayHi(5)
-      b.sayBye[Int](5)
-    }
+          b.sayHi()
+          b.sayHi(5)
+          b.sayBye[Int](5)
     println(b.isInstanceOf[B with Vista])
   }
-
 
   func()
 
 
 
-//  val b = new B with Vista
-
-//  println(classOf[B].getMethod("multi", classOf[Int], classOf[Int]))
-//  println(Vista.determineMethod(b, "say", Seq(Seq(1))))
-//  b.proxyMethod {
-//    b.sayHi(5)
+//  @interceptNew
+//  def func(): Unit = {
+//    Macros.getTypes {
+//      val b = new B
+//      b.sayHi()
+//      b.sayHi(5)
+//      b.sayBye[Int](5)
+//
+//      val a = 5
+//      val c = a + 5
+//
+//      println(b.isInstanceOf[B with Vista])
+//    }
 //  }
+//
+//  def func2(): Unit = {
+//    val b = new B with Vista
+//    if (b.isAllowed(classOf[B].getMethod("sayHi"))) {
+//      b.sayHi()
+//    } else {
+//      println("Not allowed")
+//    }
+//  }
+//
+//
+//
+//
+//
+//  func()
 }
 
