@@ -12,7 +12,6 @@ class vistacise extends StaticAnnotation {
     val transformed = template.transform {
       case stat@q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
         q"@vista.inspect ..$mods def $name[..$tparams](...$paramss): $tpeopt = Macros.getTypes { $expr }"
-      case stat => stat
     }
 
     val ntemplate = transformed.syntax.parse[Template].get
