@@ -11,12 +11,15 @@ class inspect extends StaticAnnotation {
     val q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" = defn
 
     val transformed = expr.transform {
-      case stat @ q"..$mods val $paramname: $tpeopt = $expr" =>
+      case q"..$mods val $paramname: $tpeopt = $expr" =>
         expr match {
           case q"new { ..$stat } with ..$ctorcalls { $param => ..$stats }" =>
             val newctorCalls = ctorcalls :+ ctor"vistas.Vista"
             val rhs = q"new { ..$stat } with ..$newctorCalls { $param => ..$stats }"
-            val vrr = Pat.Var.Term(Term.Name("b"))
+
+            val vrr = Pat.Var.Term(Term.Name(paramname.toString))
+
+//            paramname.name
 
             q"..$mods val $vrr: $tpeopt = $rhs"
           case _ => expr

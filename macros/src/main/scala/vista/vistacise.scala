@@ -10,7 +10,7 @@ class vistacise extends StaticAnnotation {
     val q"..$mods object $name extends $template" = defn
 
     val transformed = template.transform {
-      case stat@q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
+      case q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
         q"@vista.inspect ..$mods def $name[..$tparams](...$paramss): $tpeopt = Macros.getTypes { $expr }"
     }
 

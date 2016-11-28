@@ -5,7 +5,7 @@ class VistaMacros(val c: blackbox.Context) {
 
   import c.universe._
 
-  def getType[T: TypeTag](obj: T) = typeOf[T]
+  def getType[T: TypeTag](obj: T): c.universe.Type = typeOf[T]
 
   def variableType(tree: c.universe.Tree): TypeSymbol = {
     tree.tpe.typeSymbol.asInstanceOf[ClassSymbol].asType
@@ -33,7 +33,6 @@ class VistaMacros(val c: blackbox.Context) {
 
               // hopefully get original class
               val originalClass = baseClasses(variable.asInstanceOf[c.universe.Tree])(2)
-              val originalClassCons = q"classOf[${originalClass.asType}]"
 
               q"""
                   if ($variable.isAllowed(classOf[${originalClass.asType}].getMethod($simpleMethodName, ..$arrgs))) $stat else println("Method is forbidden")
@@ -46,6 +45,8 @@ class VistaMacros(val c: blackbox.Context) {
 
 
     val transformed = transformer.transform(s)
+
+    println(showCode(transformed))
 
     // without this, the transformer makes everything explode
     // http://stackoverflow.com/questions/20936509/scala-macros-what-is-the-difference-between-typed-aka-typechecked-an-untyped
