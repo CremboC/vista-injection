@@ -54,6 +54,6 @@ class VistaMacros(val c: blackbox.Context) {
   }
 }
 
-object Macros {
+object VistaMacros {
   def getTypes(s: Any): Any = macro VistaMacros.typesImpl
 }

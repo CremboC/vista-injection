@@ -1,10 +1,10 @@
 
-import classes.{A, B}
-import vistas.Vista
+import vistas.Vista._
 
 /**
   * @author paulius
   */
+@vista.vistacise
 object Union {
   class X {
     def one() = 1
@@ -30,64 +30,54 @@ object Union {
   def acceptsX(x: X): Boolean = x.isInstanceOf[X]
   def acceptsY(y: Y): Boolean = y.isInstanceOf[Y]
 
-  class ∀[A, B](left: A, right: B) {
-    def ∪[A, B]() = throw new RuntimeException("Should be compiled out")
-  }
-
-  object ∀ {
-    def apply[A, B](left: A, right: B): ∀[A, B] = new ∀[A, B](left, right)
-  }
-
-
-  def ∪[A, B](left: A, right: B): Any = throw new RuntimeException("Should be compiled out")
-
   def main(args: Array[String]): Unit = {
-
     val x = new X
     val y = new Y
-//    @vista.union val union = ∪(x[X], y[Y])
-//    @vista.union val union = ∀(x, y).∪[X, Y]
-    @vista.union val union = ∪[X, Y](x, y)
-//      x[X] ∪ y[Y]
 
-    println(union.getClass)
-    println(union.isInstanceOf[Vista])
-    println(acceptsX(union))
-    println(acceptsY(union))
-    acceptsXX(union)
-    acceptsYY(union)
+    val union: XY = ∪[X, Y](x, y)
+    println(union.one())
 
+    val partial1 = ∖[XY](xy, {
+      def one(): Int = ???
+    })
 
-    println((union : X).truth())
-    println(union.truth())
+    println(partial1.one())
 
+    val partial = ∖[X](x, {
+      def one(): Int = ???
+    })
 
-
-//    class XY
-//    val union = Macros.union[X, Y](x, y)
+    println(partial.one())
+    println(partial.two())
 //
+//    val nunion = ∖[XY](union, {
+//      def one(): Int = ???
+//    })
+
 //    println(union.getClass)
-//
+//    println(union.isInstanceOf[Vista])
 //    println(acceptsX(union))
+//    println(acceptsY(union))
+//    acceptsXX(union)
+//    acceptsYY(union)
+//
+//
+//    println((union : X).truth())
+//    println(union.truth())
 
-
-//    val xy = {
-//      object XY {
-//        implicit def toX(xy: XY): X = xy.x
-//        implicit def toY(xy: XY): Y = xy.y
-//      }
-//      class XY(val x: X, val y: Y)
-//      import XY._
-//      new XY(x, y)
+//    val x = new X
+    // remove one from x
+//    class Xp extends X {
+//      override def one(): Int = throw new RuntimeException("Forbidden")
+//      override def two(): Int = super.two()
+//      override def truth(): String = super.truth()
 //    }
+//    val partial = new Xp
 
+//    println(partial.truth())
 
-//    val xy =
-
-//    println(acceptsX(xy))
-//    println(acceptsY(xy))
-
-
-
+//    println(acceptsX(partial))
+//    println(acceptsY(partial))
+//    println(partial.isInstanceOf[Vista])
   }
 }

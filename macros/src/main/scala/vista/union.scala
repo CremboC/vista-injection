@@ -7,11 +7,11 @@ import scala.meta._
   * @author paulius
   */
 class union extends StaticAnnotation {
+
   inline def apply(defn: Any): Any = meta {
-    // using scala.meta because it is more statically typed than scala.reflect
     val q"..$mods val $paramname: $tpeopt = $expr" = defn
 
-    println(expr.children)
+//    println(expr.children)
     val (leftVar, leftType, rightVar, rightType) = expr.children match {
       case union :: left :: right :: Nil =>
         val q"$unionOp[$leftType, $rightType]" = union
@@ -22,7 +22,15 @@ class union extends StaticAnnotation {
       case _ => throw new RuntimeException("Illegal")
     }
 
-    val unionName = Term.fresh("union")
+    val unionTyp = tpeopt.asInstanceOf[Option[Type]] match {
+      case Some(typ) => typ
+      case _ => throw new IllegalArgumentException("Type must be set.")
+    }
+    val unionName = Term.Name(unionTyp.toString)
+
+//    val unionName = Term.fresh("union")
+    val traitType = Type.fresh("union")
+
     val unionType = Type.Name(unionName.value)
 
     val leftName = Term.fresh("left")
@@ -32,14 +40,16 @@ class union extends StaticAnnotation {
 
     val vrr = Pat.Var.Term(Term.Name(paramname.toString))
     q"""
-        object $unionName {
-          implicit def toLeft(xy: $unionType): $leftType = xy.$leftName
+        trait $traitType {
           implicit def toRight(xy: $unionType): $rightType = xy.$rightName
         }
-        class $unionType(val $leftName: $leftType, val $rightName: $rightType)
-        val $vrr = new $unionCtor($leftVar, $rightVar) with vistas.Vista
+        object $unionName extends ${Ctor.Name(traitType.value)} {
+          implicit def toLeft(xy: $unionType): $leftType = xy.$leftName
+        }
+        class $unionType(val $leftName: $leftType, val $rightName: $rightType) {
+          def this(xy: $unionType) = this(xy.$leftName, xy.$rightName)
+        }
+        val $vrr = new $unionCtor($leftVar, $rightVar)
      """
-
-    //        Macros.resolveConflicts(${Term.Name(paramname.toString)}, $leftVar, $rightVar)
   }
 }
