@@ -65,10 +65,13 @@ class forbid extends StaticAnnotation {
 
     val vrr = Pat.Var.Term(Term.Name(paramname.toString))
     q"""
+      if (${Term.Name(subjectType.toString)}.isInstanceOf[vistas.Union]) {
+
+      }
       class $forbidType extends $constructor {
         ..$forbidden
       }
-      val $vrr = new ${Ctor.Name(forbidName.value)} {}
+      val $vrr = new ${Ctor.Name(forbidName.value)}()
     """
   }
 }

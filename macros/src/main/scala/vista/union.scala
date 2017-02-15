@@ -46,8 +46,8 @@ class union extends StaticAnnotation {
         object $unionName extends ${Ctor.Name(traitType.value)} {
           implicit def toLeft(xy: $unionType): $leftType = xy.$leftName
         }
-        class $unionType(val $leftName: $leftType, val $rightName: $rightType) {
-          def this(xy: $unionType) = this(xy.$leftName, xy.$rightName)
+        class $unionType(val $leftName: $leftType, val $rightName: $rightType) extends vistas.Union {
+          def this(xy : $unionType) = this(xy.$leftName, xy.$rightName)
         }
         val $vrr = new $unionCtor($leftVar, $rightVar)
      """

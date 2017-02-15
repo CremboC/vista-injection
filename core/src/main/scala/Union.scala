@@ -37,18 +37,19 @@ object Union {
     val union: XY = ∪[X, Y](x, y)
     println(union.one())
 
-    val partial1 = ∖[XY](xy, {
-      def one(): Int = ???
-    })
 
-    println(partial1.one())
-
-    val partial = ∖[X](x, {
-      def one(): Int = ???
-    })
-
-    println(partial.one())
-    println(partial.two())
+//    val partial1 = ∖[XY](union, {
+//      def one(): Int = ???
+//    })
+//
+//    println(partial1.one())
+//
+//    val partial = ∖[X](x, {
+//      def one(): Int = ???
+//    })
+//
+//    println(partial.one())
+//    println(partial.two())
 //
 //    val nunion = ∖[XY](union, {
 //      def one(): Int = ???

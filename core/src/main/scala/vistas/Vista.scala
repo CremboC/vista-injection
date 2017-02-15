@@ -20,7 +20,10 @@ trait Vista {
 //  }
 }
 
-
+trait Union extends Vista
+trait Intersection extends Vista
+trait Difference extends Vista
+trait Product extends Vista
 
 object Vista {
   //  union
