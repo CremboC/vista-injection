@@ -6,20 +6,23 @@ import vistas.Vista._
   */
 @vista.vistacise
 object Union {
-  class X {
+
+  class X { _ : vistas.Vista =>
+    val n = 3
     def one() = 1
     def two() = 2
-    def truth() = "x"
+    def truth(): Int = n
   }
 
-  class Y {
+  class Y { _ : vistas.Vista =>
+    val n = 5
     def three() = 3
     def four() = 4
-    def truth() = "y"
+    def truth(): Int = n
   }
 
-
   def acceptsXX(x: X): Unit = {
+    println(x.one())
     println(x.truth())
   }
 
@@ -34,8 +37,15 @@ object Union {
     val x = new X
     val y = new Y
 
+//    val union = new tX with tY
+//    println(union.one())
     val union: XY = ∪[X, Y](x, y)
+
+    union.forbid[X]("one")
+
+
     println(union.one())
+    println(union.truth())
 
 
 //    val partial1 = ∖[XY](union, {

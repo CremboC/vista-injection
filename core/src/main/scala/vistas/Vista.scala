@@ -14,10 +14,6 @@ trait Vista {
   def forbid[A : ClassTag](method: String, args: Class[_]*)(implicit tag: ClassTag[A]): Unit = {
     forbidden.append(tag.runtimeClass.getMethod(method, args:_*))
   }
-
-//  def union[A : ClassTag, B : Vista]()(implicit tag: ClassTag[A]): A with B with Vista = {
-////    tag.runtimeClass.getConstructor().
-//  }
 }
 
 trait Union extends Vista
