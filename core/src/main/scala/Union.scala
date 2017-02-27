@@ -1,25 +1,29 @@
 
 import vistas.Vista._
 
+import scala.reflect.ClassTag
+
+@vista.tratify
+class X {
+  val n = 3
+  def one() = 1
+  def two() = 2
+  def truth(): Int = n
+}
+
+@vista.tratify
+class Y {
+  val n = 5
+  def three() = 3
+  def four() = 4
+  def truth(): Int = n
+}
+
 /**
   * @author paulius
   */
-@vista.vistacise
+@vista.enable
 object Union {
-
-  class X { _ : vistas.Vista =>
-    val n = 3
-    def one() = 1
-    def two() = 2
-    def truth(): Int = n
-  }
-
-  class Y { _ : vistas.Vista =>
-    val n = 5
-    def three() = 3
-    def four() = 4
-    def truth(): Int = n
-  }
 
   def acceptsXX(x: X): Unit = {
     println(x.one())
@@ -33,62 +37,47 @@ object Union {
   def acceptsX(x: X): Boolean = x.isInstanceOf[X]
   def acceptsY(y: Y): Boolean = y.isInstanceOf[Y]
 
+  def getClass[A](a: A)(implicit tag: ClassTag[A]): Class[_ <: A] = {
+    a.getClass
+  }
+
   def main(args: Array[String]): Unit = {
     val x = new X
     val y = new Y
 
 //    val union = new tX with tY
 //    println(union.one())
-    val union: XY = ∪[X, Y](x, y)
-
-    union.forbid[X]("one")
+//    val union: XY = ∪[X, Y](x, y)
 
 
-    println(union.one())
-    println(union.truth())
+    trait A {
+      def f = 1
+    }
+    trait B {
+      def f = 2
+    }
+
+    val ab = new vistas.Union with A with B
 
 
-//    val partial1 = ∖[XY](union, {
-//      def one(): Int = ???
-//    })
-//
-//    println(partial1.one())
-//
-//    val partial = ∖[X](x, {
-//      def one(): Int = ???
-//    })
-//
-//    println(partial.one())
-//    println(partial.two())
-//
-//    val nunion = ∖[XY](union, {
-//      def one(): Int = ???
-//    })
+    println(ab.f)
 
-//    println(union.getClass)
-//    println(union.isInstanceOf[Vista])
-//    println(acceptsX(union))
-//    println(acceptsY(union))
-//    acceptsXX(union)
-//    acceptsYY(union)
+
+//    println(union.isInstanceOf[_ <: X])
+
+//    x.forbid[X]("one")
+//
+//    println(getClass(x).getMethod("one"))
+
+
+//    union.forbid[X]("one")
+////    VistaMacros.getTypes()
 //
 //
-//    println((union : X).truth())
+//    VistaMacros.getTypes(union.one().+(5))
+//    VistaMacros.getTypes(union.one())
+
+//    println(union.one())
 //    println(union.truth())
-
-//    val x = new X
-    // remove one from x
-//    class Xp extends X {
-//      override def one(): Int = throw new RuntimeException("Forbidden")
-//      override def two(): Int = super.two()
-//      override def truth(): String = super.truth()
-//    }
-//    val partial = new Xp
-
-//    println(partial.truth())
-
-//    println(acceptsX(partial))
-//    println(acceptsY(partial))
-//    println(partial.isInstanceOf[Vista])
   }
 }

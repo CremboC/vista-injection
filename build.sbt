@@ -2,7 +2,7 @@ import sbt.Keys.libraryDependencies
 
 name := "vista-injection"
 // scala.meta macros are at the moment only supported in 2.11.
-scalaVersion in ThisBuild := "2.11.8"
+scalaVersion in ThisBuild := "2.12.1"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // New-style macro annotations are under active development.  As a result, in
@@ -14,7 +14,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // A dependency on macro paradise 3.x is required to both write and expand
   // new-style macros.  This is similar to how it works for old-style macro
   // annotations and a dependency on macro paradise 2.x.
-  addCompilerPlugin("org.scalameta" % "paradise" % "4.0.0.142" cross CrossVersion.full),
+  addCompilerPlugin("org.scalameta" % "paradise" % "3.0.0-M7" cross CrossVersion.full),
   scalacOptions += "-Xplugin-require:macroparadise",
   scalacOptions += "-Dquasiquote.debug",
   scalacOptions += "-feature",
