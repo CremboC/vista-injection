@@ -50,6 +50,8 @@ class union extends StaticAnnotation {
           def this(xy : $unionType) = this(xy.$leftName, xy.$rightName)
         }
         val $vrr = new $unionCtor($leftVar, $rightVar)
+
      """
+    // cannot initialise variables after otherwise it doesn't work
   }
 }

@@ -53,7 +53,7 @@ class forbid extends StaticAnnotation {
       stats.init.map { defnn =>
         val q"..$mods def $name[..$gparams](...$paramss): $tpeopt = $_" = defnn
         val nmods = mods :+ Mod.Override()
-        q"..$nmods def $name[..$gparams](...$paramss): $tpeopt = throw new RuntimeException"
+        q"..$nmods def $name[..$gparams](...$paramss): $tpeopt = throw new NoSuchMethodException"
       }
     }
 

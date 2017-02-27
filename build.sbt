@@ -18,6 +18,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions += "-Xplugin-require:macroparadise",
   scalacOptions += "-Dquasiquote.debug",
   scalacOptions += "-feature",
+  scalacOptions += "-language:implicitConversions",
   // temporary workaround for https://github.com/scalameta/paradise/issues/10
   scalacOptions in (Compile, console) := Seq(), // macroparadise plugin doesn't work in repl yet.
   // temporary workaround for https://github.com/scalameta/paradise/issues/55
@@ -32,7 +33,7 @@ lazy val macros = (project in file("macros")).settings(
   // A dependency on scala.meta is required to write new-style macros, but not
   // to expand such macros.  This is similar to how it works for old-style
   // macros and a dependency on scala.reflect.
-  libraryDependencies += "org.scalameta" %% "scalameta" % "2.0.0.566",
+  libraryDependencies += "org.scalameta" %% "scalameta" % "1.6.0",
   scalacOptions += "-feature"
 )
 
