@@ -47,6 +47,7 @@ class forbid extends StaticAnnotation {
     val forbidName = Term.fresh("forbid")
     val forbidType = Type.Name(forbidName.value)
 
+    // probably not robust
     val forbidden = {
       val q"..$stats" = args.last
 
@@ -57,17 +58,10 @@ class forbid extends StaticAnnotation {
       }
     }
 
-    val constructor = {
-      val name = Ctor.Name(subjectType.toString)
-//      ctor"$name($subjectVar)"
-      ctor"$name"
-    }
+    val constructor = Ctor.Name(subjectType.toString)
 
     val vrr = Pat.Var.Term(Term.Name(paramname.toString))
     q"""
-      if (${Term.Name(subjectType.toString)}.isInstanceOf[vistas.Union]) {
-
-      }
       class $forbidType extends $constructor {
         ..$forbidden
       }

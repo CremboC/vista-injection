@@ -5,18 +5,20 @@ import scala.reflect.ClassTag
 
 @vista.tratify
 class X {
-  val n = 3
-  def one() = 1
-  def two() = 2
-  def truth(): Int = n
+  private val other = 5
+  val n = other
+  def one(): Int = other
+  def two(): Int = 2
+//  def truth(): Int = n
 }
 
 @vista.tratify
 class Y {
-  val n = 5
-  def three() = 3
-  def four() = 4
-  def truth(): Int = n
+  private val other = 3
+//  val n = 5
+  def three(): Int = other
+  def four(): Int = 4
+//  def truth(): Int = n
 }
 
 /**
@@ -27,11 +29,11 @@ object Union {
 
   def acceptsXX(x: X): Unit = {
     println(x.one())
-    println(x.truth())
+    println(x.n)
   }
-
+//
   def acceptsYY(y: Y): Unit = {
-    println(y.truth())
+    println(y.three())
   }
 
   def acceptsX(x: X): Boolean = x.isInstanceOf[X]
@@ -47,20 +49,38 @@ object Union {
 
 //    val union = new tX with tY
 //    println(union.one())
-//    val union: XY = ∪[X, Y](x, y)
+    val union: XY = ∪[X, Y](x, y)
+
+    println(union.one())
+    println(union.two())
+    println(union.three())
+    println(union.four())
+
+    println(acceptsX(union))
+    println(acceptsY(union))
+
+    println(acceptsXX(union))
+    println(acceptsYY(union))
+
+    val verbotten = ∖[XY](union, {
+      def one(): Int = ???
+    })
+
+    println(verbotten.one())
 
 
-    trait A {
-      def f = 1
-    }
-    trait B {
-      def f = 2
-    }
 
-    val ab = new vistas.Union with A with B
-
-
-    println(ab.f)
+//    trait A {
+//      def f: Double = 1.0
+//    }
+//    trait B {
+//      def f: Int = 2
+//    }
+//
+//    val ab = new vistas.Union with A with B
+//
+//
+//    println(ab.f)
 
 
 //    println(union.isInstanceOf[_ <: X])

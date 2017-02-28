@@ -43,23 +43,19 @@ class union extends StaticAnnotation {
 
     val leftTypeCtor = Ctor.Name(leftType.toString)
     val rightTypeCtor = Ctor.Name(rightType.toString)
+
+
+//    val template = {
+//      Seq(ctor"$leftTypeCtor", ctor"$rightTypeCtor")
+//    }
+//    Ctor.Call(leftType.toString)
+//    template"{} with ..$template"
+
+
+//    val template = template"{ ..${Seq.empty} } with ..$ctorcalls"
     q"""
-        val $vrr = new vistas.Union with $leftTypeCtor with $rightTypeCtor
-     """
-
-//    q"""
-//        trait $traitType {
-//          implicit def toRight(xy: $unionType): $rightType = xy.$rightName
-//        }
-//        object $unionName extends ${Ctor.Name(traitType.value)} {
-//          implicit def toLeft(xy: $unionType): $leftType = xy.$leftName
-//        }
-//        class $unionType(val $leftName: $leftType, val $rightName: $rightType) extends vistas.Union {
-//          def this(xy : $unionType) = this(xy.$leftName, xy.$rightName)
-//        }
-//        val $vrr = new $unionCtor($leftVar, $rightVar)
-
-//     """
-    // cannot initialise variables after otherwise it doesn't work
+        class $unionType extends $leftTypeCtor with $rightTypeCtor
+        val $vrr = new $unionCtor()
+    """
   }
 }
