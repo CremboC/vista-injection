@@ -1,6 +1,7 @@
 package vista
 
 import scala.annotation.StaticAnnotation
+import scala.meta.Term.Block
 import scala.meta._
 
 object EnableHelpers {
@@ -22,19 +23,22 @@ class enable extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     import EnableHelpers.NonRecursiveTransformer
     val q"..$mods object $name extends $template" = defn
+    val template"{ ..$earlyStats } with ..$ctorcalls { $param => ..$stats }" = template
 
     def isUnion(expr: Term): Boolean = {
-      val syntax = expr.tokens.syntax
-      syntax.contains("∪") || syntax.contains("sum")
+      val syntax = expr.syntax
+      syntax.contains("∪")
+//      || syntax.contains("sum")
     }
     def isForbid(expr: Term): Boolean = {
-      val syntax = expr.tokens.syntax
-      syntax.contains("∖") || syntax.contains("diff")
+      val syntax = expr.syntax
+      syntax.contains("∖")
+//      || syntax.contains("diff")
     }
 
-    val transformed = template.transform {
-//      case q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
-//        q"@vista.inspect ..$mods def $name[..$tparams](...$paramss): $tpeopt = Macros.getTypes { $expr }"
+    val q"{ ..$nstats }" = Block(stats).transform {
+      //      case q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
+      //        q"@vista.inspect ..$mods def $name[..$tparams](...$paramss): $tpeopt = Macros.getTypes { $expr }"
       case q"..$mods val $paramname: $tpeopt = new { ..$stats } with ..$ctorCalls { ..$stats2 }" =>
         val nCtors = ctorCalls :+ ctor"${Ctor.Name("vistas.Vista")}"
         val vrr = Pat.Var.Term(Term.Name(paramname.toString))
@@ -46,12 +50,11 @@ class enable extends StaticAnnotation {
         val vrr = Pat.Var.Term(Term.Name(paramname.toString))
         q"@vista.forbid ..$mods val $vrr : $tpeopt = $expr"
     } /*transformNR {
-      case q"$a.$b(..$argss)" =>
-        q"VistaMacros.getTypes($a.$b(..$argss))"
-    }*/
+         case q"$a.$b(..$argss)" =>
+           q"VistaMacros.getTypes($a.$b(..$argss))"
+       }*/
 
-    val ntemplate = transformed.syntax.parse[Template].get
-
+    val ntemplate = template"{ ..$earlyStats } with ..$ctorcalls { $param => ..$nstats }"
     q"..$mods object $name extends $ntemplate"
   }
 }
