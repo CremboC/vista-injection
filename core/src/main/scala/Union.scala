@@ -6,19 +6,27 @@ import scala.reflect.ClassTag
 @vista.tratify
 class X {
   private val other = 5
-  val n = other
+  val n: Int = other
   def one(): Int = other
   def two(): Int = 2
-//  def truth(): Int = n
 }
 
 @vista.tratify
 class Y {
   private val other = 3
-//  val n = 5
   def three(): Int = other
   def four(): Int = 4
-//  def truth(): Int = n
+}
+
+@vista.tratify
+class F {
+  def hello(): String = "Hello from F!"
+}
+
+@vista.tratify
+class S {
+  def a(): String = "a"
+  def b(): String = "b"
 }
 
 /**
@@ -39,34 +47,92 @@ object Union {
   def acceptsX(x: X): Boolean = x.isInstanceOf[X]
   def acceptsY(y: Y): Boolean = y.isInstanceOf[Y]
 
-  def getClass[A](a: A)(implicit tag: ClassTag[A]): Class[_ <: A] = {
-    a.getClass
+  def safe[A](f: => A): Option[A] = try Some(f) catch {
+    case _: Throwable => None
+  }
+
+  def sameSource(): Unit = {
+    val s1 = new S
+    val s2 = new S
+
+    val s1diff: Sb = diff[S](s1, {
+      def a(): String = ???
+    })
+
+    val s2diff: Sa = diff[S](s2, {
+      def b(): String = ???
+    })
+
+    println(safe(s1diff.a()))
+    println(safe(s2diff.b()))
+
+    val sunion: Sab = sum[Sa, Sb](s1diff, s2diff)
+    println(safe(sunion.a()))
+    println(safe(sunion.b()))
   }
 
   def main(args: Array[String]): Unit = {
-    val x = new X
-    val y = new Y
-
-//    val union = new tX with tY
+    sameSource()
+//    val x = new X
+//    val y = new Y
+//
+//
+////    println(union.one())
+//    val union: XY = ∪[X, Y](x, y)
+//
 //    println(union.one())
-    val union: XY = ∪[X, Y](x, y)
+//    println(union.two())
+//    println(union.three())
+//    println(union.four())
+////
+////    println(acceptsX(union))
+////    println(acceptsY(union))
+////
+////    println(acceptsXX(union))
+////    println(acceptsYY(union))
+//
+//    val verbotten: XYf = ∖[XY](union, {
+//      def one(): Int = ???
+//    })
+//
+////    println(acceptsXX(verbotten))
+//
+//    val verbotten2: XYff = ∖[XYf](union, {
+//      def two(): Int = ???
+//    })
+//
+//    try {
+//      println(verbotten2.two())
+//    } catch {
+//      case e: Throwable => println(e.getClass)
+//    }
+//
+//    try {
+//      println(verbotten2.one())
+//    } catch {
+//      case e: Throwable => println(e.getClass)
+//    }
+//
+//    val f = new F
+//    val unionf: FXY = ∪[XY, F](union, f)
+//
+//    println(unionf.hello())
+//
+//    val verbottenf: FXYf = ∖[FXY](unionf, {
+//      def hello(): String = ???
+//    })
+//
+//    try {
+//      println(verbottenf.hello())
+//    } catch {
+//      case e: Throwable => println(e.getClass)
+//    }
 
-    println(union.one())
-    println(union.two())
-    println(union.three())
-    println(union.four())
+//    println(verbotten.one())
 
-    println(acceptsX(union))
-    println(acceptsY(union))
 
-    println(acceptsXX(union))
-    println(acceptsYY(union))
 
-    val verbotten = ∖[XY](union, {
-      def one(): Int = ???
-    })
 
-    println(verbotten.one())
 
 
 

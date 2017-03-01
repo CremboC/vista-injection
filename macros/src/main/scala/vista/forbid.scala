@@ -3,49 +3,20 @@ package vista
 import scala.annotation.StaticAnnotation
 import scala.meta._
 
-/**
-  * Assume
-  * {{{
-  * class X {
-  *   def a
-  *   def b
-  * }
-  *
-  *
-  * val x = new X
-  * }}}
-  *
-  * Usage is
-  * {{{
-  * val partial = ∖[X](x, {
-  *   def one(): Int = ???
-  * })
-  * }}}
-  *
-  * Generated code is
-  * {{{
-  * class Xp extends X {
-  *   override def one(): Int = throw new RuntimeException
-  * }
-  * val partial = new Xp
-  * }}}
-  */
 class forbid extends StaticAnnotation {
-  // issues
-  // 1. assumes purity of functions.
-  // 2. ignores members
 
   inline def apply(defn: Any): Any = meta {
     val q"..$mods val $paramname: $tpeopt = $expr" = defn
-    val q"$forbidOp[..$typargs](..$args)" = expr
+    val q"$_[..$typargs](..$args)" = expr
+
+    val providedType = tpeopt.asInstanceOf[Some[Type]].getOrElse {
+      throw new IllegalArgumentException("Must provide a type")
+    }
 
     val subjectType = typargs.head
-    val subjectVar = args.head
 
-    println(subjectType)
-
-    val forbidName = Term.fresh("forbid")
-    val forbidType = Type.Name(forbidName.value)
+    val traitName = Type.Name(providedType.toString)
+    val className = Type.Name(s"${providedType.toString}c")
 
     // probably not robust
     val forbidden = {
@@ -62,10 +33,11 @@ class forbid extends StaticAnnotation {
 
     val vrr = Pat.Var.Term(Term.Name(paramname.toString))
     q"""
-      class $forbidType extends $constructor {
+      trait $traitName extends $constructor {
         ..$forbidden
       }
-      val $vrr = new ${Ctor.Name(forbidName.value)}()
+      class $className extends ${Ctor.Name(traitName.toString)} {}
+      ..$mods val $vrr = new ${Ctor.Name(className.value)}()
     """
   }
 }

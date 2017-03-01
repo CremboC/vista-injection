@@ -4,7 +4,7 @@ import vistas.Vista
 /**
   * @author paulius
   */
-//@vista.vistacise
+//@vista.enable
 object Test extends App {
 
   def func(): Unit = {
