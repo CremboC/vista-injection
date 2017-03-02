@@ -1,8 +1,6 @@
 
 import vistas.Vista._
 
-import scala.reflect.ClassTag
-
 @vista.tratify
 class X {
   private val other = 5
@@ -47,7 +45,9 @@ object Union {
   def acceptsX(x: X): Boolean = x.isInstanceOf[X]
   def acceptsY(y: Y): Boolean = y.isInstanceOf[Y]
 
-  def safe[A](f: => A): Option[A] = try Some(f) catch {
+//  def acceptsSb(sb: Sb): Boolean = sb.isInstanceOf[Sb]
+
+  def safe[A](f: => A): Option[A] = try Option(f) catch {
     case _: Throwable => None
   }
 
@@ -55,18 +55,20 @@ object Union {
     val s1 = new S
     val s2 = new S
 
-    val s1diff: Sb = diff[S](s1, {
+    val s1diff: Sb = ∖[S](s1, {
       def a(): String = ???
     })
 
-    val s2diff: Sa = diff[S](s2, {
+    val s2diff: Sa = ∖[S](s2, {
       def b(): String = ???
     })
 
     println(safe(s1diff.a()))
+    println(safe(s1diff.b()))
+    println(safe(s2diff.a()))
     println(safe(s2diff.b()))
 
-    val sunion: Sab = sum[Sa, Sb](s1diff, s2diff)
+    val sunion: Sab = ∪[Sa, Sb](s1diff, s2diff)
     println(safe(sunion.a()))
     println(safe(sunion.b()))
   }

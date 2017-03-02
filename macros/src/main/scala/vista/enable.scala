@@ -25,16 +25,8 @@ class enable extends StaticAnnotation {
     val q"..$mods object $name extends $template" = defn
     val template"{ ..$earlyStats } with ..$ctorcalls { $param => ..$stats }" = template
 
-    def isUnion(expr: Term): Boolean = {
-      val syntax = expr.syntax
-      syntax.contains("∪")
-//      || syntax.contains("sum")
-    }
-    def isForbid(expr: Term): Boolean = {
-      val syntax = expr.syntax
-      syntax.contains("∖")
-//      || syntax.contains("diff")
-    }
+    def isUnion(expr: Term): Boolean = expr.syntax.contains("∪")
+    def isForbid(expr: Term): Boolean = expr.syntax.contains("∖")
 
     val q"{ ..$nstats }" = Block(stats).transform {
       //      case q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" =>
