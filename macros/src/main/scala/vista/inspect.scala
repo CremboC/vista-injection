@@ -10,7 +10,7 @@ class inspect extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $expr" = defn
 
-    val transformed = expr.transform {
+    val Term.Block(stats) = expr.transform {
       case e@q"..$mods val $paramname: $tpeopt = $expr" =>
         println(e)
         expr match {
@@ -20,7 +20,6 @@ class inspect extends StaticAnnotation {
 
             val vrr = Pat.Var.Term(Term.Name(paramname.toString))
 
-            //            paramname.name
             println(q"..$mods val $vrr: $tpeopt = $rhs")
             q"..$mods val $vrr: $tpeopt = $rhs"
           case _ => expr
@@ -28,12 +27,6 @@ class inspect extends StaticAnnotation {
       case stat => stat
     }
 
-
-    val body = transformed.syntax.parse[Term].get
-    val ret = q"..$mods def $name[..$tparams](...$paramss): $tpeopt = $body"
-
-    //    println(ret)
-
-    ret
+    q"..$mods def $name[..$tparams](...$paramss): $tpeopt = { ..$stats }"
   }
 }
