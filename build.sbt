@@ -34,6 +34,11 @@ lazy val macros = (project in file("macros")).settings(
   // to expand such macros.  This is similar to how it works for old-style
   // macros and a dependency on scala.reflect.
   libraryDependencies += "org.scalameta" %% "scalameta" % "1.6.0",
+  libraryDependencies += "org.scalameta" %% "contrib" % "1.7.0-385-2c036181",
+
+  libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1",
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+
   scalacOptions += "-feature"
 )
 
