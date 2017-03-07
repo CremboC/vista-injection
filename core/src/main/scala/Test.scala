@@ -4,14 +4,14 @@ import vistas.Vista
 /**
   * @author paulius
   */
-//@vista.vistacise
+@vista.enable
 object Test extends App {
 
   def func(): Unit = {
     val b = new B
 
-//    b.forbid[B]("sayHi", classOf[Int])
-//    b.forbid[B]("sayHi")
+    b.forbid[B]("sayHi", classOf[Int])
+    b.forbid[B]("sayHi")
 
     b.sayHi()
     b.sayHi(5)
