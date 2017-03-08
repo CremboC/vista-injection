@@ -6,6 +6,8 @@ import scala.meta._
   * @author paulius
   */
 object VistaHelpers {
-  def isUnion(expr: Term): Boolean = expr.syntax.contains("∪")
-  def isForbid(expr: Term): Boolean = expr.syntax.contains("∖")
+  def isUnion(expr: Tree): Boolean = expr.syntax.contains("∪")
+  def isForbid(expr: Tree): Boolean = expr.syntax.contains("∖")
+  def isIntersect(expr: Tree): Boolean = expr.syntax.contains("∩")
+  def isProduct(expr: Tree): Boolean = expr.syntax.contains("⨯")
 }

@@ -4,7 +4,7 @@ import org.scalatest._
 import scala.meta._
 import scala.meta.contrib._
 
-class UnionizeSpec extends FlatSpec with Matchers {
+class UnionizeTest extends FlatSpec with Matchers {
   "Create union" should "create the appropriate set of classes" in {
     val expected =
       q"""

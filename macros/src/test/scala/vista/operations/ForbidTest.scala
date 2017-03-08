@@ -7,7 +7,7 @@ import scala.meta.contrib._
 /**
   * @author paulius
   */
-class ForbidSpec extends FlatSpec with Matchers {
+class ForbidTest extends FlatSpec with Matchers {
   "Forbid definition" should "create the appropriate set of classes" in {
     val expected =
       q"""
