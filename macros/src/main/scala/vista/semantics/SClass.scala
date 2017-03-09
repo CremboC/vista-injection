@@ -9,34 +9,19 @@ class SClass(val body: Defn.Class) {
   private lazy val members: Seq[Defn] = body.templ.collect[Defn] {
     case defn: Defn.Def => defn
     case valf: Defn.Val => valf
+    case varf: Defn.Var => varf
   }
 
-  lazy val methods: Seq[SMethod] = {
-    members.collect {
-      case Defn.Def(_, name, _, paramss, tpeopt, _) =>
-        SMethod(name.value, SMethod.parseParams(paramss), tpeopt.get.syntax) // FIXME: get is bad
-    }
+  val name: String = body.name.value
+
+  lazy val methods: Seq[Defn.Def] = members.collect {
+    case d: Defn.Def => d
   }
 
-  lazy val vars: Seq[SVar] = {
-    members.collect {
-      case Defn.Val(_, names, tpeopt, _) =>
-        SVar(names.head.toString(), tpeopt.get.syntax)
-      case Defn.Var(_, names, tpeopt, _) =>
-        SVar(names.head.toString(), tpeopt.get.syntax)
-    }
+  lazy val vars: Seq[Either[Defn.Val, Defn.Var]] = members.collect {
+    case va: Defn.Val => Left(va)
+    case va: Defn.Var => Right(va)
   }
 }
 
-case class SMethod(name: String, params: Seq[SParam], returnType: String)
-
-object SMethod {
-  def parseParams(params: Seq[Seq[Term.Param]]): Seq[SParam] = {
-    params.flatten.map {
-      case Term.Param(_, name, tpeopt, _) => SParam(name.syntax, tpeopt.get.syntax)
-    }
-  }
-}
-
-case class SVar(name: String, typ: String)
-case class SParam(name: String, typ: String)
+case class SMethod(name: String, types: Seq[String], params: Seq[Seq[String]])

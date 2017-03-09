@@ -1,5 +1,6 @@
 
 import vistas.Vista
+import vistas.Vista._
 
 /**
   * @author paulius
@@ -27,8 +28,36 @@ object Test extends App {
     }
   }
 
+  def acceptsB(b: B): Boolean = b.isInstanceOf[B]
+
+
   def func(): Unit = {
     val b = new B
+
+//    val b1 = {
+//      trait Bf extends B {
+//        override def multi(a: Int)(b: Int): Int = throw new NoSuchElementException
+//      }
+//      class Bfc extends Bf
+//      new Bfc()
+//    }
+
+//    b1.isInstanceOf[B]
+
+
+    val b1: Bf = ∖[B](b, {
+      def multi(a: Int)(b: Int): Int = ???
+    })
+
+//    b1.multi(5)(5)
+    println(b1.isInstanceOf[B])
+
+    println(acceptsB(b1))
+
+//    val bunion: BfUB = ∪[B, Bf](b, b1)
+
+//    println(bunion)
+
 
 //    b.forbid[B]("sayHi", classOf[Int])
 //    b.forbid[B]("sayHi")

@@ -1,9 +1,9 @@
 package vista.semantics
 
 import org.scalatest._
-import vista.operations.Forbid
 
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * Created by Crembo on 2017-03-08.
@@ -30,24 +30,24 @@ class DatabaseTest extends WordSpec with Matchers {
              }
             """
 
-        val db = Database
+        val db = vista.semantics.Database
         source.collect {
           case c: Defn.Class => c
         }.foreach(db.addClass)
 
         db.classes shouldNot be (Set.empty)
 
-        val xClass :: yClass :: Nil = db.classes.toList
+        val xClass = db.classes.find(_.name == "X").get
+        val xTests = Seq(q"def one(): Int = other", q"def two(): Int = 2")
+        val xPairs = xClass.methods.zip(xTests)
 
-        xClass.methods should contain allOf (
-          SMethod("one", Seq.empty, "Int"),
-          SMethod("two", Seq.empty, "Int")
-        )
+        xPairs.foreach { case (l, r) => l.isEqual[Structurally](r) }
 
-        yClass.methods should contain allOf (
-          SMethod("three", Seq.empty, "Int"),
-          SMethod("four", Seq(SParam("param", "Int")), "Int")
-        )
+        val yClass = db.classes.find(_.name == "Y").get
+        val yTests = Seq(q"def three(): Int = other", q"def four(param: Int): Int = 4")
+        val yPairs = yClass.methods.zip(yTests)
+
+        yPairs.foreach { case (l, r) => l.isEqual[Structurally](r) }
       }
     }
   }

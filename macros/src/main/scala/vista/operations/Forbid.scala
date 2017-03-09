@@ -1,53 +1,107 @@
 package vista.operations
 
 import scala.meta._
+import vista.semantics
 
+import scala.collection.immutable
+
+
+/**
+  * Public interface for Forbid method
+  */
 object Forbid {
-  def apply(defn: Defn.Val): Tree = {
-    val Defn.Val(_, _, tpeopt, rhs) = defn
-    tpeopt.getOrElse {
-      throw new IllegalArgumentException("Must provide a type")
-    }
+  import ForbidImpl._
 
-    val q"$_[..$typargs](..$args)" = rhs
-    args.last match {
-      case _: Term.Block => withDefs(defn)
-      case _ => ???
-    }
+  def apply(defn: Defn.Val)(implicit db: semantics.Database.type): Tree = parseDefn(defn) match {
+    case None => q"throw new IllegalStateException" // FIXME: something more reasonable..
+    case Some(de) => ForbidImpl(de)
   }
 
-  private def withDefs(defn: Defn.Val): Tree = {
-    val Defn.Val(mods, param, tpeopt, expr) = defn
-    val paramname = param.head
-    val q"$_[..$typargs](..$args)" = expr
+  def apply(defn: Defn.Def)(implicit db: semantics.Database.type): Tree = parseDefn(defn) match {
+    case None => q"throw new IllegalStateException" // FIXME: need something more reasonable
+    case Some(t) =>
+      val q"{ ..$stats }" = ForbidImpl(t)
+      Defn.Def(defn.mods, defn.name, defn.tparams, defn.paramss, defn.decltpe, body = Term.Block(stats))
+  }
+}
 
-    val providedType = tpeopt.get
+private[this] case class ForbidInput(
+                        nclass: String,
+                        oclass: String,
+                        methods: Seq[Defn.Def],
+                        varname: Option[String] = None,
+                        lsource: Option[String] = None,
+                        rsource: Option[String] = None
+                      )
 
-    val subjectType = typargs.head
+/**
+  * Internal API of Forbid
+  */
+private[this] object ForbidImpl {
+  def parseDefn(defn: Defn.Def): Option[ForbidInput] = defn.decltpe match {
+    case None => None
+    case Some(typ) =>
+      val q"$_[..$typargs](..$args)" = defn.body
+      val subjectType = typargs.head
 
-    val traitName = Type.Name(providedType.toString)
-    val className = Type.Name(s"${providedType.toString}c")
+      val methods = {
+        val q"..$stats" = args.last
+        stats.collect {
+          case d: Defn.Def => d
+        }
+      }
 
-    // probably not robust
-    val forbidden = {
-      val q"..$stats" = args.last
+      Some(ForbidInput(typ.syntax, subjectType.syntax, methods))
+  }
 
-      stats.map { defnn =>
-        val q"..$mods def $name[..$gparams](...$paramss): $tpeopt = $_" = defnn
+  def parseDefn(defn: Defn.Val): Option[ForbidInput] = defn.decltpe match {
+    case None => None
+    case Some(typ) =>
+      val q"$_[..$typargs](..$args)" = defn.rhs
+      val subjectType = typargs.head
+
+      val methods = {
+        val q"..$stats" = args.last
+        stats.collect {
+          case d: Defn.Def => d
+        }
+      }
+
+      val Defn.Val(_, param, _, _) = defn
+      val paramname = param.head
+
+      Some(ForbidInput(typ.syntax, subjectType.syntax, methods, Some(paramname.syntax)))
+  }
+
+  def apply(inp: ForbidInput)(implicit db: semantics.Database.type): Tree = {
+    val forbidden = inp.methods.map {
+      case Defn.Def(mods, name, gparams, paramss, tpeopt, _) =>
         val nmods = mods :+ Mod.Override()
-        q"..$nmods def $name[..$gparams](...$paramss): $tpeopt = throw new NoSuchMethodException"
-      }
+        q"..$nmods def $name[..$gparams](...$paramss): ${tpeopt.getOrElse(Type.Name("None"))} = throw new NoSuchMethodException"
+    }.to[immutable.Seq]
+
+    val constructor = Ctor.Name(inp.oclass)
+    val traitq =
+      q"""
+         trait ${Type.Name(inp.nclass)} extends $constructor {
+           ..$forbidden
+         }
+      """
+
+    inp.varname match {
+      case None =>
+        q"""
+           $traitq
+           new ${Ctor.Name(inp.nclass)} {}
+        """
+      case Some(vr) =>
+        val vrr = Pat.Var.Term(Term.Name(vr))
+        q"""
+          trait ${Type.Name(inp.nclass)} extends $constructor {
+            ..$forbidden
+          }
+          val $vrr = new ${Ctor.Name(inp.nclass)} {}
+        """
     }
-
-    val constructor = Ctor.Name(subjectType.toString)
-
-    val vrr = Pat.Var.Term(Term.Name(paramname.toString))
-    q"""
-      trait $traitName extends $constructor {
-        ..$forbidden
-      }
-      class $className extends ${Ctor.Name(traitName.toString)} {}
-      ..$mods val $vrr = new ${Ctor.Name(className.value)}()
-    """
   }
 }

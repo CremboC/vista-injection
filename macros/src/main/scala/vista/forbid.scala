@@ -1,12 +1,22 @@
 package vista
 
+import vista.operations.Forbid
+
 import scala.annotation.StaticAnnotation
 import scala.meta._
 
 class forbid extends StaticAnnotation {
 
   inline def apply(defn: Any): Any = meta {
+//    implicit val db = vista.semantics.Database
     val q"..$mods val $paramname: $tpeopt = $expr" = defn
+
+//    println(defn)
+
+
+//    Forbid(Defn.Val(mods, paramname, tpeopt.asInstanceOf[Some[Type]], expr))
+
+//    val q"..$mods val $paramname: $tpeopt = $expr" = defn
     val q"$_[..$typargs](..$args)" = expr
 
     val providedType = tpeopt.asInstanceOf[Some[Type]].getOrElse {

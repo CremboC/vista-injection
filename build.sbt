@@ -1,7 +1,6 @@
 import sbt.Keys.libraryDependencies
 
 name := "vista-injection"
-// scala.meta macros are at the moment only supported in 2.11.
 scalaVersion in ThisBuild := "2.12.1"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
@@ -45,7 +44,6 @@ lazy val macros = (project in file("macros")).settings(
 )
 
 // Use macros in this project.
-//lazy val app = project.settings(metaMacroSettings).dependsOn(macros)
 lazy val core = (project in file("core"))
   .settings(metaMacroSettings)
   .dependsOn(macros)

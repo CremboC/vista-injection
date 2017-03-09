@@ -2,6 +2,7 @@ package vista.semantics
 
 import org.scalatest._
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
@@ -23,9 +24,8 @@ class SClassTest extends WordSpec with Matchers {
         sclass.methods shouldNot be (Seq.empty)
         sclass.vars should be (Seq.empty)
 
-        sclass.methods.head should be {
-          SMethod("a", Seq.empty, "Int")
-        }
+        val expected = q"def a(): Int = { 5 + 5 }"
+        sclass.methods.head.isEqual[Structurally](expected) should be (true)
       }
     }
 
@@ -43,9 +43,8 @@ class SClassTest extends WordSpec with Matchers {
         val sclass = new SClass(c)
 
         sclass.methods shouldNot be (Seq.empty)
-        sclass.methods.head should be {
-          SMethod("a", Seq(SParam("p1", "Int"), SParam("p2", "Double")), "Int")
-        }
+        val expected = q"def a(p1: Int, p2: Double): Int = { 5 + 5 }"
+        sclass.methods.head.isEqual[Structurally](expected) should be (true)
       }
     }
   }

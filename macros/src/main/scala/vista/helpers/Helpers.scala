@@ -6,7 +6,7 @@ import scala.meta.transversers.Transformer
 /**
   * @author paulius
   */
-object EnableHelpers {
+object Helpers {
   implicit class NonRecursiveTransformer(tree: Tree) {
     def transformNR(fn: PartialFunction[Tree, Tree]): Tree = {
       object transformer extends Transformer {

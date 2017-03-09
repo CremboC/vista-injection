@@ -1,7 +1,7 @@
 
 import vistas.Vista._
 
-@vista.tratify
+//@vista.tratify
 class X {
   private val other = 5
   val n: Int = other
@@ -9,19 +9,19 @@ class X {
   def two(): Int = 2
 }
 
-@vista.tratify
+//@vista.tratify
 class Y {
   private val other = 3
   def three(): Int = other
   def four(): Int = 4
 }
 
-@vista.tratify
+//@vista.tratify
 class F {
   def hello(): String = "Hello from F!"
 }
 
-@vista.tratify
+//@vista.tratify
 class S {
   def a(): String = "a"
   def b(): String = "b"
@@ -30,7 +30,7 @@ class S {
 /**
   * @author paulius
   */
-@vista.enable
+//@vista.enable
 object Union {
 
   def acceptsXX(x: X): Unit = {
@@ -55,22 +55,22 @@ object Union {
     val s1 = new S
     val s2 = new S
 
-    val s1diff: Sb = ∖[S](s1, {
-      def a(): String = ???
-    })
-
-    val s2diff: Sa = ∖[S](s2, {
-      def b(): String = ???
-    })
-
-    println(safe(s1diff.a()))
-    println(safe(s1diff.b()))
-    println(safe(s2diff.a()))
-    println(safe(s2diff.b()))
-
-    val sunion: Sab = ∪[Sa, Sb](s1diff, s2diff)
-    println(safe(sunion.a()))
-    println(safe(sunion.b()))
+//    val s1diff: Sb = ∖[S](s1, {
+//      def a(): String = ???
+//    })
+//
+//    val s2diff: Sa = ∖[S](s2, {
+//      def b(): String = ???
+//    })
+//
+//    println(safe(s1diff.a()))
+//    println(safe(s1diff.b()))
+//    println(safe(s2diff.a()))
+//    println(safe(s2diff.b()))
+//
+//    val sunion: Sab = ∪[Sa, Sb](s1diff, s2diff)
+//    println(safe(sunion.a()))
+//    println(safe(sunion.b()))
   }
 
   def main(args: Array[String]): Unit = {

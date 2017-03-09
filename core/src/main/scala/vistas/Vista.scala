@@ -1,6 +1,7 @@
 package vistas
 
-sealed trait Vista
+trait AnyV
+sealed trait Vista extends AnyV
 
 trait Union extends Vista
 trait Intersection extends Vista
