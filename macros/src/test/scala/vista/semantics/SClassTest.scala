@@ -25,7 +25,7 @@ class SClassTest extends WordSpec with Matchers {
         sclass.vars should be (Seq.empty)
 
         val expected = q"def a(): Int = { 5 + 5 }"
-        sclass.methods.head.isEqual[Structurally](expected) should be (true)
+        sclass.methods.head.isEqual(expected) should be (true)
       }
     }
 
@@ -44,7 +44,7 @@ class SClassTest extends WordSpec with Matchers {
 
         sclass.methods shouldNot be (Seq.empty)
         val expected = q"def a(p1: Int, p2: Double): Int = { 5 + 5 }"
-        sclass.methods.head.isEqual[Structurally](expected) should be (true)
+        sclass.methods.head.isEqual(expected) should be (true)
       }
     }
   }

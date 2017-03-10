@@ -1,12 +1,10 @@
-package vista.helpers
-
-import scala.meta.Tree
-import scala.meta.transversers.Transformer
+import scala.meta._
 
 /**
-  * @author paulius
+  * @author Paulius Imbrasas
   */
-object Helpers {
+package object helpers {
+
   implicit class NonRecursiveTransformer(tree: Tree) {
     def transformNR(fn: PartialFunction[Tree, Tree]): Tree = {
       object transformer extends Transformer {

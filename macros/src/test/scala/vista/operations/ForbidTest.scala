@@ -52,6 +52,40 @@ class ForbidTest extends WordSpec with Matchers {
         implicit val db = semantics.Database
         Forbid(success).isEqual[Structurally](expected) should be(true)
       }
+
+      "expand in-place without a surrounding block" in {
+        val expected =
+          q"""
+            def test(): A = {
+              val s = Seq(1, 2, 3)
+              val os = s.map(_ * 2)
+              trait Af extends A {
+               override def a(s: String): Int = throw new NoSuchMethodException
+               override def b(): Int = throw new NoSuchMethodException
+              }
+              val ab = new Af {}
+              ab
+            }
+           """
+        val input =
+          q"""
+             def test(): A = {
+                val s = Seq(1, 2, 3)
+                val os = s.map(_ * 2)
+                val ab: Af = ∖[A](a, {
+                 def a(s: String): Int = ???
+                 def b(): Int = ???
+                })
+                ab
+             }
+           """
+
+
+        implicit val db = vista.semantics.Database
+
+        val result = input.transform(Forbid.transformer)
+        result.isEqual(expected) should be (true)
+      }
     }
 
     "given a def definition" should {
@@ -74,6 +108,31 @@ class ForbidTest extends WordSpec with Matchers {
 
         implicit val db = semantics.Database
         Forbid(success).isEqual[Structurally](expected) should be(true)
+      }
+
+      "expand in-place with a new block" in {
+        val expected =
+          q"""
+            def test(a: A): Af = {
+              trait Af extends A {
+               override def a(s: String): Int = throw new NoSuchMethodException
+               override def b(): Int = throw new NoSuchMethodException
+              }
+              new Af {}
+            }
+           """
+        val input =
+          q"""
+             def test(a: A): Af = ∖[A](a, {
+                              def a(s: String): Int = ???
+                              def b(): Int = ???
+                            })
+           """
+
+
+        implicit val db = vista.semantics.Database
+        val result = input.transform(Forbid.transformer)
+        result.isEqual(expected) should be (true)
       }
     }
   }

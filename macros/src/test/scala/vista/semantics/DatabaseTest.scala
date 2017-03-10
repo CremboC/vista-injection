@@ -32,8 +32,8 @@ class DatabaseTest extends WordSpec with Matchers {
 
         val db = vista.semantics.Database
         source.collect {
-          case c: Defn.Class => c
-        }.foreach(db.addClass)
+          case c: Defn.Class => db.addClass(c)
+        }
 
         db.classes shouldNot be (Set.empty)
 
@@ -41,13 +41,13 @@ class DatabaseTest extends WordSpec with Matchers {
         val xTests = Seq(q"def one(): Int = other", q"def two(): Int = 2")
         val xPairs = xClass.methods.zip(xTests)
 
-        xPairs.foreach { case (l, r) => l.isEqual[Structurally](r) }
+        xPairs.foreach { case (l, r) => l.isEqual(r) }
 
         val yClass = db.classes.find(_.name == "Y").get
         val yTests = Seq(q"def three(): Int = other", q"def four(param: Int): Int = 4")
         val yPairs = yClass.methods.zip(yTests)
 
-        yPairs.foreach { case (l, r) => l.isEqual[Structurally](r) }
+        yPairs.foreach { case (l, r) => l.isEqual(r) }
       }
     }
   }
