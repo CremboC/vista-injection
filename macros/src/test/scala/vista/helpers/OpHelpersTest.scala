@@ -4,7 +4,7 @@ import org.scalatest._
 import scala.meta._
 
 /**
-  * @author paulius
+  * @author Paulius Imbrasas
   */
 class OpHelpersTest extends WordSpec with Matchers {
 

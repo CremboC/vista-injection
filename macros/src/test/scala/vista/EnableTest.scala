@@ -9,11 +9,10 @@ import scala.meta._
 import scala.collection.immutable.Seq
 
 
-
 /**
-  * Created by Crembo on 2017-03-12.
+  * @author Paulius Imbrasas
   */
-class EnableTest extends WordSpec with Matchers {
+class EnableTest extends WordSpec with Matchers with ResetsDatabase {
   import vista.treeStructureEquality
 
   "Enable vistas" when {

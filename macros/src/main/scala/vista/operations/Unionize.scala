@@ -1,8 +1,8 @@
 package vista.operations
 
 import vista.operations.internal.UnionizeImpl
-
 import vista.helpers.OpHelpers.isUnion
+import vista.operations.parsers.UnionizeParser
 import vista.semantics
 
 import scala.meta._
@@ -10,8 +10,7 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-object Unionize extends Operation {
-  import vista.operations.internal.UnionizeImpl._
+object Unionize extends Operation with UnionizeParser {
 
   def apply(definition: Defn.Val)(implicit db: semantics.Database.type): Term.Block = parseDefn(definition) match {
     case None => throw new IllegalArgumentException("Couldn't parse defn") // FIXME: something more reasonable..
@@ -23,12 +22,8 @@ object Unionize extends Operation {
   }
 }
 
-private[operations] case class UnionizeInput(
-                                              lclass: String,
-                                              rclass: String,
-                                              lvar: String,
-                                              rvar: String,
-                                              newtype: String,
-                                              newvar: Option[String] = None
-                                            )
+
+
+
+
 

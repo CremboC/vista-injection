@@ -4,9 +4,11 @@ import org.scalatest._
 import vista.semantics
 
 import scala.meta._
-import scala.meta.contrib._
 import vista.treeStructureEquality
 
+/**
+  * @author Paulius Imbrasas
+  */
 class UnionizeTest extends FlatSpec with Matchers {
   "Create union" should "create the appropriate set of classes" in {
     val expected =

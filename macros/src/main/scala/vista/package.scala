@@ -16,4 +16,13 @@ package object vista {
         }
     }
 
+  implicit val defnStructureEquality =
+    new Equality[Defn.Def] {
+      def areEqual(a: Defn.Def, b: Any): Boolean =
+        b match {
+          case bt: Defn.Def => a.isEqual(bt)
+          case _ => false
+        }
+    }
+
 }

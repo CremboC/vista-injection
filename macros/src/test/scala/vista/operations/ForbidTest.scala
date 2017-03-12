@@ -2,17 +2,15 @@ package vista.operations
 
 import org.scalatest._
 import vista.helpers.OpHelpers.isForbid
-import vista.semantics
+import vista.{ResetsDatabase, semantics, treeStructureEquality}
 
 import scala.meta._
-import vista.treeStructureEquality
-
 import scala.collection.immutable.Seq
 
 /**
-  * @author paulius
+  * @author Paulius Imbrasas
   */
-class ForbidTest extends WordSpec with Matchers {
+class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
 
 
   "Forbid" when {

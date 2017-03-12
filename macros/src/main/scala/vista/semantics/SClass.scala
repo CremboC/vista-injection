@@ -1,6 +1,8 @@
 package vista.semantics
 
+import scala.collection.immutable.Seq
 import scala.meta._
+import meta.XDefn
 
 /**
   * @author Paulius Imbrasas
@@ -14,8 +16,15 @@ class SClass(val body: Defn.Class) {
 
   val name: String = body.name.value
 
-  lazy val methods: Seq[Defn.Def] = members.collect {
-    case d: Defn.Def => d
+  def methods(implicit db: vista.semantics.Database.type): Set[Defn.Def] = {
+    val parents = body.templ.parents.map(_.syntax)
+    val parentMethods = parents.flatMap(db.get(_).methods)
+
+    //    val signatures = parentMethods.map(_.signature) // signatures
+
+    (parentMethods ++ members.collect {
+      case d: Defn.Def => d
+    }).toSet
   }
 
   lazy val vars: Seq[Either[Defn.Val, Defn.Var]] = members.collect {

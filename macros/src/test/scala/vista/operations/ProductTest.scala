@@ -1,10 +1,11 @@
 package vista.operations
 
 import org.scalatest._
+import vista.ResetsDatabase
 
 /**
-  * Created by Crembo on 2017-03-08.
+  * @author Paulius Imbrasas
   */
-class ProductTest extends FunSuite with Matchers {
+class ProductTest extends FunSuite with Matchers with ResetsDatabase {
 
 }

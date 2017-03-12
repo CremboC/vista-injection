@@ -8,7 +8,6 @@ import scala.meta._
   */
 object Database {
 
-
   private val database: mutable.Set[SClass] = mutable.Set.empty
 
   def addClass(c: Defn.Class): Boolean = {
