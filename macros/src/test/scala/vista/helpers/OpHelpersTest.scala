@@ -6,20 +6,20 @@ import scala.meta._
 /**
   * @author paulius
   */
-class VistaHelpersTest extends WordSpec with Matchers {
+class OpHelpersTest extends WordSpec with Matchers {
 
   "A union symbol" when {
     "written as ∪" should {
       "be detected correctly" in {
         val success = q"∪[A, B](a, b)"
-        VistaHelpers.isUnion(success) should be (true)
+        OpHelpers.isUnion(success) should be (true)
       }
     }
 
     "written incorrectly" should {
       "not be detected" in {
         val fail = q"u[A, B](a, b)"
-        VistaHelpers.isUnion(fail) should be (false)
+        OpHelpers.isUnion(fail) should be (false)
       }
     }
   }
@@ -35,7 +35,7 @@ class VistaHelpersTest extends WordSpec with Matchers {
             })
           }
         """
-        VistaHelpers.isForbid(success) should be (true)
+        OpHelpers.isForbid(success) should be (true)
       }
     }
 
@@ -48,7 +48,7 @@ class VistaHelpersTest extends WordSpec with Matchers {
             ⨯[A, B](a, b)
          }
        """
-        VistaHelpers.isForbid(fail) should be (false)
+        OpHelpers.isForbid(fail) should be (false)
       }
     }
   }
@@ -57,14 +57,14 @@ class VistaHelpersTest extends WordSpec with Matchers {
     "written as ∩" should {
       "be detected" in {
         val success = q"∩[A, B](a, b)"
-        VistaHelpers.isIntersect(success) should be (true)
+        OpHelpers.isIntersect(success) should be (true)
       }
     }
 
     "written incorrectly" should {
       "not be detected" in {
         val fail = q"∖[A, B](a, b)"
-        VistaHelpers.isIntersect(fail) should be (false)
+        OpHelpers.isIntersect(fail) should be (false)
       }
     }
   }
@@ -73,14 +73,14 @@ class VistaHelpersTest extends WordSpec with Matchers {
     "written as ⨯" should {
       "be detected correctly" in {
         val success = q"⨯[A, B](a, b)"
-        VistaHelpers.isProduct(success) should be (true)
+        OpHelpers.isProduct(success) should be (true)
       }
     }
 
     "written as x" should {
       "fail" in {
         val fail = q"x[A, B](a, b)"
-        VistaHelpers.isProduct(fail) should be (false)
+        OpHelpers.isProduct(fail) should be (false)
       }
     }
   }

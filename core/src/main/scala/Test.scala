@@ -8,6 +8,12 @@ import vistas.Vista._
 @vista.enable
 object Test extends App {
 
+  class A {
+    def nonBDef(): Unit = {
+      println("Hello form A")
+    }
+  }
+
   class B {
     def sayHi(a: Int): Unit = {
       println("Hi with param!")
@@ -33,13 +39,17 @@ object Test extends App {
   def func(): Unit = {
     val b = new B
 
-
     val b1: Bf = ∖[B](b, {
       def multi(a: Int)(b: Int): Int = ???
     })
 
     println(b1.isInstanceOf[B])
     println(acceptsB(b1))
+
+    val a = new A
+    val ab: AB = ∪[A, B](a, b)
+    ab.nonBDef()
+    ab.say("Hello from B")
   }
 
   func()

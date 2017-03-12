@@ -1,12 +1,14 @@
 package vista.operations
 
+import vista.semantics
+
 import scala.meta._
 
 /**
   * Created by Crembo on 2017-03-08.
   */
-object Product {
-  def apply(defn: Defn.Val): Tree = {
-    q"5"
-  }
+object Product extends Operation {
+  def apply(defn: Defn.Val): Tree = ???
+
+  override def modifier(implicit db: semantics.Database.type): PartialFunction[Tree, Term.Block] = ???
 }

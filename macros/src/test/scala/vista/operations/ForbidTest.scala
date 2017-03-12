@@ -1,15 +1,19 @@
 package vista.operations
 
 import org.scalatest._
+import vista.helpers.OpHelpers.isForbid
 import vista.semantics
 
 import scala.meta._
-import scala.meta.contrib._
+import vista.treeStructureEquality
+
+import scala.collection.immutable.Seq
 
 /**
   * @author paulius
   */
 class ForbidTest extends WordSpec with Matchers {
+
 
   "Forbid" when {
     "given a val definition" should {
@@ -31,7 +35,9 @@ class ForbidTest extends WordSpec with Matchers {
           """
 
         implicit val db = semantics.Database
-        Forbid(success).isEqual[Structurally](expected) should be(true)
+
+        val result: Tree = Forbid(success)
+        result should equal (expected)
       }
 
       "handle a complex case" in {
@@ -50,7 +56,8 @@ class ForbidTest extends WordSpec with Matchers {
           """
 
         implicit val db = semantics.Database
-        Forbid(success).isEqual[Structurally](expected) should be(true)
+        val result: Tree = Forbid(success)
+        result should equal (expected)
       }
 
       "expand in-place without a surrounding block" in {
@@ -80,11 +87,17 @@ class ForbidTest extends WordSpec with Matchers {
              }
            """
 
-
         implicit val db = vista.semantics.Database
 
-        val result = input.transform(Forbid.transformer)
-        result.isEqual(expected) should be (true)
+        val result = input.transform {
+          case b: Term.Block if isForbid(b) =>
+            val modified = b.stats.collect(Forbid.modifier orElse {
+              case o => Term.Block(Seq(o))
+            }).flatMap(_.stats)
+
+            Term.Block(modified)
+        }
+        result should equal (expected)
       }
     }
 
@@ -107,7 +120,7 @@ class ForbidTest extends WordSpec with Matchers {
           """
 
         implicit val db = semantics.Database
-        Forbid(success).isEqual[Structurally](expected) should be(true)
+        Forbid(success) should equal (expected)
       }
 
       "expand in-place with a new block" in {
@@ -131,8 +144,15 @@ class ForbidTest extends WordSpec with Matchers {
 
 
         implicit val db = vista.semantics.Database
-        val result = input.transform(Forbid.transformer)
-        result.isEqual(expected) should be (true)
+        val result = input.transform {
+          case b: Term.Block if isForbid(b) =>
+            val modified = b.stats.collect(Forbid.modifier orElse {
+              case o => Term.Block(Seq(o))
+            }).flatMap(_.stats)
+
+            Term.Block(modified)
+        }
+        result should equal (expected)
       }
     }
   }
