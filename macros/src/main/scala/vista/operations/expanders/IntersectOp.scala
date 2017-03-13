@@ -7,6 +7,8 @@ import scala.meta._
 import scala.meta.contrib._
 import scala.collection.immutable.Seq
 
+import meta.XDefnIterable
+
 /**
   * @author Paulius Imbrasas
   */
@@ -28,16 +30,27 @@ private[operations] object IntersectOp {
     // we're overriding only the methods that no longer allow
     // mintersect will return a list of methods which are allow, but
     // we can only disallow methods, hence that is used here
-    val forbidden = lclazz.methods.mdiff(rclazz.methods).map { m =>
+    val methodsInBoth = lclazz.methods >+< rclazz.methods
+    val forbidden = methodsInBoth.map { m =>
       m.copy(body = q"throw new NoSuchMethodException", mods = m.mods :+ Mod.Override())
-    }.toSeq
+    }
+
+    // get common signatures in order to avoid "trait X inherits conflicting members"
+    val lsignatures = db.get(inp.lclass).methods.signatures.toSet
+    val rsignatures = db.get(inp.rclass).methods.signatures.toSet
+
+    val common = commonMethods(inp, lsignatures, rsignatures)
+
+    val result = {
+      forbidden ++ common
+    }.toSeq.sortBy(_.name.syntax).asInstanceOf[Seq[Stat]]
 
     inp.newvar match {
       case None => ???
       case Some(nvar) =>
         q"""
            trait $traitName extends $leftTypeCtor with $rightTypeCtor {
-             ..${forbidden.asInstanceOf[Seq[Stat]]}
+             ..$result
            }
            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {}
         """

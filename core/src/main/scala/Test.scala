@@ -12,6 +12,8 @@ object Test extends App {
     def nonBDef(): Unit = {
       println("Hello form A")
     }
+
+    def common(): Int = 5
   }
 
   class B {
@@ -32,6 +34,8 @@ object Test extends App {
     def sayHi(): Unit = {
       println("Hi without param!")
     }
+
+    def common(): Int = 5
   }
 
   def acceptsB(b: B): Boolean = b.isInstanceOf[B]
@@ -47,10 +51,17 @@ object Test extends App {
     println(acceptsB(b1))
 
     val a = new A
+    a.common()
     val ab: AB = ∪[A, B](a, b)
     ab.nonBDef()
     ab.say("Hello from B")
+
+    val inter: AxB = ∩[A, B](a, b)
+
+    println(inter.common)
+
   }
+
 
   func()
 }

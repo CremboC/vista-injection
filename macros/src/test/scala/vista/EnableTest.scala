@@ -48,12 +48,14 @@ class EnableTest extends WordSpec with Matchers with ResetsDatabase {
                println(acceptsB(b1))
 
                val a = new A
-               trait AB extends A with B
+               trait AB extends A with B {}
                val ab = new AB {}
                ab.nonBDef()
                ab.say("Hello from B")
              }
           """
+
+        q"class A; class B".collect { case c: Defn.Class => semantics.Database.addClass(c) }
 
         val modifiers = Seq(
           ForbidModifiers.defnValModifier,

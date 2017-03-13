@@ -8,6 +8,8 @@ import meta.XDefn
   * @author Paulius Imbrasas
   */
 class SClass(val body: Defn.Class) {
+  private val db = vista.semantics.Database
+
   private lazy val members: Seq[Defn] = body.templ.collect[Defn] {
     case defn: Defn.Def => defn
     case valf: Defn.Val => valf
@@ -16,7 +18,7 @@ class SClass(val body: Defn.Class) {
 
   val name: String = body.name.value
 
-  def methods(implicit db: vista.semantics.Database.type): Set[Defn.Def] = {
+  def methods: Set[Defn.Def] = {
     val parents = body.templ.parents.map(_.syntax)
     val parentMethods = parents.flatMap(db.get(_).methods)
 

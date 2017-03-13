@@ -16,8 +16,7 @@ package object operations {
 
   def parseAndExpand[Source, Input <: OpInput, Result <: Op[_]](defn: Source)
                                                       (implicit parser: Parser[Source, Input], expander: Expander[Input, Result]): Term.Block =
-    parse[Source, Input](defn) match {
-      case None => throw new IllegalArgumentException
-      case Some(parsed) => expand[Input, Result](parsed)
+    parse[Source, Input](defn).map(d => expand[Input, Result](d)).getOrElse {
+      throw new IllegalArgumentException
     }
 }

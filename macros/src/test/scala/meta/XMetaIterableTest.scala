@@ -37,7 +37,7 @@ class XMetaIterableTest extends FlatSpec with Matchers {
           def d: String = "d"
         """.collect { case d: Defn.Def => d }.toSet
 
-    val result = s1.mdiff(s2).structurally
+    val result = s1.disjointUnion(s2).structurally
     expected.structurally.forall(result.contains) should be (true)
   }
 }
