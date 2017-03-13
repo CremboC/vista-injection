@@ -5,10 +5,8 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-private[operations] trait IntersectParser extends Parser[IntersectInput] {
-  override def parseDefn(defn: Defn.Def): Option[IntersectInput] = ???
-
-  override def parseDefn(defn: Defn.Val): Option[IntersectInput] = defn.decltpe match {
+private[operations] object IntersectParser {
+  implicit val defnValToIntersectInput: Parser[Defn.Val, IntersectInput] = (defn: Defn.Val) => defn.decltpe match {
     case None => None
     case Some(typ) =>
       val (leftVar, leftType, rightVar, rightType) = defn.rhs.children match {

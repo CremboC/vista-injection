@@ -3,12 +3,26 @@ package vista.operations.parsers
 import scala.collection.immutable.Seq
 import scala.meta._
 
-/**
-  * @author Paulius Imbrasas
-  */
-private[operations] trait ForbidParser extends Parser[ForbidInput] {
 
-  override def parseDefn(defn: Defn.Def): Option[ForbidInput] = defn.decltpe match {
+private[operations] object ForbidParser {
+  implicit val defnValToForbidInput: Parser[Defn.Val, ForbidInput] = (defn: Defn.Val) => defn.decltpe match {
+    case None => None
+    case Some(typ) =>
+      val q"$_[..$typargs](..$args)" = defn.rhs
+      val subjectType = typargs.head
+
+      val methods = {
+        val q"..$stats" = args.last
+        stats.collect {
+          case d: Defn.Def => d
+        }
+      }
+
+      val paramname = defn.pats.head
+      Some(ForbidInput(typ.syntax, subjectType.syntax, methods, Some(paramname.syntax)))
+  }
+
+  implicit val defnDefToForbidInput: Parser[Defn.Def, ForbidInput] = (defn: Defn.Def) => defn.decltpe match {
     case None => None
     case Some(typ) =>
       val q"$_[..$typargs](..$args)" = defn.body
@@ -24,24 +38,6 @@ private[operations] trait ForbidParser extends Parser[ForbidInput] {
       Some(ForbidInput(typ.syntax, subjectType.syntax, methods))
   }
 
-  override def parseDefn(defn: Defn.Val): Option[ForbidInput] = defn.decltpe match {
-    case None => None
-    case Some(typ) =>
-      val q"$_[..$typargs](..$args)" = defn.rhs
-      val subjectType = typargs.head
-
-      val methods = {
-        val q"..$stats" = args.last
-        stats.collect {
-          case d: Defn.Def => d
-        }
-      }
-
-      val Defn.Val(_, param, _, _) = defn
-      val paramname = param.head
-
-      Some(ForbidInput(typ.syntax, subjectType.syntax, methods, Some(paramname.syntax)))
-  }
 }
 
 private[operations] case class ForbidInput(

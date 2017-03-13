@@ -5,10 +5,8 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-private[operations] trait UnionizeParser extends Parser[UnionizeInput] {
-  override def parseDefn(defn: Defn.Def): Option[UnionizeInput] = ???
-
-  override def parseDefn(defn: Defn.Val): Option[UnionizeInput] = defn.decltpe match {
+private[operations] object UnionizeParser {
+  implicit val defnValToUnionizeInput: Parser[Defn.Val, UnionizeInput] = (defn: Defn.Val) => defn.decltpe match {
     case None => None
     case Some(typ) =>
       val (leftVar, leftType, rightVar, rightType) = defn.rhs.children match {
