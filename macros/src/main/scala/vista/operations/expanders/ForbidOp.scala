@@ -1,7 +1,5 @@
 package vista.operations.expanders
 
-import vista.helpers.OpHelpers
-import vista.operations.{Modifier, parseAndExpand}
 import vista.operations.parsers.OpOverload
 import vista.semantics
 
