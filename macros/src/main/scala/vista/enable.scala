@@ -6,6 +6,7 @@ import scala.meta._
 import vista.helpers.OpHelpers._
 import vista.modifiers._
 import vista.operations._
+import vista.operations.parsers.OpOverload
 
 import scala.collection.immutable.Seq
 
@@ -17,13 +18,16 @@ class enable extends StaticAnnotation {
         val template"{ ..$_ } with ..$_ { $_ => ..$stats }" = obj.templ
 
         // build up SemDB
-        implicit val db = semantics.Database
+        val db = semantics.Database
         defn.collect {
           case c: Defn.Class => db.addClass(c)
         }
 
-        val ops = Seq(Forbid, Unionize)
-        val modifiers = ops.map(_.modifier).reduce(_ orElse _)
+        val modifiers = Seq(
+          ForbidModifiers.defnValModifier,
+          UnionModifiers.defnValModifier,
+          IntersectModifiers.defnValModifier
+        ).reduce(_ orElse _)
 
         val Block(nstats) = Block(stats)
           .transform { // first convert all classes into traits

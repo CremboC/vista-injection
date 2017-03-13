@@ -2,17 +2,15 @@ package vista
 
 import org.scalatest._
 import vista.helpers.OpHelpers.hasOp
-import vista.operations.{Forbid, Unionize}
+import vista.operations.{ForbidModifiers, UnionModifiers}
 
 import scala.meta._
 import scala.collection.immutable.Seq
-
 
 /**
   * @author Paulius Imbrasas
   */
 class EnableTest extends WordSpec with Matchers with ResetsDatabase {
-  import vista.treeStructureEquality
 
   "Enable vistas" when {
     "Given a mix of operations" should {
@@ -57,10 +55,10 @@ class EnableTest extends WordSpec with Matchers with ResetsDatabase {
              }
           """
 
-        implicit val db = semantics.Database
-
-        val ops = Seq(Forbid, Unionize)
-        val modifiers = ops.map(_.modifier).reduce(_ orElse _)
+        val modifiers = Seq(
+          ForbidModifiers.defnValModifier,
+          UnionModifiers.defnValModifier
+        ).reduce(_ orElse _)
 
         val result = source.transform {
           case b: Term.Block if hasOp(b) =>
@@ -70,7 +68,7 @@ class EnableTest extends WordSpec with Matchers with ResetsDatabase {
 
             Term.Block(modified)
         }
-        result should equal (expected)
+        result should equal(expected)
       }
     }
   }

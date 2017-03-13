@@ -1,22 +1,53 @@
 package vista.operations
 
-import scala.meta.Defn
+import scala.meta._
 
 /**
-  * @author Paulius Imbrasas
+  * @author Paulius
   */
 package object parsers {
-  trait Parser[From, To] {
+  trait Parser[From, To <: OpInput] {
     def parse(defn: From): Option[To]
   }
 
-  implicit val unionizeParser: Parser[Defn.Val, UnionizeInput] = UnionizeParser.defnValToInput
-  implicit val intersectParser: Parser[Defn.Val, IntersectInput] = IntersectParser.defnValToInput
+  implicit val defnValToNormal: Parser[Defn.Val, OpVistas] =
+    (defn: Defn.Val) => defn.decltpe match {
+      case None => None
+      case Some(typ) =>
+        val (leftVar, leftType, rightVar, rightType) = defn.rhs.children match {
+          case op :: left :: right :: Nil =>
+            val q"$_[$leftType, $rightType]" = op
+            val q"${leftVar: Term.Name}" = left
+            val q"${rightVar: Term.Name}" = right
 
-  implicit val forbidParser: Parser[Defn.Val, ForbidInput] = ForbidParser.defnValToInput
-  implicit val forbidParser2: Parser[Defn.Def, ForbidInput] = ForbidParser.defnDefToInput
+            (leftVar, leftType, rightVar, rightType)
+          case _ => throw new RuntimeException("Illegal")
+        }
 
-  implicit val productParser: Parser[Defn.Val, ProductInput] = ProductParser.defnValToInput
+        Some(OpVistas(leftType.syntax, rightType.syntax,
+          leftVar.syntax, rightVar.syntax,
+          typ.syntax, Some(defn.pats.head.syntax)))
+    }
 
-  def parse[From, To](defn: From)(implicit parser: Parser[From, To]): Option[To] = parser.parse(defn)
+  implicit val defnValToOverloaded: Parser[Defn.Val, OpOverload] =
+    (defn: Defn.Val) => defn.decltpe match {
+      case None => None
+      case Some(newtype) =>
+        val q"$_[..$typargs](..$args)" = defn.rhs
+        val lclass = typargs.head
+
+        val lvar = args.head
+
+        val methods = {
+          val q"..$stats" = args.last
+          stats.collect {
+            case d: Defn.Def => d
+          }
+        }
+
+        val paramname = defn.pats.head
+        Some(OpOverload(lclass.syntax, lvar.syntax, newtype.syntax, methods, Some(paramname.syntax)))
+    }
+
+  def parse[From, To <: OpInput](defn: From)(implicit parser: Parser[From, To]): Option[To] = parser.parse(defn)
 }

@@ -25,4 +25,12 @@ package object vista {
         }
     }
 
+  implicit val termBlockStructureEquality =
+    new Equality[Term.Block] {
+      def areEqual(a: Term.Block, b: Any): Boolean =
+        b match {
+          case bt: Term.Block => a isEqual bt
+          case _ => false
+        }
+    }
 }

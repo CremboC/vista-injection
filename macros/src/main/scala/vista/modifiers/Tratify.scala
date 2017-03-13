@@ -8,7 +8,9 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object Tratify {
-  def apply(cls: Defn.Class)(implicit db: semantics.Database.type): Tree = {
+  private implicit val db = semantics.Database
+
+  def apply(cls: Defn.Class): Tree = {
     val q"..$mods class $name extends $template" = cls
 
     q"""

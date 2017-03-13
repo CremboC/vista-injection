@@ -1,6 +1,6 @@
-package vista.operations.internal
+package vista.operations.expanders
 
-import vista.operations.parsers.UnionizeInput
+import vista.operations.parsers.OpVistas
 import vista.semantics
 
 import scala.meta._
@@ -9,8 +9,12 @@ import scala.meta.contrib._
 /**
   * Internal API implementation
   */
-private[operations] object UnionizeImpl {
-  def apply(inp: UnionizeInput)(implicit db: semantics.Database.type): Term.Block = {
+private[operations] object UnionOp {
+  type Union = Op[UnionOp.type ]
+
+  private implicit val db = semantics.Database
+
+  val expander: Expander[OpVistas, Union] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
     val leftTypeCtor = Ctor.Name(inp.lclass)

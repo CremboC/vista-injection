@@ -1,6 +1,6 @@
-package vista.operations.internal
+package vista.operations.expanders
 
-import vista.operations.parsers.IntersectInput
+import vista.operations.parsers.OpVistas
 import vista.semantics
 
 import scala.meta._
@@ -10,10 +10,13 @@ import scala.collection.immutable.Seq
 /**
   * @author Paulius Imbrasas
   */
-private[operations] object IntersectImpl {
+private[operations] object IntersectOp {
+  type Intersect = Op[IntersectOp.type]
   import meta.XMetaIterable
 
-  def apply(inp: IntersectInput)(implicit db: semantics.Database.type): Term.Block = {
+  private implicit val db = semantics.Database
+
+  val expander: Expander[OpVistas, Intersect] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
     val leftTypeCtor = Ctor.Name(inp.lclass)
