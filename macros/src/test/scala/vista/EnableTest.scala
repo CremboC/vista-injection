@@ -1,6 +1,5 @@
 package vista
 
-import org.scalactic.Equality
 import org.scalatest._
 import vista.helpers.OpHelpers.hasOp
 import vista.operations.{Forbid, Unionize}
