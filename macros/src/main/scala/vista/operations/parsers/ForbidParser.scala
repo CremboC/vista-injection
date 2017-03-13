@@ -5,38 +5,40 @@ import scala.meta._
 
 
 private[operations] object ForbidParser {
-  implicit val defnValToForbidInput: Parser[Defn.Val, ForbidInput] = (defn: Defn.Val) => defn.decltpe match {
-    case None => None
-    case Some(typ) =>
-      val q"$_[..$typargs](..$args)" = defn.rhs
-      val subjectType = typargs.head
+  implicit val defnValToInput: Parser[Defn.Val, ForbidInput] =
+    (defn: Defn.Val) => defn.decltpe match {
+      case None => None
+      case Some(typ) =>
+        val q"$_[..$typargs](..$args)" = defn.rhs
+        val subjectType = typargs.head
 
-      val methods = {
-        val q"..$stats" = args.last
-        stats.collect {
-          case d: Defn.Def => d
+        val methods = {
+          val q"..$stats" = args.last
+          stats.collect {
+            case d: Defn.Def => d
+          }
         }
-      }
 
-      val paramname = defn.pats.head
-      Some(ForbidInput(typ.syntax, subjectType.syntax, methods, Some(paramname.syntax)))
-  }
+        val paramname = defn.pats.head
+        Some(ForbidInput(typ.syntax, subjectType.syntax, methods, Some(paramname.syntax)))
+    }
 
-  implicit val defnDefToForbidInput: Parser[Defn.Def, ForbidInput] = (defn: Defn.Def) => defn.decltpe match {
-    case None => None
-    case Some(typ) =>
-      val q"$_[..$typargs](..$args)" = defn.body
-      val subjectType = typargs.head
+  implicit val defnDefToInput: Parser[Defn.Def, ForbidInput] =
+    (defn: Defn.Def) => defn.decltpe match {
+      case None => None
+      case Some(typ) =>
+        val q"$_[..$typargs](..$args)" = defn.body
+        val subjectType = typargs.head
 
-      val methods = {
-        val q"..$stats" = args.last
-        stats.collect {
-          case d: Defn.Def => d
+        val methods = {
+          val q"..$stats" = args.last
+          stats.collect {
+            case d: Defn.Def => d
+          }
         }
-      }
 
-      Some(ForbidInput(typ.syntax, subjectType.syntax, methods))
-  }
+        Some(ForbidInput(typ.syntax, subjectType.syntax, methods))
+    }
 
 }
 

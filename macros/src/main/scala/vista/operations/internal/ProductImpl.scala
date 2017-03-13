@@ -1,7 +1,13 @@
 package vista.operations.internal
 
+import vista.operations.parsers.ProductInput
+import vista.semantics
+
+import scala.meta._
+
 /**
-  * Created by Crembo on 2017-03-12.
+  * @author Paulius Imbrasas
   */
 private[operations] object ProductImpl {
+  def apply(inp: ProductInput)(implicit db: semantics.Database.type): Term.Block = ???
 }

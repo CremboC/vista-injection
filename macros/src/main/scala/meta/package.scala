@@ -23,7 +23,8 @@ package object meta {
     */
   implicit class XMetaIterable[A <: Tree](self: Set[A]) {
 
-    def toStructural: Set[Structurally[A]] = self.map(new Structurally(_))
+    def structurally: Set[Structurally[A]] = self.map(new Structurally(_))
+    def syntactically: Set[Syntactically[A]] = self.map(new Syntactically(_))
 
     def mintersect(other: Set[A]): Set[A] = {
       val selfStr = self.map(new Structurally(_))
@@ -38,5 +39,9 @@ package object meta {
 
       (selfStr.diff(otherStr) ++ otherStr.diff(selfStr)).map(_.tree)
     }
+  }
+
+  implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
+    def signatures: Iterable[Defn.Def] = self.map(_.signature)
   }
 }

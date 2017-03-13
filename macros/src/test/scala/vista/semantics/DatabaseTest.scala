@@ -37,14 +37,14 @@ class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
         db.classes shouldNot be (Set.empty)
 
         val xClass = db.get("X")
-        val xTests = Set(q"def one(): Int = other", q"def two(): Int = 2").toStructural
+        val xTests = Set(q"def one(): Int = other", q"def two(): Int = 2").structurally
 
-        xClass.methods.toStructural.forall(xTests.contains) should be (true)
+        xClass.methods.structurally.forall(xTests.contains) should be (true)
 
         val yClass = db.get("Y")
-        val yTests = Set(q"def three(): Int = other", q"def four(param: Int): Int = 4").toStructural
+        val yTests = Set(q"def three(): Int = other", q"def four(param: Int): Int = 4").structurally
 
-        yClass.methods.toStructural.forall(yTests.contains) should be (true)
+        yClass.methods.structurally.forall(yTests.contains) should be (true)
       }
     }
 
