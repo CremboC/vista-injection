@@ -21,12 +21,14 @@ class enable extends StaticAnnotation {
         val db = semantics.Database
         defn.collect {
           case c: Defn.Class => db.addClass(c)
+          case t: Defn.Trait => db.addClass(t)
         }
 
         val modifiers = Seq(
           ForbidModifiers.defnValModifier,
           UnionModifiers.defnValModifier,
-          IntersectModifiers.defnValModifier
+          IntersectModifiers.defnValModifier,
+          ProductModifiers.defnValModifier
         ).reduce(_ orElse _)
 
         val Block(nstats) = Block(stats)

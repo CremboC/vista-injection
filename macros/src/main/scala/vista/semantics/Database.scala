@@ -17,6 +17,11 @@ object Database {
     database.add(new SClass(c))
   }
 
+  def addClass(t: Defn.Trait): Boolean = {
+    val c = q"..${t.mods} class ${t.name}[..${t.tparams}] extends ${t.templ}"
+    database.add(new SClass(c))
+  }
+
   def get(value: ClassName): SClass = database.find(_.name == value).getOrElse {
     throw new IllegalStateException(s"Class <$value> not recorded in SemDB.")
   }

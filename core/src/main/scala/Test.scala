@@ -1,5 +1,4 @@
 
-import vistas.Vista
 import vistas.Vista._
 
 /**
@@ -7,6 +6,14 @@ import vistas.Vista._
   */
 @vista.enable
 object Test extends App {
+
+  trait F {
+    def a(): Int = 5
+  }
+
+  class G {
+    def b(): Int = 3
+  }
 
   class A {
     def nonBDef(): Unit = {
@@ -60,9 +67,11 @@ object Test extends App {
 
     println(inter.common)
 
+    val comb: FG = ⨯[F, G](f, g)
+    println(comb.ab()())
   }
 
-
   func()
+
 }
 
