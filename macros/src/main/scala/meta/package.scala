@@ -60,10 +60,23 @@ package object meta {
     }
 
     def \(other: Set[A]): Set[A] = mdiff(other)
+
+
+    def cross(other: Set[A]): Set[(A, A)] = {
+      val selfStr = self.structurally
+      val otherStr = other.structurally
+
+      val pairs = for { s <- selfStr; o <- otherStr } yield (s, o)
+      pairs.map {
+        case (x, y) => (x.tree, y.tree)
+      }
+    }
+
+    def ><(other: Set[A]): Set[(A, A)] = cross(other)
   }
 
   implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
     @inline
-    def signatures: Iterable[Defn.Def] = self.map(_.signature)
+    def signatures: Set[Defn.Def] = self.map(_.signature).toSet
   }
 }

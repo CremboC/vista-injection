@@ -61,7 +61,7 @@ package object expanders {
   implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] = ForbidOp.expander
   implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] = IntersectOp.expander
   implicit val unionExpander: Expander[OpVistas, UnionOp.Union] = UnionOp.expander
-//  implicit val forbidExpander: Expander[OpOverload] = ForbidOp.expander
+  implicit val productExpander: Expander[OpVistas, ProductOp.Product] = ProductOp.expander
 
   def expand[A <: OpInput, B <: Op[_]](input: A)(implicit expander: Expander[A, B]): Term.Block = expander.expand(input)
 }

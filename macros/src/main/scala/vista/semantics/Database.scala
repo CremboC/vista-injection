@@ -7,14 +7,17 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object Database {
+  type ClassName = String
 
   private val database: mutable.Set[SClass] = mutable.Set.empty
+
+  def apply(value: ClassName): SClass = get(value)
 
   def addClass(c: Defn.Class): Boolean = {
     database.add(new SClass(c))
   }
 
-  def get(value: String): SClass = database.find(_.name == value).getOrElse {
+  def get(value: ClassName): SClass = database.find(_.name == value).getOrElse {
     throw new IllegalStateException(s"Class <$value> not recorded in SemDB.")
   }
 

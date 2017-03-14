@@ -24,8 +24,8 @@ private[operations] object IntersectOp {
     val leftTypeCtor = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
-    val lclazz = db.get(inp.lclass)
-    val rclazz = db.get(inp.rclass)
+    val lclazz = db(inp.lclass)
+    val rclazz = db(inp.rclass)
 
     // we're overriding only the methods that no longer allow
     // mintersect will return a list of methods which are allow, but
@@ -36,8 +36,8 @@ private[operations] object IntersectOp {
     }
 
     // get common signatures in order to avoid "trait X inherits conflicting members"
-    val lsignatures = db.get(inp.lclass).methods.signatures.toSet
-    val rsignatures = db.get(inp.rclass).methods.signatures.toSet
+    val lsignatures = lclazz.methods.signatures
+    val rsignatures = rclazz.methods.signatures
 
     val common = commonMethods(inp, lsignatures, rsignatures)
 

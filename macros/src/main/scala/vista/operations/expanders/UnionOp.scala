@@ -23,8 +23,8 @@ private[operations] object UnionOp {
     val leftTypeCtor = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
-    val lsignatures = db.get(inp.lclass).methods.signatures.toSet
-    val rsignatures = db.get(inp.rclass).methods.signatures.toSet
+    val lsignatures = db.get(inp.lclass).methods.signatures
+    val rsignatures = db.get(inp.rclass).methods.signatures
 
     val common = commonMethods(inp, lsignatures, rsignatures).toSeq.sortBy(_.name.syntax).asInstanceOf[Seq[Stat]]
 
