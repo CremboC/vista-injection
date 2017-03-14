@@ -79,17 +79,17 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         val source =
           q"""
               class A {
-                def a[A](v: A): Int = v.toInt
+                def a[A, B](v: A): B = v.asInstanceOf[B]
               }
 
               class B {
-                def b(): Int = 3
+                def b[A](s: A): Int = s.toInt
               }
             """
         val expected =
           q"""
               trait AB extends A with B {
-                def ab(v: Tvista1)() = (a(v), b())
+                def ab[Tvista1, Tvista2, Tvista3](v: Tvista1)(s: Tvista3) = (a[Tvista1, Tvista2](v), b[Tvista3](s))
               }
               val ab = new AB {}
             """
