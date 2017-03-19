@@ -19,10 +19,12 @@ class enable extends StaticAnnotation {
 
         // build up SemDB
         val db = semantics.Database
-        defn.collect {
+        val semDbBuilder: PartialFunction[Tree, Unit] = {
           case c: Defn.Class => db.addClass(c)
           case t: Defn.Trait => db.addClass(t)
         }
+
+        defn.collect(semDbBuilder)
 
         val modifiers = Seq(
           ForbidModifiers.defnValModifier,
@@ -44,9 +46,19 @@ class enable extends StaticAnnotation {
               }
 
             case b: Term.Block if hasOp(b) =>
-              val modified = b.stats.collect(modifiers orElse {
-                case o => Term.Block(Seq(o))
-              }).flatMap(_.stats)
+              println(db.classes.map(_.name))
+
+
+              val default: PartialFunction[Tree, Term.Block] = {
+                case o: Stat => Term.Block(Seq(o))
+              }
+              val function = modifiers orElse default andThen { c =>
+                c.collect(semDbBuilder)
+                c
+              }
+              val modified = b.stats.collect(function).flatMap(_.stats)
+
+              println(modified)
 
               Term.Block(modified)
           }
