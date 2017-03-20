@@ -18,7 +18,7 @@ class XMetaIterableTest extends FlatSpec with Matchers {
       ))
   }
 
-  "A meta iterable" should "find the difference correctly" in {
+  "A meta iterable" should "find the disjoint union correctly" in {
     val s1 =
       q"""
           def a: String = "a"

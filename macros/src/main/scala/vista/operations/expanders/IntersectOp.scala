@@ -5,7 +5,8 @@ import vista.semantics
 
 import scala.collection.immutable.Seq
 import scala.meta._
-import _root_.meta.XDefnIterable
+import meta.XDefnIterable
+import meta.XMetaIterable
 
 import scala.meta.contrib._
 
@@ -14,7 +15,6 @@ import scala.meta.contrib._
   */
 private[operations] object IntersectOp {
   type Intersect = Op[IntersectOp.type]
-  import meta.XMetaIterable
 
   private implicit val db = semantics.Database
 
@@ -27,23 +27,20 @@ private[operations] object IntersectOp {
     val lclazz = db(inp.lclass)
     val rclazz = db(inp.rclass)
 
-    // we're overriding only the methods that no longer allow
-    // mintersect will return a list of methods which are allow, but
+    val lsignatures = lclazz.methods.signatures
+    val rsignatures = rclazz.methods.signatures
+
+    // we're only overriding the methods that are no longer allowed
+    // mintersect will return a list of methods which are allowed, but
     // we can only disallow methods, hence that is used here
-    val methodsInBoth = lclazz.methods >+< rclazz.methods
-    val forbidden = methodsInBoth.map { m =>
+    val disjointMethods = lsignatures >+< rsignatures
+    val forbidden = disjointMethods.map { m =>
       m.copy(body = q"throw new NoSuchMethodException", mods = m.mods :+ Mod.Override())
     }
 
     // get common signatures in order to avoid "trait X inherits conflicting members"
-    val lsignatures = lclazz.methods.signatures
-    val rsignatures = rclazz.methods.signatures
-
     val common = commonMethods(inp, lsignatures, rsignatures)
-
-    val result = {
-      forbidden ++ common
-    }.toSeq.sortBy(_.name.syntax).asInstanceOf[Seq[Stat]]
+    val result = (forbidden ++ common).to[Seq].sortBy(_.name.syntax)
 
     inp.newvar match {
       case None => ???

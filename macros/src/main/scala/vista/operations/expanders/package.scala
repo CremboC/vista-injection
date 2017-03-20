@@ -44,9 +44,9 @@ package object expanders {
       * In order to solve this, the original signatures stored in the database are restored
       * which allow us to distinguish def g() and def g
       *
-      * This is probably a bad idea as in theoretically this method could be used for vista \op/ visibilities
-      * as well, but this particular code prohibits this from happening, since sets of visibilities are obviously
-      * not stored in the database.
+      * This is probably a bad idea as in theory this method could be used for vista \op/ visibilities
+      * as well, but this particular code prohibits this from happening, since sets of visibilities (which are not classes)
+      * are obviously not stored in the database.
       */
     val db = vista.semantics.Database
     val map =
