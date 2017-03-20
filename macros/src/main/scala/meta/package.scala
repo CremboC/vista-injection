@@ -79,4 +79,9 @@ package object meta {
     @inline
     def signatures: Set[Defn.Def] = self.map(_.signature).toSet
   }
+
+  object XCtor {
+    @inline
+    def default: Ctor.Primary = Ctor.Primary(Seq.empty, Ctor.Name("this"), Seq.empty)
+  }
 }
