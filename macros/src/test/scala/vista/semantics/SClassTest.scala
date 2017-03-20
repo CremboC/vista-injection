@@ -23,7 +23,7 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         implicit val db = vista.semantics.Database
-        val sclass = new SClass(c)
+        val sclass      = new SClass(c)
         sclass.methods shouldNot be(Seq.empty)
         sclass.vars should be(Seq.empty)
 
@@ -54,7 +54,7 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
 
         import meta.XMetaIterable
 
-        db.get("A").methods.mintersect(expected) should have (size (2))
+        db.get("A").methods.mintersect(expected) should have(size(2))
       }
 
       "present the methods correctly 2" in {
@@ -78,7 +78,7 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
 
         import meta.XMetaIterable
 
-        db.get("A").methods.mintersect(expected) should have (size (1))
+        db.get("A").methods.mintersect(expected) should have(size(1))
       }
     }
 
@@ -94,7 +94,7 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
         """
 
         implicit val db = vista.semantics.Database
-        val sclass = new SClass(c)
+        val sclass      = new SClass(c)
 
         sclass.methods shouldNot be(Seq.empty)
         val expected = q"def a(p1: Int, p2: Double): Int = { 5 + 5 }"

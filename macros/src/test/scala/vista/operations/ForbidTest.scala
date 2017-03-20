@@ -2,12 +2,12 @@ package vista.operations
 
 import org.scalatest._
 import vista.helpers.OpHelpers.isForbid
-import vista.operations.expanders.ForbidOp
+import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.parsers.OpOverload
 import vista.{ResetsDatabase, termBlockStructureEquality, treeStructureEquality}
 
-import scala.meta._
 import scala.collection.immutable.Seq
+import scala.meta._
 
 /**
   * @author Paulius Imbrasas
@@ -32,8 +32,8 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
             })
           """
 
-        val expanded = parseAndExpand[Defn.Val, OpOverload, ForbidOp.Forbid](source)
-        expanded should equal (expected)
+        val expanded = parseAndExpand[Defn.Val, OpOverload, Forbid](source)
+        expanded should equal(expected)
       }
 
       "handle a complex case" in {
@@ -51,8 +51,8 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
            })
           """
 
-        val expanded = parseAndExpand[Defn.Val, OpOverload, ForbidOp.Forbid](source)
-        expanded should equal (expected)
+        val expanded = parseAndExpand[Defn.Val, OpOverload, Forbid](source)
+        expanded should equal(expected)
       }
 
       "expand in-place without a surrounding block" in {
@@ -84,13 +84,15 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
 
         val result = input.transform {
           case b: Term.Block if isForbid(b) =>
-            val modified = b.stats.collect(ForbidModifiers.defnValModifier orElse {
-              case o => Term.Block(Seq(o))
-            }).flatMap(_.stats)
+            val modified = b.stats
+              .collect(ForbidModifiers.defnValModifier orElse {
+                case o => Term.Block(Seq(o))
+              })
+              .flatMap(_.stats)
 
             Term.Block(modified)
         }
-        result should equal (expected)
+        result should equal(expected)
       }
     }
 

@@ -3,11 +3,11 @@ package vista.operations.expanders
 import vista.operations.parsers.OpVistas
 import vista.semantics
 
-import scala.meta._
-import scala.meta.contrib._
 import scala.collection.immutable.Seq
+import scala.meta._
+import _root_.meta.XDefnIterable
 
-import meta.XDefnIterable
+import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
@@ -21,7 +21,7 @@ private[operations] object IntersectOp {
   val expander: Expander[OpVistas, Intersect] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
-    val leftTypeCtor = Ctor.Name(inp.lclass)
+    val leftTypeCtor  = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
     val lclazz = db(inp.lclass)

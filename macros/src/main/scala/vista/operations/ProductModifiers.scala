@@ -11,6 +11,7 @@ import scala.meta._
   */
 object ProductModifiers {
   val defnValModifier: PartialFunction[Tree, Term.Block] = {
-    case defn: Defn.Val if OpHelpers.isProduct(defn) => parseAndExpand[Defn.Val, OpVistas, Product](defn)
+    case defn: Defn.Val if OpHelpers.isProduct(defn) =>
+      parseAndExpand[Defn.Val, OpVistas, Product](defn)
   }
 }

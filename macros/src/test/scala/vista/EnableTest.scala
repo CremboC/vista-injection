@@ -4,8 +4,8 @@ import org.scalatest._
 import vista.helpers.OpHelpers.hasOp
 import vista.operations.{ForbidModifiers, UnionModifiers}
 
-import scala.meta._
 import scala.collection.immutable.Seq
+import scala.meta._
 
 /**
   * @author Paulius Imbrasas
@@ -64,9 +64,11 @@ class EnableTest extends WordSpec with Matchers with ResetsDatabase {
 
         val result = source.transform {
           case b: Term.Block if hasOp(b) =>
-            val modified = b.stats.collect(modifiers orElse {
-              case o => Term.Block(Seq(o))
-            }).flatMap(_.stats)
+            val modified = b.stats
+              .collect(modifiers orElse {
+                case o => Term.Block(Seq(o))
+              })
+              .flatMap(_.stats)
 
             Term.Block(modified)
         }

@@ -16,12 +16,12 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
     "expanding a simple case" should {
       "expand correctly" in {
         val expected =
-            q"""
+          q"""
               trait AB extends A with B {}
               val ab = new AB {}
             """
         val source =
-            q"""
+          q"""
               val ab: AB = ∪[A, B](a, b)
             """
 

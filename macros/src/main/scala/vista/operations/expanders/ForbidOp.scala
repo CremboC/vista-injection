@@ -3,8 +3,8 @@ package vista.operations.expanders
 import vista.operations.parsers.OpOverload
 import vista.semantics
 
-import scala.meta._
 import scala.collection.immutable.Seq
+import scala.meta._
 
 /**
   * Internal API of Forbid
@@ -15,11 +15,13 @@ private[operations] object ForbidOp {
   private implicit val db = semantics.Database
 
   val expander: Expander[OpOverload, Forbid] = (inp: OpOverload) => {
-    val forbidden = inp.methods.map {
-      case Defn.Def(mods, name, gparams, paramss, tpeopt, _) =>
-        val nmods = mods :+ Mod.Override()
-        q"..$nmods def $name[..$gparams](...$paramss): ${tpeopt.getOrElse(Type.Name("None"))} = throw new NoSuchMethodException"
-    }.asInstanceOf[Seq[Stat]]
+    val forbidden = inp.methods
+      .map {
+        case Defn.Def(mods, name, gparams, paramss, tpeopt, _) =>
+          val nmods = mods :+ Mod.Override()
+          q"..$nmods def $name[..$gparams](...$paramss): ${tpeopt.getOrElse(Type.Name("None"))} = throw new NoSuchMethodException"
+      }
+      .asInstanceOf[Seq[Stat]]
 
     val constructor = Ctor.Name(inp.lclass)
     val traitq =

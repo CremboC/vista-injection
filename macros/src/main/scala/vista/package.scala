@@ -12,7 +12,7 @@ package object vista {
       def areEqual(a: Tree, b: Any): Boolean =
         b match {
           case bt: Tree => a.isEqual(bt)
-          case _ => false
+          case _        => false
         }
     }
 
@@ -21,7 +21,7 @@ package object vista {
       def areEqual(a: Defn.Def, b: Any): Boolean =
         b match {
           case bt: Defn.Def => a.isEqual(bt)
-          case _ => false
+          case _            => false
         }
     }
 
@@ -30,7 +30,7 @@ package object vista {
       def areEqual(a: Term.Block, b: Any): Boolean =
         b match {
           case bt: Term.Block => a isEqual bt
-          case _ => false
+          case _              => false
         }
     }
 }

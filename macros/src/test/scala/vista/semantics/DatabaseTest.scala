@@ -1,10 +1,10 @@
 package vista.semantics
 
+import _root_.meta.XMetaIterable
 import org.scalatest._
+import vista.{ResetsDatabase, defnStructureEquality}
 
 import scala.meta._
-import _root_.meta.XMetaIterable
-import vista.{ResetsDatabase, defnStructureEquality}
 
 /**
   * @author Paulius Imbrasas
@@ -34,17 +34,18 @@ class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
           case c: Defn.Class => db.addClass(c)
         }
 
-        db.classes shouldNot be (Set.empty)
+        db.classes shouldNot be(Set.empty)
 
         val xClass = db.get("X")
         val xTests = Set(q"def one(): Int = other", q"def two(): Int = 2").structurally
 
-        xClass.methods.structurally.forall(xTests.contains) should be (true)
+        xClass.methods.structurally.forall(xTests.contains) should be(true)
 
         val yClass = db.get("Y")
-        val yTests = Set(q"def three(): Int = other", q"def four(param: Int): Int = 4").structurally
+        val yTests =
+          Set(q"def three(): Int = other", q"def four(param: Int): Int = 4").structurally
 
-        yClass.methods.structurally.forall(yTests.contains) should be (true)
+        yClass.methods.structurally.forall(yTests.contains) should be(true)
       }
     }
 
@@ -77,7 +78,7 @@ class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
           case c: Defn.Class => db.addClass(c)
         }
 
-        db.get("X").methods should contain (expected)
+        db.get("X").methods should contain(expected)
       }
     }
   }

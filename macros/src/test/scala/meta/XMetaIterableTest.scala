@@ -1,6 +1,7 @@
 package meta
 
 import org.scalatest._
+
 import scala.meta._
 
 /**
@@ -11,9 +12,10 @@ class XMetaIterableTest extends FlatSpec with Matchers {
     val s1 = Set(q"def one(): Int = 1", q"def two(): Int = 2")
     val s2 = Set(q"def one(): Int = 1", q"def three(): Int = 3")
 
-    s1.mintersect(s2) should equal (Set(
-      s1.head
-    ))
+    s1.mintersect(s2) should equal(
+      Set(
+        s1.head
+      ))
   }
 
   "A meta iterable" should "find the difference correctly" in {
@@ -38,6 +40,6 @@ class XMetaIterableTest extends FlatSpec with Matchers {
         """.collect { case d: Defn.Def => d }.toSet
 
     val result = s1.disjointUnion(s2).structurally
-    expected.structurally.forall(result.contains) should be (true)
+    expected.structurally.forall(result.contains) should be(true)
   }
 }

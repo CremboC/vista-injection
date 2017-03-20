@@ -15,19 +15,26 @@ package object expanders {
   }
 
   object Expander {
-    implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] = ForbidOp.expander
-    implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] = IntersectOp.expander
-    implicit val unionExpander: Expander[OpVistas, UnionOp.Union] = UnionOp.expander
-    implicit val productExpander: Expander[OpVistas, ProductOp.Product] = ProductOp.expander
+    implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] =
+      ForbidOp.expander
+    implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] =
+      IntersectOp.expander
+    implicit val unionExpander: Expander[OpVistas, UnionOp.Union] =
+      UnionOp.expander
+    implicit val productExpander: Expander[OpVistas, ProductOp.Product] =
+      ProductOp.expander
 
-    def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] = expander
+    def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] =
+      expander
   }
 
-  def commonMethods(inp: OpVistas, lsignatures: Set[Defn.Def], rsignatures: Set[Defn.Def]): Set[Defn.Def] = {
-    import meta.XMetaIterable
-    import meta.XDefn
-    import scala.meta.contrib._
+  def commonMethods(inp: OpVistas,
+                    lsignatures: Set[Defn.Def],
+                    rsignatures: Set[Defn.Def]): Set[Defn.Def] = {
+    import meta.{XDefn, XMetaIterable}
+
     import scala.meta._
+    import scala.meta.contrib._
 
     /**
       * Theoretically the user should pass in normalised sets of signatures, but this is clearly not enforced.
@@ -43,11 +50,11 @@ package object expanders {
       */
     val db = vista.semantics.Database
     val map =
-      db.get(inp.lclass).methods.map(m => m.signature.syntax -> m).toMap ++
-      db.get(inp.rclass).methods.map(m => m.signature.syntax -> m).toMap
+      db.get(inp.lclass).methods.map(m => m.signature.syntax   -> m).toMap ++
+        db.get(inp.rclass).methods.map(m => m.signature.syntax -> m).toMap
 
     lsignatures.mintersect(rsignatures).map { mn =>
-      val m = map(mn.signature.syntax)
+      val m       = map(mn.signature.syntax)
       val tparams = m.tparams.map(typ => targ"${typ.name.asType}")
       val paramss = m.paramss.map(_.map(arg => arg"${arg.name.asTerm}"))
 

@@ -1,7 +1,7 @@
 package vista.modifiers
 
-import vista.semantics
 import meta.XCtor
+import vista.semantics
 
 import scala.meta._
 import scala.meta.contrib._
@@ -13,7 +13,8 @@ object Tratify {
   private implicit val db = semantics.Database
 
   def apply(cls: Defn.Class): Tree = {
-    val traite = Defn.Trait(cls.mods, cls.name, cls.tparams, XCtor.default, cls.templ)
+    val traite =
+      Defn.Trait(cls.mods, cls.name, cls.tparams, XCtor.default, cls.templ)
 
     val ntrait =
       if (cls.ctor.paramss.isEmpty) traite
@@ -21,7 +22,8 @@ object Tratify {
         val paramss = cls.ctor.paramss
 
         def extractDecltpe(p: Term.Param): Type.Name = p.decltpe match {
-          case None => Type.Name("") // will probably fail here if ever reached.
+          case None =>
+            Type.Name("") // will probably fail here if ever reached.
           case Some(typ) => Type.Name(typ.syntax)
         }
 
@@ -48,7 +50,7 @@ object Tratify {
         })
 
         val nstats = traite.templ.stats match {
-          case None => decls
+          case None        => decls
           case Some(stats) => decls ++ stats
         }
 

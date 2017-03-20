@@ -11,6 +11,7 @@ import scala.meta._
   */
 object ForbidModifiers {
   val defnValModifier: PartialFunction[Tree, Term.Block] = {
-    case defn: Defn.Val if OpHelpers.isForbid(defn) => parseAndExpand[Defn.Val, OpOverload, Forbid](defn)
+    case defn: Defn.Val if OpHelpers.isForbid(defn) =>
+      parseAndExpand[Defn.Val, OpOverload, Forbid](defn)
   }
 }

@@ -1,12 +1,11 @@
 package vista.operations
 
 import org.scalatest._
+import vista.operations.expanders.ProductOp.Product
+import vista.operations.parsers.OpVistas
+import vista.{ResetsDatabase, termBlockStructureEquality}
 
 import scala.meta._
-import vista.ResetsDatabase
-import vista.operations.parsers.OpVistas
-import vista.operations.expanders.ProductOp.Product
-import vista.termBlockStructureEquality
 
 /**
   * @author Paulius Imbrasas
@@ -40,7 +39,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         source.collect { case c: Defn.Class => db.addClass(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
-        expanded should equal (expected)
+        expanded should equal(expected)
       }
     }
 
@@ -70,7 +69,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         source.collect { case c: Defn.Class => db.addClass(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
-        expanded should equal (expected)
+        expanded should equal(expected)
       }
     }
 
@@ -100,7 +99,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         source.collect { case c: Defn.Class => db.addClass(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
-        expanded should equal (expected)
+        expanded should equal(expected)
       }
     }
   }

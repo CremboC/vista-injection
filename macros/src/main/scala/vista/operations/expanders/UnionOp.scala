@@ -1,13 +1,12 @@
 package vista.operations.expanders
 
-import vista.operations.parsers.OpVistas
-import meta.XMetaIterable
 import meta.XDefnIterable
+import vista.operations.parsers.OpVistas
 import vista.semantics
 
+import scala.collection.immutable.Seq
 import scala.meta._
 import scala.meta.contrib._
-import scala.collection.immutable.Seq
 
 /**
   * Internal API implementation
@@ -20,13 +19,15 @@ private[operations] object UnionOp {
   val expander: Expander[OpVistas, Union] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
-    val leftTypeCtor = Ctor.Name(inp.lclass)
+    val leftTypeCtor  = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
     val lsignatures = db.get(inp.lclass).methods.signatures
     val rsignatures = db.get(inp.rclass).methods.signatures
 
-    val common = commonMethods(inp, lsignatures, rsignatures).toSeq.sortBy(_.name.syntax).asInstanceOf[Seq[Stat]]
+    val common = commonMethods(inp, lsignatures, rsignatures).toSeq
+      .sortBy(_.name.syntax)
+      .asInstanceOf[Seq[Stat]]
 
     inp.newvar match {
       case None =>

@@ -1,6 +1,6 @@
+import scala.collection.immutable.Seq
 import scala.meta._
 import scala.meta.contrib._
-import scala.collection.immutable.Seq
 
 /**
   * @author Paulius Imbrasas
@@ -34,14 +34,14 @@ package object meta {
     def syntactically: Set[Syntactically[A]] = self.map(new Syntactically(_))
 
     def mintersect(other: Set[A]): Set[A] = {
-      val selfStr = self.structurally
+      val selfStr  = self.structurally
       val otherStr = other.structurally
 
       selfStr.intersect(otherStr).map(_.tree)
     }
 
     def disjointUnion(other: Set[A]): Set[A] = {
-      val selfStr = self.structurally
+      val selfStr  = self.structurally
       val otherStr = other.structurally
 
       (selfStr.diff(otherStr) ++ otherStr.diff(selfStr)).map(_.tree)
@@ -61,9 +61,8 @@ package object meta {
 
     def \(other: Set[A]): Set[A] = mdiff(other)
 
-
     def cross(other: Set[A]): Set[(A, A)] = {
-      val selfStr = self.structurally
+      val selfStr  = self.structurally
       val otherStr = other.structurally
 
       val pairs = for { s <- selfStr; o <- otherStr } yield (s, o)
@@ -82,6 +81,7 @@ package object meta {
 
   object XCtor {
     @inline
-    def default: Ctor.Primary = Ctor.Primary(Seq.empty, Ctor.Name("this"), Seq.empty)
+    def default: Ctor.Primary =
+      Ctor.Primary(Seq.empty, Ctor.Name("this"), Seq.empty)
   }
 }
