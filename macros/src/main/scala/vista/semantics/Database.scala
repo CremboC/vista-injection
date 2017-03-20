@@ -44,6 +44,8 @@ object Database {
     }
   }
 
+  def exists(name: ClassName): Boolean = database.get(name).isDefined
+
   def classes: Set[SClass] = database.classes
 
   /**

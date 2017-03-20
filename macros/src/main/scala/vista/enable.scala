@@ -48,18 +48,38 @@ class enable extends StaticAnnotation {
         // classes into the semdb so we can operate on them as well
         val function = modifiers orElse default andThen { c => c.traverse(semDbBuilder); c }
 
+        def convertCtor(term: Term.New): Term.New = {
+          val ctors = term.templ.parents :+ Ctor.Name("vistas.AnyV")
+          term.copy(term.templ.copy(parents = ctors))
+        }
+
+        def instantiationRequiresConversion(term: Term.New): Boolean =
+          if (term.templ.parents.isEmpty) false
+          else {
+            val className = term.templ.parents.head.syntax.takeWhile(_ != '(')
+            db.exists(className)
+          }
+
+        def inheritsVistaTrait(term: Term.New): Boolean =
+          if (term.templ.parents.isEmpty) false
+          else {
+            term.templ.parents.map(_.syntax).contains("vistas.AnyV")
+          }
+
         val Block(nstats) = Block(stats)
           .transform { // first convert all classes into traits
             case classdefn: Defn.Class => Tratify(classdefn)
           }
           .transform {
             // since we converted classes into traits we need to make sure they are instantiable
-            case v: Defn.Val => v.rhs match {
-              case rhs: Term.New =>
-                val nCtors = rhs.templ.parents :+ Ctor.Name("vistas.AnyV")
-                v.copy(rhs = rhs.copy(rhs.templ.copy(parents = nCtors)))
-              case _ => v
-            }
+            case term: Term.New if instantiationRequiresConversion(term) && !inheritsVistaTrait(term) =>
+              convertCtor(term)
+
+            case v: Defn.Val =>
+              v.rhs match {
+                case term: Term.New if !inheritsVistaTrait(term) => v.copy(rhs = convertCtor(term))
+                case _ => v
+              }
 
             // if a term block as an op, we will expand it
             case b: Term.Block if hasOp(b) =>
