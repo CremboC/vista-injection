@@ -18,7 +18,7 @@ class SClass(val body: Defn.Class, val opResult: Boolean = false) {
   val name: String = body.name.value
 
   def methods: Set[Defn.Def] = {
-    val parents       = body.templ.parents.map(_.syntax)
+    val parents       = body.templ.parents.map(_.syntax.takeWhile(_ != '('))
     val parentMethods = parents.flatMap(db.get(_).methods)
 
     (parentMethods ++ members.collect {
