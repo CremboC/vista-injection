@@ -78,7 +78,7 @@ private[operations] object ProductOp {
   }
 
   private def generateTParams(tparams: Seq[Type.Param]): Map[String, Type.Param] =
-    tparams.map(t => (t.name.value, t.copy(name = Type.fresh(s"Tvista")))).toMap
+    tparams.map(t => (t.name.value, t.copy(name = Type.fresh("Tvista")))).toMap
 
   private def extractParams(params: Seq[Term.Param], tparams: Map[String, Type.Param]): Seq[Term.Param] =
     params.map { param =>
@@ -97,7 +97,7 @@ private[operations] object ProductOp {
       case (term, current) => term.copy(args = term.args :+ current.name.asTerm)
     }
 
-  private def insertTypesToTerm(params: Seq[Type.Param], term: Term.Apply): Term.Apply = {
+  private def insertTypesToTerm(params: Seq[Type.Param], term: Term.Apply): Term.Apply =
     if (params.isEmpty) term
     else {
       val q"$name(..$args)" = term
@@ -105,5 +105,4 @@ private[operations] object ProductOp {
 
       q"$name[..$nparams](..$args)"
     }
-  }
 }

@@ -2,7 +2,6 @@ package vista.operations
 
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 
-import scala.collection.immutable.Seq
 import scala.meta.{Defn, Term}
 
 /**
@@ -13,6 +12,15 @@ package object expanders {
 
   trait Expander[A <: OpInput, B <: Op[_]] {
     def expand(input: A): Term.Block
+  }
+
+  object Expander {
+    implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] = ForbidOp.expander
+    implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] = IntersectOp.expander
+    implicit val unionExpander: Expander[OpVistas, UnionOp.Union] = UnionOp.expander
+    implicit val productExpander: Expander[OpVistas, ProductOp.Product] = ProductOp.expander
+
+    def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] = expander
   }
 
   def commonMethods(inp: OpVistas, lsignatures: Set[Defn.Def], rsignatures: Set[Defn.Def]): Set[Defn.Def] = {
@@ -57,11 +65,4 @@ package object expanders {
       m.copy(body = body, mods = m.mods :+ Mod.Override())
     }
   }
-
-  implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] = ForbidOp.expander
-  implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] = IntersectOp.expander
-  implicit val unionExpander: Expander[OpVistas, UnionOp.Union] = UnionOp.expander
-  implicit val productExpander: Expander[OpVistas, ProductOp.Product] = ProductOp.expander
-
-  def expand[A <: OpInput, B <: Op[_]](input: A)(implicit expander: Expander[A, B]): Term.Block = expander.expand(input)
 }
