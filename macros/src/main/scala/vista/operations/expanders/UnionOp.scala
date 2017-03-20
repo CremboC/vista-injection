@@ -25,9 +25,9 @@ private[operations] object UnionOp {
     val lsignatures = db.get(inp.lclass).methods.signatures
     val rsignatures = db.get(inp.rclass).methods.signatures
 
-    val common = commonMethods(inp, lsignatures, rsignatures).toSeq
+    val common = commonMethods(inp, lsignatures, rsignatures)
+      .to[Seq]
       .sortBy(_.name.syntax)
-      .asInstanceOf[Seq[Stat]]
 
     inp.newvar match {
       case None =>

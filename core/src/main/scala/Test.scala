@@ -9,6 +9,7 @@ object Test extends App {
 
   trait F {
     def a(): Int = 5
+    def c(): Int = 2
   }
 
   class G {
@@ -67,8 +68,15 @@ object Test extends App {
 
     println(inter.common)
 
-    val comb: FG = ⨯[F, G](f, g)
-    println(comb.ab()())
+//    val comb: FG = ⨯[F, G](f, g)
+//    println(comb.ab()())
+//
+//    val ff: Ff = ∖[F](b, {
+//      def c(): Int= ???
+//    })
+//
+//    val ffxg: FfxG = ⨯[Ff, G](f, g)
+//    println(ffxg.ab()())
   }
 
   func()
