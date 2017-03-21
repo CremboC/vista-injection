@@ -1,28 +1,28 @@
 package vista.modifiers
 
 import org.scalatest._
-import scala.meta._
+import vista.{ResetsDatabase, treeStructureEquality}
 
-import vista.treeStructureEquality
+import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class TratifyTest extends FlatSpec with Matchers {
+class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
 
   "Tratify" should "convert a parameter-less class into a trait" in {
-    val source = q"class A"
+    val source         = q"class A"
     val expected: Tree = q"trait A"
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
   "Tratify" should "convert a parameter-less class with a body into a trait" in {
-    val source = q"class A { def f: Int = 5 }"
+    val source         = q"class A { def f: Int = 5 }"
     val expected: Tree = q"trait A { def f: Int = 5 }"
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -35,7 +35,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -48,7 +48,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -61,7 +61,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -74,7 +74,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -87,7 +87,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -100,7 +100,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -113,7 +113,7 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
     result should equal(expected)
   }
 
@@ -128,8 +128,63 @@ class TratifyTest extends FlatSpec with Matchers {
           }
         """
 
-    val result = Tratify(source)
+    val result: Tree = Tratify(source)
+    result should equal(expected)
+  }
+
+  "Tratify" should "convert a class constructor into a trait constructor" in {
+    val source = q"class A(val a: String)"
+    val expected: Tree =
+      q"""
+          new A {
+            override val a: String = "hello"
+          }
+        """
+
+
+    val term = q"""new A("hello")"""
+
+    val db = vista.semantics.Database
+    db.add(source)
+
+    val result: Tree = Tratify(term)
+    result should equal(expected)
+  }
+
+  "Tratify" should "convert a complex class constructor into a trait constructor" in {
+    val source = q"class A(val a: String, private var b: Int)"
+    val expected: Tree =
+      q"""
+          new A {
+            override val a: String = "hello"
+            private override var b: Int = 5
+          }
+        """
+    
+    val term = q"""new A("hello", 5)"""
+
+    val db = vista.semantics.Database
+    db.add(source)
+
+    val result: Tree = Tratify(term)
+    result should equal(expected)
+  }
+
+  "Tratify" should "expand a term extending another class correctly" in {
+    val source = q"class A(val a: String)"
+    val expected: Tree =
+      q"""
+          new A with vistas.AnyV {
+            override val a: String = "hello"
+          }
+        """
+
+    val term = q"""new A("hello") with vistas.AnyV"""
+
+    val db = vista.semantics.Database
+    db.add(source)
+
+    val result: Tree = Tratify(term)
     result should equal(expected)
   }
 }
-

@@ -55,7 +55,7 @@ class EnableTest extends WordSpec with Matchers with ResetsDatabase {
              }
           """
 
-        q"class A; class B".collect { case c: Defn.Class => semantics.Database.addClass(c) }
+        q"class A; class B".collect { case c: Defn.Class => semantics.Database.add(c) }
 
         val modifiers = Seq(
           ForbidModifiers.defnValModifier,

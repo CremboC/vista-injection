@@ -1,23 +1,12 @@
-import scala.collection.immutable.Seq
-import scala.meta._
-import scala.meta.contrib._
+package meta
+
+import scala.meta.Tree
+import scala.meta.contrib.{Structurally, Syntactically}
 
 /**
-  * @author Paulius Imbrasas
+  * Created by Crembo on 2017-03-21.
   */
-package object meta {
-
-  /**
-    * Defn.Def extensions.
-    * @param defn
-    */
-  implicit class XDefn(defn: Defn.Def) {
-    def signature: Defn.Def = {
-      // ensures that def g() === def g
-      val paramss = if (defn.paramss.isEmpty) Seq(Seq.empty) else defn.paramss
-      defn.copy(body = Term.Block(Seq.empty), decltpe = None, paramss = paramss)
-    }
-  }
+trait XSet {
 
   /**
     * Extensions for sets of trees.
@@ -25,7 +14,7 @@ package object meta {
     * @param self set of any element which can be considered a tree
     * @tparam A anything that is a tree
     */
-  implicit class XMetaIterable[A <: Tree](self: Set[A]) {
+  implicit class XSet[A <: Tree](self: Set[A]) {
 
     @inline
     def structurally: Set[Structurally[A]] = self.map(new Structurally(_))
@@ -72,16 +61,5 @@ package object meta {
     }
 
     def ><(other: Set[A]): Set[(A, A)] = cross(other)
-  }
-
-  implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
-    @inline
-    def signatures: Set[Defn.Def] = self.map(_.signature).toSet
-  }
-
-  object XCtor {
-    @inline
-    def default: Ctor.Primary =
-      Ctor.Primary(Seq.empty, Ctor.Name("this"), Seq.empty)
   }
 }

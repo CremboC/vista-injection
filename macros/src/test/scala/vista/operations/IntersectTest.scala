@@ -3,9 +3,9 @@ package vista.operations
 import org.scalatest._
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.parsers.OpVistas
+import vista.{ResetsDatabase, semantics}
 
 import scala.meta._
-import vista.{ResetsDatabase, semantics, termBlockStructureEquality, treeStructureEquality}
 
 /**
   * @author Paulius Imbrasas
@@ -34,8 +34,8 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           q"""
              trait AB extends A with B {
                override def a(): Int = super[A].a()
-               override def b(): Int = throw new NoSuchMethodException
-               override def c(): Int = throw new NoSuchMethodException
+               override def b() = throw new NoSuchMethodException
+               override def c() = throw new NoSuchMethodException
                override def d(): Int = super[A].d()
              }
              val ab = new AB {}
@@ -47,7 +47,7 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         val db = semantics.Database
-        classes.collect { case c: Defn.Class => db.addClass(c) }
+        classes.traverse { case c: Defn.Class => db.add(c) }
         val expanded = parseAndExpand[Defn.Val, OpVistas, Intersect](source)
 
         expanded.syntax should equal(expected.syntax)
@@ -77,7 +77,7 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           q"""
              trait AB extends A with B {
                override def a(): Int = super[A].a()
-               override def b(): Int = throw new NoSuchMethodException
+               override def b() = throw new NoSuchMethodException
                override def c(): Int = super[A].c()
                override def d: Int = super[A].d
              }
@@ -90,7 +90,7 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         val db = semantics.Database
-        classes.collect { case c: Defn.Class => db.addClass(c) }
+        classes.traverse { case c: Defn.Class => db.add(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Intersect](source)
         expanded.syntax should equal(expected.syntax)
@@ -118,8 +118,8 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           q"""
              trait AB extends A with B {
                override def a: Int = super[A].a
-               override def b(): Int = throw new NoSuchMethodException
-               override def c(): Int = throw new NoSuchMethodException
+               override def b() = throw new NoSuchMethodException
+               override def c() = throw new NoSuchMethodException
                override def common: Int = super[A].common
                override def d(): Int = super[A].d()
              }
@@ -132,7 +132,7 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         val db = semantics.Database
-        classes.collect { case c: Defn.Class => db.addClass(c) }
+        classes.traverse { case c: Defn.Class => db.add(c) }
         val expanded = parseAndExpand[Defn.Val, OpVistas, Intersect](source)
         expanded.syntax should equal(expected.syntax)
       }

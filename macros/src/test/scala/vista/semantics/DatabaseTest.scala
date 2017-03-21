@@ -1,6 +1,6 @@
 package vista.semantics
 
-import _root_.meta.XMetaIterable
+import meta.xtensions._
 import org.scalatest._
 import vista.{ResetsDatabase, defnStructureEquality}
 
@@ -30,8 +30,8 @@ class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
             """
 
         implicit val db = vista.semantics.Database
-        source.collect {
-          case c: Defn.Class => db.addClass(c)
+        source.traverse {
+          case c: Defn.Class => db.add(c)
         }
 
         db.classes shouldNot be(Set.empty)
@@ -74,8 +74,8 @@ class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
         val expected = q"def parent(): Int = 999"
 
         implicit val db = vista.semantics.Database
-        source.collect {
-          case c: Defn.Class => db.addClass(c)
+        source.traverse {
+          case c: Defn.Class => db.add(c)
         }
 
         db.get("X").methods should contain(expected)

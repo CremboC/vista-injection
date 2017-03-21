@@ -31,7 +31,7 @@ package object expanders {
   def commonMethods(inp: OpVistas,
                     lsignatures: Set[Defn.Def],
                     rsignatures: Set[Defn.Def]): Set[Defn.Def] = {
-    import meta.{XDefn, XMetaIterable}
+    import meta.xtensions._
 
     import scala.meta._
     import scala.meta.contrib._

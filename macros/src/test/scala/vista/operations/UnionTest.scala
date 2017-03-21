@@ -25,7 +25,7 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
               val ab: AB = ∪[A, B](a, b)
             """
 
-        q"""class A; class B""".collect { case c: Defn.Class => semantics.Database.addClass(c) }
+        q"""class A; class B""".traverse { case c: Defn.Class => semantics.Database.add(c) }
 
         val result = parseAndExpand[Defn.Val, OpVistas, Union](source)
         result should equal(expected)
@@ -65,7 +65,7 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
               val ab = new AB {}
             """
 
-        classes.collect { case c: Defn.Class => semantics.Database.addClass(c) }
+        classes.traverse { case c: Defn.Class => semantics.Database.add(c) }
         val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
         expanded.syntax should equal(expected.syntax)
       }

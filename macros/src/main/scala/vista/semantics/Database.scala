@@ -1,5 +1,7 @@
 package vista.semantics
 
+import vista.modifiers.Tratify
+
 import scala.collection.mutable
 import scala.meta._
 
@@ -7,51 +9,58 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object Database {
+
   type ClassName = String
 
   private class Store {
-    private val store = mutable.Map.empty[ClassName, SClass]
+    private val store = mutable.Map.empty[ClassName, Inst]
 
-    def add(clazz: SClass): Unit = {
+    def add(clazz: Inst): Unit = {
       store.put(clazz.name, clazz)
     }
 
-    def get(clazz: ClassName): Option[SClass] = store.get(clazz)
+    def get(clazz: ClassName): Option[Inst] = store.get(clazz)
 
-    def classes: Set[SClass] = store.values.to
+    def classes: Set[Inst] = store.values.to
 
     def clear(): Unit = {
       store.clear()
     }
   }
 
-  private val database: Store = new Store
+  private val store: Store = new Store
 
-  def apply(value: ClassName): SClass = get(value)
+  def apply(value: ClassName): Inst = get(value)
 
-  def addClass(c: Defn.Class): Unit = {
-    database.add(new SClass(c))
+  def add(c: Defn.Class): Unit = {
+    import meta.xtensions.{XDeclVal, XDeclVar}
+
+    val decls = Tratify.ctorToDecls(c).map {
+      case d: Decl.Val => d.asDefnVal
+      case d: Decl.Var => d.asDefnVar
+    }
+    store.add(Inst.Class(c, decls))
   }
 
-  def addClass(t: Defn.Trait, opResult: Boolean = false): Unit = {
-    val c = q"..${t.mods} class ${t.name}[..${t.tparams}] extends ${t.templ}"
-    database.add(new SClass(c, opResult))
+  def add(c: Defn.Trait): Unit = {
+    if (!exists(c.name.value))
+      store.add(Inst.Trait(c))
   }
 
-  def get(value: ClassName): SClass = {
-    database.get(value).getOrElse {
+  def get(value: ClassName): Inst = {
+    store.get(value).getOrElse {
       throw new IllegalStateException(s"Class <$value> not recorded in SemDB.")
     }
   }
 
-  def exists(name: ClassName): Boolean = database.get(name).isDefined
+  def exists(name: ClassName): Boolean = store.get(name).isDefined
 
-  def classes: Set[SClass] = database.classes
+  def classes: Set[Inst] = store.classes
 
   /**
     * Useful for testing purposes
     */
   def clear(): Unit = {
-    database.clear()
+    store.clear()
   }
 }

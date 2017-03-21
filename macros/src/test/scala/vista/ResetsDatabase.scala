@@ -7,7 +7,6 @@ import org.scalatest._
   */
 trait ResetsDatabase extends Suite with BeforeAndAfterEach {
   override def afterEach(): Unit = {
-    val db = semantics.Database
-    db.clear()
+    semantics.Database.clear()
   }
 }

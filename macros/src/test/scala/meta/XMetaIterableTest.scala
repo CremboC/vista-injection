@@ -1,5 +1,6 @@
 package meta
 
+import _root_.meta.xtensions._
 import org.scalatest._
 
 import scala.meta._
@@ -7,7 +8,7 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-class XMetaIterableTest extends FlatSpec with Matchers {
+class XSetTest extends FlatSpec with Matchers {
   "A meta iterable" should "find the intersection correctly" in {
     val s1 = Set(q"def one(): Int = 1", q"def two(): Int = 2")
     val s2 = Set(q"def one(): Int = 1", q"def three(): Int = 3")

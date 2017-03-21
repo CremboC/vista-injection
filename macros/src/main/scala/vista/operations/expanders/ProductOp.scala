@@ -1,6 +1,6 @@
 package vista.operations.expanders
 
-import meta.{XDefnIterable, XMetaIterable}
+import meta.xtensions._
 import vista.operations.parsers.OpVistas
 import vista.semantics
 

@@ -1,13 +1,11 @@
 package vista.operations.expanders
 
+import _root_.meta.xtensions._
 import vista.operations.parsers.OpVistas
 import vista.semantics
 
 import scala.collection.immutable.Seq
 import scala.meta._
-import meta.XDefnIterable
-import meta.XMetaIterable
-
 import scala.meta.contrib._
 
 /**
@@ -41,6 +39,11 @@ private[operations] object IntersectOp {
     // get common signatures in order to avoid "trait X inherits conflicting members"
     val common = commonMethods(inp, lsignatures, rsignatures)
     val result = (forbidden ++ common).to[Seq].sortBy(_.name.syntax)
+
+//    val members = lclazz match {
+//      case c: Inst.Class => Tratify.combineCtorMembers(c)
+//      case _ => Seq.empty
+//    }
 
     inp.newvar match {
       case None => ???

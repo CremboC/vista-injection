@@ -36,7 +36,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         val input = q"val ab: AB = x[A, B](a, b)"
 
         val db = vista.semantics.Database
-        source.collect { case c: Defn.Class => db.addClass(c) }
+        source.traverse { case c: Defn.Class => db.add(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
         expanded should equal(expected)
@@ -66,7 +66,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         val input = q"val ab: AB = x[A, B](a, b)"
 
         val db = vista.semantics.Database
-        source.collect { case c: Defn.Class => db.addClass(c) }
+        source.traverse { case c: Defn.Class => db.add(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
         expanded should equal(expected)
@@ -96,7 +96,7 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         val input = q"val ab: AB = x[A, B](a, b)"
 
         val db = vista.semantics.Database
-        source.collect { case c: Defn.Class => db.addClass(c) }
+        source.traverse { case c: Defn.Class => db.add(c) }
 
         val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
         expanded should equal(expected)

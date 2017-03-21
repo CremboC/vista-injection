@@ -1,5 +1,6 @@
 package vista
 
+import meta.xtensions.XTemplate
 import vista.helpers.OpHelpers._
 import vista.modifiers._
 import vista.operations._
@@ -19,8 +20,8 @@ class enable extends StaticAnnotation {
         // build up SemDB
         val db = semantics.Database
         val semDbBuilder: PartialFunction[Tree, Unit] = {
-          case c: Defn.Class => db.addClass(c)
-          case t: Defn.Trait => db.addClass(t)
+          case c: Defn.Class => db.add(c)
+          case t: Defn.Trait => db.add(t)
         }
 
         defn.traverse(semDbBuilder)
@@ -66,6 +67,8 @@ class enable extends StaticAnnotation {
             term.templ.parents.map(_.syntax).contains("vistas.AnyV")
           }
 
+        def constructingTrait(term: Term.New): Boolean = term.templ.ctorsWithArguments.isDefined
+
         val Block(nstats) = Block(stats)
           .transform { // first convert all classes into traits
             case classdefn: Defn.Class => Tratify(classdefn)
@@ -74,6 +77,9 @@ class enable extends StaticAnnotation {
             // since we converted classes into traits we need to make sure they are instantiable
             case term: Term.New if instantiationRequiresConversion(term) && !inheritsVistaTrait(term) =>
               convertCtor(term)
+
+            case term: Term.New if instantiationRequiresConversion(term) && constructingTrait(term) =>
+              Tratify(term)
 
             case v: Defn.Val =>
               v.rhs match {
