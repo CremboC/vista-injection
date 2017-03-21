@@ -19,11 +19,12 @@ private[operations] object UnionOp {
   val expander: Expander[OpVistas, Union] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
-    val leftTypeCtor  = Ctor.Name(inp.lclass)
-    val rightTypeCtor = Ctor.Name(inp.rclass)
+    val lctor  = Ctor.Name(inp.lclass)
+    val rctor = Ctor.Name(inp.rclass)
 
     val lclazz = db.get(inp.lclass)
     val rclazz = db.get(inp.rclass)
+
     val lsignatures = lclazz.methods.signatures
     val rsignatures = rclazz.methods.signatures
 
@@ -36,7 +37,7 @@ private[operations] object UnionOp {
     inp.newvar match {
       case None =>
         q"""
-            trait $traitName extends $leftTypeCtor with $rightTypeCtor {
+            trait $traitName extends $lctor with $rctor {
               ..$common
             }
             new ${Ctor.Name(traitName.value)} {
@@ -46,7 +47,7 @@ private[operations] object UnionOp {
 
       case Some(nvar) =>
         q"""
-            trait $traitName extends $leftTypeCtor with $rightTypeCtor {
+            trait $traitName extends $lctor with $rctor {
               ..$common
             }
             val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {

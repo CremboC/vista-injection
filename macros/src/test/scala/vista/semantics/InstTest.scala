@@ -4,12 +4,14 @@ import org.scalatest._
 import vista.ResetsDatabase
 
 import scala.meta._
+import _root_.meta.xtensions.XSet
+
 import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
   */
-class SClassTest extends WordSpec with Matchers with ResetsDatabase {
+class InstTest extends WordSpec with Matchers with ResetsDatabase {
   "An SClass" when {
     "given a valid class" should {
       "store it appropriately" in {
@@ -51,8 +53,6 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
         implicit val db = vista.semantics.Database
         source.traverse { case c: Defn.Class => db.add(c) }
 
-        import meta.xtensions.XSet
-
         db.get("A").methods.mintersect(expected) should have(size(2))
       }
 
@@ -74,8 +74,6 @@ class SClassTest extends WordSpec with Matchers with ResetsDatabase {
 
         implicit val db = vista.semantics.Database
         source.traverse { case c: Defn.Class => db.add(c) }
-
-        import meta.xtensions.XSet
 
         db.get("A").methods.mintersect(expected) should have(size(1))
       }
