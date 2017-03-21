@@ -14,7 +14,7 @@ import scala.meta.contrib._
 private[operations] object IntersectOp {
   type Intersect = Op[IntersectOp.type]
 
-  private implicit val db = semantics.Database
+  private val db = semantics.Database
 
   val expander: Expander[OpVistas, Intersect] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
@@ -40,10 +40,7 @@ private[operations] object IntersectOp {
     val common = commonMethods(inp, lsignatures, rsignatures)
     val result = (forbidden ++ common).to[Seq].sortBy(_.name.syntax)
 
-//    val members = lclazz match {
-//      case c: Inst.Class => Tratify.combineCtorMembers(c)
-//      case _ => Seq.empty
-//    }
+    val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
 
     inp.newvar match {
       case None => ???
@@ -52,7 +49,9 @@ private[operations] object IntersectOp {
            trait $traitName extends $leftTypeCtor with $rightTypeCtor {
              ..$result
            }
-           val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {}
+           val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
+             ..$members
+           }
         """
     }
   }

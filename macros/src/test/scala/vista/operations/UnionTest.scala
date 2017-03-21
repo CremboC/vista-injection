@@ -71,6 +71,43 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
       }
     }
 
+    "expanding a parametrised class" should {
+      "work correctly" in {
+        val classes =
+          q"""
+              class A(val a: Seq[Int]) {
+                def a: Int = 1
+                def b: Int = 2
+              }
+
+              class B(f: () => Unit, var o: Int) {
+                def a: Int = 1
+                def c: Int = 3
+              }
+            """
+        val source =
+          q"""
+              val ab: AB = ∪[A, B](a, b)
+            """
+
+        val expected =
+          q"""
+              trait AB extends A with B {
+                override def a: Int = super[A].a
+              }
+              val ab = new AB {
+                override val a: Seq[Int] = a.a
+                override val f: () => Unit = b.f
+                override var o: Int = b.o
+              }
+            """
+
+        classes.traverse { case c: Defn.Class => semantics.Database.add(c) }
+        val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
+        expanded.syntax should equal(expected.syntax)
+      }
+    }
+
     "expanding a wrong union" should {
       "fail when one of the types is missing" in {
         val source = q"val ab: AB = ∪[A](a, b)"

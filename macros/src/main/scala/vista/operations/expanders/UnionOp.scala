@@ -22,12 +22,16 @@ private[operations] object UnionOp {
     val leftTypeCtor  = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
-    val lsignatures = db.get(inp.lclass).methods.signatures
-    val rsignatures = db.get(inp.rclass).methods.signatures
+    val lclazz = db.get(inp.lclass)
+    val rclazz = db.get(inp.rclass)
+    val lsignatures = lclazz.methods.signatures
+    val rsignatures = rclazz.methods.signatures
 
     val common = commonMethods(inp, lsignatures, rsignatures)
       .to[Seq]
       .sortBy(_.name.syntax)
+
+    val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
 
     inp.newvar match {
       case None =>
@@ -35,7 +39,9 @@ private[operations] object UnionOp {
             trait $traitName extends $leftTypeCtor with $rightTypeCtor {
               ..$common
             }
-            new ${Ctor.Name(traitName.value)} {}
+            new ${Ctor.Name(traitName.value)} {
+              ..$members
+            }
         """
 
       case Some(nvar) =>
@@ -43,7 +49,9 @@ private[operations] object UnionOp {
             trait $traitName extends $leftTypeCtor with $rightTypeCtor {
               ..$common
             }
-            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {}
+            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
+              ..$members
+            }
         """
     }
   }

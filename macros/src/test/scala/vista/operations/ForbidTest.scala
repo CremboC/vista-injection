@@ -16,6 +16,7 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
   "Forbid" when {
     "given a val definition" should {
       "create correct classes" in {
+        val clazz = q"class A"
         val expected =
           q"""
           trait Af extends A {
@@ -32,11 +33,14 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
             })
           """
 
+        vista.semantics.Database.add(clazz)
+
         val expanded = parseAndExpand[Defn.Val, OpOverload, Forbid](source)
         expanded should equal(expected)
       }
 
       "handle a complex case" in {
+        val clazz = q"class B"
         val expected =
           q"""
             trait Bf extends B {
@@ -50,12 +54,13 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
              def sayHi(a: Int): Unit = ???
            })
           """
-
+        vista.semantics.Database.add(clazz)
         val expanded = parseAndExpand[Defn.Val, OpOverload, Forbid](source)
         expanded should equal(expected)
       }
 
       "expand in-place without a surrounding block" in {
+        val clazz = q"class A"
         val expected =
           q"""
             def test(): A = {
@@ -81,7 +86,7 @@ class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
                 ab
              }
            """
-
+        vista.semantics.Database.add(clazz)
         val result = input.transform {
           case b: Term.Block if isForbid(b) =>
             val modified = b.stats

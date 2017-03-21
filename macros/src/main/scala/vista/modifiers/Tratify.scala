@@ -51,31 +51,19 @@ object Tratify {
     }
   }
 
-  // FIXME: probably wrong
-  def combineCtorMembers(cls: Inst.Class): Seq[Defn] =
-    cls.ctorMembers.zip(cls.ctor.paramss.flatten).map {
-      case (member, arg) =>
-        val value = s"${arg.syntax}".parse[Term].get
-        member match {
-          case m: Defn.Val => m.copy(mods = m.mods :+ Mod.Override(), rhs = value)
-          case m: Defn.Var => m.copy(mods = m.mods :+ Mod.Override(), rhs = Some(value))
-        }
-    }
-
   def ctorToDecls(cls: Defn.Class): Seq[Decl] =
     if (cls.ctor.paramss.isEmpty) Seq.empty
     else {
       val paramss = cls.ctor.paramss
 
-      def extractDecltpe(p: Term.Param): Type.Name = p.decltpe match {
-        case None =>
-          Type.Name("") // will probably fail here if ever reached.
-        case Some(typ) => Type.Name(typ.syntax)
+      def extractDecltpe(p: Term.Param): Type = p.decltpe match {
+        case None => throw new IllegalArgumentException("Type must be declared for this")
+        case Some(typ) => typ.asInstanceOf[Type]
       }
 
       // convert params into val/var declarations
       // which will be replaced inside the body of the trait
-      val decls = paramss.flatMap(_.map { p =>
+      paramss.flatMap(_.map { p =>
         val decl = p.mods match {
           case Nil =>
             q"val ${p.name.asPat}: ${extractDecltpe(p)}"
@@ -94,8 +82,6 @@ object Tratify {
         }
         decl
       })
-
-      decls
     }
 
   def apply(cls: Defn.Class): Defn.Trait = {

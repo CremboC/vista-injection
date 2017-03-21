@@ -12,7 +12,7 @@ import scala.meta._
 private[operations] object ForbidOp {
   type Forbid = Op[ForbidOp.type]
 
-  private implicit val db = semantics.Database
+  private val db = semantics.Database
 
   val expander: Expander[OpOverload, Forbid] = (inp: OpOverload) => {
     val forbidden = inp.methods
@@ -31,11 +31,16 @@ private[operations] object ForbidOp {
          }
       """
 
+    val lclazz  = db(inp.lclass)
+    val members = ctorMembersDefns(lclazz, inp.lvar)
+
     inp.newvar match {
       case None =>
         q"""
            $traitq
-           new ${Ctor.Name(inp.newtype)} {}
+           new ${Ctor.Name(inp.newtype)} {
+             ..$members
+           }
         """
       case Some(vr) =>
         val vrr = Pat.Var.Term(Term.Name(vr))
@@ -43,7 +48,9 @@ private[operations] object ForbidOp {
           trait ${Type.Name(inp.newtype)} extends $constructor {
             ..$forbidden
           }
-          val $vrr = new ${Ctor.Name(inp.newtype)} {}
+          val $vrr = new ${Ctor.Name(inp.newtype)} {
+            ..$members
+          }
         """
     }
   }

@@ -1,8 +1,10 @@
 package vista.operations
 
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
+import vista.semantics.Inst
 
-import scala.meta.{Defn, Term}
+import scala.collection.immutable.Seq
+import scala.meta._
 
 /**
   * @author Paulius Imbrasas
@@ -72,4 +74,18 @@ package object expanders {
       m.copy(body = body, mods = m.mods :+ Mod.Override())
     }
   }
+
+  def ctorMembersDefns(inst: Inst, varname: String): Seq[Defn] =
+    inst match {
+      case cls: Inst.Class =>
+        cls.ctorMembers.zip(cls.ctor.paramss.flatten).map {
+          case (member, arg) =>
+            val value = s"$varname.${arg.name.value}".parse[Term].get
+            member match {
+              case m: Defn.Val => m.copy(mods = m.mods :+ Mod.Override(), rhs = value)
+              case m: Defn.Var => m.copy(mods = m.mods :+ Mod.Override(), rhs = Some(value))
+            }
+        }
+      case _ => Seq.empty
+    }
 }

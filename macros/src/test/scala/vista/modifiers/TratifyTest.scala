@@ -31,7 +31,7 @@ class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
     val expected: Tree =
       q"""
           trait A {
-            private val a: String
+            val a: String
           }
         """
 
@@ -57,7 +57,7 @@ class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
     val expected: Tree =
       q"""
           trait A {
-            private val a: String
+            val a: String
           }
         """
 
@@ -83,7 +83,7 @@ class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
     val expected: Tree =
       q"""
           trait A {
-            private var a: String
+            var a: String
           }
         """
 
@@ -122,9 +122,9 @@ class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
     val expected: Tree =
       q"""
           trait A {
-            private val a: String
+            val a: String
             val b: Int
-            private var c: Int
+            var c: Int
           }
         """
 
@@ -157,7 +157,7 @@ class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
       q"""
           new A {
             override val a: String = "hello"
-            private override var b: Int = 5
+            override var b: Int = 5
           }
         """
     

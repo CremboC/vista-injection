@@ -102,5 +102,38 @@ class ProductTest extends WordSpec with Matchers with ResetsDatabase {
         expanded should equal(expected)
       }
     }
+
+    "given a parametrised classes" should {
+      "expand correctly" in {
+        val source =
+          q"""
+              class A(p: Int) {
+                def a(v: String): Int = v.toInt
+              }
+
+              class B(p1: Int) {
+                def b(): Int = 3
+              }
+            """
+        val expected =
+          q"""
+              trait AB extends A with B {
+                def ab(v: String)() = (a(v), b())
+              }
+              val ab = new AB {
+                override val p: Int = a.p
+                override val p1: Int = b.p1
+              }
+            """
+
+        val input = q"val ab: AB = x[A, B](a, b)"
+
+        val db = vista.semantics.Database
+        source.traverse { case c: Defn.Class => db.add(c) }
+
+        val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
+        expanded should equal(expected)
+      }
+    }
   }
 }

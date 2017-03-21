@@ -136,6 +136,41 @@ class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
         val expanded = parseAndExpand[Defn.Val, OpVistas, Intersect](source)
         expanded.syntax should equal(expected.syntax)
       }
+
+      "expand correctly with parametrised classes" in {
+        val classes =
+          q"""
+              class A(b: Int) {
+                def a: Int = 1
+              }
+
+              class B(n: Int) {
+                def a: Int = 1
+              }
+          """
+
+        val expected =
+          q"""
+              trait AB extends A with B {
+                override def a: Int = super[A].a
+              }
+              val ab = new AB {
+                override val b: Int = a.b
+                override val n: Int = b.n
+              }
+           """
+
+        val db = semantics.Database
+        classes.traverse { case c: Defn.Class => db.add(c) }
+
+        val source =
+          q"""
+            val ab: AB = ∩[A, B](a, b)
+          """
+
+        val expanded = parseAndExpand[Defn.Val, OpVistas, Intersect](source)
+        expanded.syntax should equal(expected.syntax)
+      }
     }
   }
 }

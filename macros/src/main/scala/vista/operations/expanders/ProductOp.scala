@@ -17,8 +17,11 @@ private[operations] object ProductOp {
   private implicit val db = semantics.Database
 
   val expander: Expander[OpVistas, Product] = (inp: OpVistas) => {
-    val lsignatures = db(inp.lclass).methods.signatures
-    val rsignatures = db(inp.rclass).methods.signatures
+    val lclazz = db(inp.lclass)
+    val rclazz = db(inp.rclass)
+
+    val lsignatures = lclazz.methods.signatures
+    val rsignatures = rclazz.methods.signatures
 
     val pairs = lsignatures >< rsignatures
 
@@ -63,6 +66,8 @@ private[operations] object ProductOp {
     val leftTypeCtor  = Ctor.Name(inp.lclass)
     val rightTypeCtor = Ctor.Name(inp.rclass)
 
+    val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
+
     // TODO: common methods?
 
     inp.newvar match {
@@ -72,7 +77,9 @@ private[operations] object ProductOp {
             trait $traitName extends $leftTypeCtor with $rightTypeCtor {
               ..$pairDefs
             }
-            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {}
+            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
+              ..$members
+            }
           """
     }
   }
