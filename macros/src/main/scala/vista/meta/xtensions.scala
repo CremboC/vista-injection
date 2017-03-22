@@ -1,4 +1,4 @@
-package meta
+package vista.meta
 
 /**
   * Created by Crembo on 2017-03-21.

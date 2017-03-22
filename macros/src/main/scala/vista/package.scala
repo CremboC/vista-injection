@@ -25,6 +25,15 @@ package object vista {
         }
     }
 
+  implicit val traitStructureEquality =
+    new Equality[Defn.Trait] {
+      def areEqual(a: Defn.Trait, b: Any): Boolean =
+        b match {
+          case bt: Defn.Trait => a.isEqual(bt)
+          case _            => false
+        }
+    }
+
   implicit val termBlockStructureEquality =
     new Equality[Term.Block] {
       def areEqual(a: Term.Block, b: Any): Boolean =

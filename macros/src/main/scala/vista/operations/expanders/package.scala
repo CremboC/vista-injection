@@ -1,15 +1,19 @@
 package vista.operations
 
+import vista.meta.xtensions._
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
+import vista.semantics.Database.ClassName
 import vista.semantics.Inst
 
 import scala.collection.immutable.Seq
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
   */
 package object expanders {
+
   sealed trait Op[A]
 
   trait Expander[A <: OpInput, B <: Op[_]] {
@@ -30,48 +34,63 @@ package object expanders {
       expander
   }
 
-  def commonMethods(inp: OpVistas,
-                    lsignatures: Set[Defn.Def],
-                    rsignatures: Set[Defn.Def]): Set[Defn.Def] = {
-    import meta.xtensions._
-
-    import scala.meta._
-    import scala.meta.contrib._
-
-    /**
-      * Theoretically the user should pass in normalised sets of signatures, but this is clearly not enforced.
-      * Assuming they are normalised, we say def g() === def g. Unfortunately this is only true
-      * for signatures. When the methods are invoked, this is no longer true.
-      * This is an issue when generating the common methods between two vistas.
-      * In order to solve this, the original signatures stored in the database are restored
-      * which allow us to distinguish def g() and def g
-      *
-      * This is probably a bad idea as in theory this method could be used for vista \op/ visibilities
-      * as well, but this particular code prohibits this from happening, since sets of visibilities (which are not classes)
-      * are obviously not stored in the database.
-      */
+  /**
+    * Merges common methods, the correct one is executed
+    *
+    * This is needed due to:
+    * {{{
+    *   trait A {
+    *     def a: Int
+    *   }
+    *
+    *   trait B {
+    *     def a: Int
+    *   }
+    *
+    *   trait AB extends A with B {
+    *     override def a: Int = super[A].a
+    *   }
+    * }}}
+    * When inhering a common method, its source must be declared
+    *
+    * @param inp
+    * @return
+    */
+  def commonMethods(inp: OpVistas): Set[Defn.Def] = {
     val db = vista.semantics.Database
-    val map =
-      db.get(inp.lclass).methods.map(m => m.signature.syntax   -> m).toMap ++
-        db.get(inp.rclass).methods.map(m => m.signature.syntax -> m).toMap
 
-    lsignatures.mintersect(rsignatures).map { mn =>
-      val m       = map(mn.signature.syntax)
-      val tparams = m.tparams.map(typ => targ"${typ.name.asType}")
-      val paramss = m.paramss.map(_.map(arg => arg"${arg.name.asTerm}"))
+    def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
+      db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
 
-      // FIXME: there must be a better way...
-      val body = if (tparams.nonEmpty && paramss.nonEmpty) {
-        q"super[${Type.Name(inp.lclass)}].${m.name}[..$tparams](...$paramss)"
-      } else if (tparams.nonEmpty) {
-        q"super[${Type.Name(inp.lclass)}].${m.name}[..$tparams]"
-      } else if (paramss.nonEmpty) {
-        q"super[${Type.Name(inp.lclass)}].${m.name}(...$paramss)"
-      } else {
-        q"super[${Type.Name(inp.lclass)}].${m.name}"
-      }
+    val map = visibilitiesMap(inp.rclass) ++ visibilitiesMap(inp.lclass)
 
-      m.copy(body = body, mods = m.mods :+ Mod.Override())
+    val lvisibilities = db(inp.lclass).visibilities.signatures
+    val rvisibilities = db(inp.rclass).visibilities.signatures
+
+    // specialised version of superDefBody
+    val spec = superDefBody(_: ClassName, _: Defn.Def, map)
+
+    lvisibilities mintersect rvisibilities map { m =>
+      val body = spec(inp.lclass, m)
+      map(m.signature.syntax).copy(mods = (m.mods :+ Mod.Override()).toSet.to, body = body)
+    }
+  }
+
+  def superDefBody(className: ClassName, mn: Defn.Def, map: Map[ClassName, Defn.Def]): Term = {
+    val m = map(mn.signature.syntax)
+
+    val tparams = m.tparams.map(typ => targ"${typ.name.asType}")
+    val paramss = m.paramss.map(_.map(arg => arg"${arg.name.asTerm}"))
+
+    // FIXME: there must be a better way...
+    if (tparams.nonEmpty && paramss.nonEmpty) {
+      q"super[${Type.Name(className)}].${m.name}[..$tparams](...$paramss)"
+    } else if (tparams.nonEmpty) {
+      q"super[${Type.Name(className)}].${m.name}[..$tparams]"
+    } else if (paramss.nonEmpty) {
+      q"super[${Type.Name(className)}].${m.name}(...$paramss)"
+    } else {
+      q"super[${Type.Name(className)}].${m.name}"
     }
   }
 
@@ -82,8 +101,9 @@ package object expanders {
           case (member, arg) =>
             val value = s"$varname.${arg.name.value}".parse[Term].get
             member match {
-              case m: Defn.Val => m.copy(mods = m.mods :+ Mod.Override(), rhs = value)
-              case m: Defn.Var => m.copy(mods = m.mods :+ Mod.Override(), rhs = Some(value))
+              case m: Defn.Val => m.copy(mods = (m.mods :+ Mod.Override()).toSet.to, rhs = value)
+              case m: Defn.Var =>
+                m.copy(mods = (m.mods :+ Mod.Override()).toSet.to, rhs = Some(value))
             }
         }
       case _ => Seq.empty

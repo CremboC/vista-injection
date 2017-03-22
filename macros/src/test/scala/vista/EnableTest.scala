@@ -1,6 +1,5 @@
 package vista
 
-import org.scalatest._
 import vista.helpers.OpHelpers.hasOp
 import vista.operations.{ForbidModifiers, UnionModifiers}
 
@@ -10,7 +9,7 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-class EnableTest extends WordSpec with Matchers with ResetsDatabase {
+class EnableTest extends WordSpecBase {
 
   "Enable vistas" when {
     "Given a mix of operations" should {

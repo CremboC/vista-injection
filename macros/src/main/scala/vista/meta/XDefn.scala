@@ -1,4 +1,6 @@
-package meta
+package vista.meta
+
+import vista.util.EqualitySet
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -37,10 +39,12 @@ trait XDefn {
   }
 
   implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
-    @inline
-    def signatures: Set[Defn.Def] = self.map(_.signature).to
+    import vista.util.Equalities.defnDefEquality
 
     @inline
-    def normalized: Set[Defn.Def] = self.map(_.normalize).to
+    def signatures: Set[Defn.Def] = EqualitySet(self.map(_.signature))
+
+    @inline
+    def normalized: Set[Defn.Def] = EqualitySet(self.map(_.normalize))
   }
 }

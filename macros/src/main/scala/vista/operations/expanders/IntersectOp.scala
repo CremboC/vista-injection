@@ -1,6 +1,6 @@
 package vista.operations.expanders
 
-import _root_.meta.xtensions._
+import vista.meta.xtensions._
 import vista.operations.parsers.OpVistas
 import vista.semantics
 
@@ -25,8 +25,8 @@ private[operations] object IntersectOp {
     val lclazz = db(inp.lclass)
     val rclazz = db(inp.rclass)
 
-    val lsignatures = lclazz.methods.signatures
-    val rsignatures = rclazz.methods.signatures
+    val lsignatures = lclazz.visibilities.signatures
+    val rsignatures = rclazz.visibilities.signatures
 
     // we're only overriding the methods that are no longer allowed
     // mintersect will return a list of methods which are allowed, but
@@ -37,7 +37,7 @@ private[operations] object IntersectOp {
     }
 
     // get common signatures in order to avoid "trait X inherits conflicting members"
-    val common = commonMethods(inp, lsignatures, rsignatures)
+    val common = commonMethods(inp)
     val result = (forbidden ++ common).to[Seq].sortBy(_.name.syntax)
 
     val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)

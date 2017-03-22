@@ -1,6 +1,6 @@
 package vista.operations.expanders
 
-import meta.xtensions._
+import vista.meta.xtensions._
 import vista.operations.parsers.OpVistas
 import vista.semantics
 
@@ -14,7 +14,7 @@ import scala.meta.contrib._
 private[operations] object ProductOp {
   type Product = Op[ProductOp.type]
 
-  private implicit val db = semantics.Database
+  private val db = semantics.Database
 
   val expander: Expander[OpVistas, Product] = (inp: OpVistas) => {
     val lclazz = db(inp.lclass)

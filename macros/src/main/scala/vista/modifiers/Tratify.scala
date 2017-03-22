@@ -1,6 +1,6 @@
 package vista.modifiers
 
-import meta.xtensions._
+import vista.meta.xtensions._
 import vista.semantics
 import vista.semantics.Inst
 

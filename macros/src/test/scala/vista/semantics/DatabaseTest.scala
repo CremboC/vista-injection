@@ -1,15 +1,14 @@
 package vista.semantics
 
-import meta.xtensions._
-import org.scalatest._
-import vista.{ResetsDatabase, defnStructureEquality}
+import vista.meta.xtensions._
+import vista.{WordSpecBase, defnStructureEquality}
 
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class DatabaseTest extends WordSpec with Matchers with ResetsDatabase {
+class DatabaseTest extends WordSpecBase {
 
   "A database" when {
     "parsing multiple classes" should {

@@ -1,18 +1,17 @@
 package vista.semantics
 
-import org.scalatest._
-import vista.ResetsDatabase
+import vista.WordSpecBase
+import vista.meta.xtensions.XSet
 
 import scala.meta._
-import _root_.meta.xtensions.XSet
-
 import scala.meta.contrib._
+import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
   */
-class InstTest extends WordSpec with Matchers with ResetsDatabase {
-  "An SClass" when {
+class InstTest extends WordSpecBase {
+  "An Inst.Class" when {
     "given a valid class" should {
       "store it appropriately" in {
         val c =
@@ -23,8 +22,6 @@ class InstTest extends WordSpec with Matchers with ResetsDatabase {
               }
             }
           """
-
-        val db     = vista.semantics.Database
         val sclass = Inst.Class(c)
         sclass.methods shouldNot be(Seq.empty)
 
@@ -49,10 +46,7 @@ class InstTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         val expected = Set(q"def b(): Int = 5", q"def a(): Int = { 5 + 5 }")
-
-        implicit val db = vista.semantics.Database
-        source.traverse { case c: Defn.Class => db.add(c) }
-
+        source |> addInsts
         db.get("A").methods.mintersect(expected) should have(size(2))
       }
 
@@ -71,10 +65,7 @@ class InstTest extends WordSpec with Matchers with ResetsDatabase {
           """
 
         val expected = Set(q"def a(): Int = { 5 + 5 }")
-
-        implicit val db = vista.semantics.Database
-        source.traverse { case c: Defn.Class => db.add(c) }
-
+        source |> addInsts
         db.get("A").methods.mintersect(expected) should have(size(1))
       }
     }
@@ -90,8 +81,7 @@ class InstTest extends WordSpec with Matchers with ResetsDatabase {
           }
         """
 
-        implicit val db = vista.semantics.Database
-        val sclass      = Inst.Class(c)
+        val sclass = Inst.Class(c)
 
         sclass.methods shouldNot be(Seq.empty)
         val expected = q"def a(p1: Int, p2: Double): Int = { 5 + 5 }"

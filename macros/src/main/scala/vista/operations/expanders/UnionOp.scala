@@ -1,8 +1,11 @@
 package vista.operations.expanders
 
-import meta.xtensions.XDefnIterable
+import vista.meta.xtensions.XDefn
 import vista.operations.parsers.OpVistas
 import vista.semantics
+import vista.semantics.Database.ClassName
+import vista.util.Equalities.defnDefEquality
+import vista.util.EqualitySet
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -14,31 +17,44 @@ import scala.meta.contrib._
 private[operations] object UnionOp {
   type Union = Op[UnionOp.type]
 
-  private implicit val db = semantics.Database
+  private val db = semantics.Database
 
   val expander: Expander[OpVistas, Union] = (inp: OpVistas) => {
     val traitName = Type.Name(inp.newtype)
 
-    val lctor  = Ctor.Name(inp.lclass)
-    val rctor = Ctor.Name(inp.rclass)
-
     val lclazz = db.get(inp.lclass)
     val rclazz = db.get(inp.rclass)
 
-    val lsignatures = lclazz.methods.signatures
-    val rsignatures = rclazz.methods.signatures
+    val common = commonMethods(inp).to[Seq]
 
-    val common = commonMethods(inp, lsignatures, rsignatures)
-      .to[Seq]
-      .sortBy(_.name.syntax)
+    val methods = {
+      def methodsFromSide(methods: Set[Defn.Def], className: ClassName): Set[Defn.Def] = {
+        def visibilitiesSignatureToMethod(className: ClassName): Map[ClassName, Defn.Def] =
+          db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
+
+        val map = visibilitiesSignatureToMethod(className)
+        val spec = superDefBody(_: ClassName, _: Defn.Def, map)
+        methods.map { m =>
+          val body = spec(className, m)
+          m.copy(mods = (m.mods :+ Mod.Override()).toSet.to, body = body)
+        }
+      }
+
+      val commonBySignature = EqualitySet(common: _*)
+      val lmethods = lclazz.visibilities.filterNot(commonBySignature.contains)
+      val rmethods = rclazz.visibilities.filterNot(commonBySignature.contains)
+      methodsFromSide(lmethods, inp.lclass) ++ methodsFromSide(rmethods, inp.rclass)
+    }
+
+    val result = (common ++ methods).sortBy(_.name.syntax)
 
     val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
 
     inp.newvar match {
       case None =>
         q"""
-            trait $traitName extends $lctor with $rctor {
-              ..$common
+            trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
+              ..$result
             }
             new ${Ctor.Name(traitName.value)} {
               ..$members
@@ -47,8 +63,8 @@ private[operations] object UnionOp {
 
       case Some(nvar) =>
         q"""
-            trait $traitName extends $lctor with $rctor {
-              ..$common
+            trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
+              ..$result
             }
             val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
               ..$members

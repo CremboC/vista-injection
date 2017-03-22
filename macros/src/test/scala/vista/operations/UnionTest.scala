@@ -1,16 +1,16 @@
 package vista.operations
 
-import org.scalatest._
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.OpVistas
-import vista.{ResetsDatabase, semantics, termBlockStructureEquality}
+import vista.{WordSpecBase, termBlockStructureEquality}
 
 import scala.meta._
+import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
   */
-class UnionTest extends WordSpec with Matchers with ResetsDatabase {
+class UnionTest extends WordSpecBase {
 
   "A union" when {
     "expanding a simple case" should {
@@ -25,7 +25,7 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
               val ab: AB = ∪[A, B](a, b)
             """
 
-        q"""class A; class B""".traverse { case c: Defn.Class => semantics.Database.add(c) }
+        q"""class A; class B""" |> addInsts
 
         val result = parseAndExpand[Defn.Val, OpVistas, Union](source)
         result should equal(expected)
@@ -57,15 +57,17 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
 
         val expected =
           q"""
-              trait AB extends A with B {
-                override def a: Int = super[A].a
-                override def g[T]: Int = super[A].g[T]
-                override def o(p: String): String = super[A].o(p)
-              }
-              val ab = new AB {}
-            """
+            trait AB extends A with B {
+              override def a: Int = super[A].a
+              override def b: Int = super[A].b
+              override def c: Int = super[B].c
+              override def g[T]: Int = super[A].g[T]
+              override def o(p: String): String = super[A].o(p)
+            }
+            val ab = new AB {}
+          """
 
-        classes.traverse { case c: Defn.Class => semantics.Database.add(c) }
+        classes |> addInsts
         val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
         expanded.syntax should equal(expected.syntax)
       }
@@ -94,6 +96,8 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
           q"""
               trait AB extends A with B {
                 override def a: Int = super[A].a
+                override def b: Int = super[A].b
+                override def c: Int = super[B].c
               }
               val ab = new AB {
                 override val a: Seq[Int] = a.a
@@ -102,9 +106,45 @@ class UnionTest extends WordSpec with Matchers with ResetsDatabase {
               }
             """
 
-        classes.traverse { case c: Defn.Class => semantics.Database.add(c) }
+        classes |> addInsts
         val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
         expanded.syntax should equal(expected.syntax)
+      }
+    }
+
+    "expanding a hierarchy of classes" should {
+      "expand correct" in {
+        val source =
+          q"""
+            class AB {
+              def a: Int = 1
+              def b: Int = 2
+            }
+
+            trait Aa extends AB {
+              override def b: Int = throw new NoSuchMethodException
+            }
+
+            trait Ab extends AB {
+              override def a: Int = throw new NoSuchMethodException
+            }
+          """
+
+        source |> addInsts
+
+        val op = q"val a: A = ∪[Aa, Ab](aa, bb)"
+        val expanded = parseAndExpand[Defn.Val, OpVistas, Union](op).collect {
+          case t: Defn.Trait => t
+        }.head
+
+        expanded.syntax should equal {
+          q"""
+              trait A extends Aa with Ab {
+                override def a: Int = super[Aa].a
+                override def b: Int = super[Ab].b
+              }
+          """.syntax
+        }
       }
     }
 

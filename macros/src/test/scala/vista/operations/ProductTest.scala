@@ -1,16 +1,15 @@
 package vista.operations
 
-import org.scalatest._
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.parsers.OpVistas
-import vista.{ResetsDatabase, termBlockStructureEquality}
+import vista.{WordSpecBase, termBlockStructureEquality}
 
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class ProductTest extends WordSpec with Matchers with ResetsDatabase {
+class ProductTest extends WordSpecBase {
 
   "Product" when {
     "given two simple class" should {

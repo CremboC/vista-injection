@@ -1,14 +1,13 @@
 package vista.modifiers
 
-import org.scalatest._
-import vista.{ResetsDatabase, treeStructureEquality}
+import vista.{FlatSpecBase, treeStructureEquality}
 
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class TratifyTest extends FlatSpec with Matchers with ResetsDatabase {
+class TratifyTest extends FlatSpecBase {
 
   "Tratify" should "convert a parameter-less class into a trait" in {
     val source         = q"class A"

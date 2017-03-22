@@ -33,7 +33,7 @@ object Database {
   def apply(value: ClassName): Inst = get(value)
 
   def add(c: Defn.Class): Unit = {
-    import meta.xtensions.{XDeclVal, XDeclVar}
+    import vista.meta.xtensions.{XDeclVal, XDeclVar}
 
     val decls = Tratify.ctorToDecls(c).map {
       case d: Decl.Val => d.asDefnVal

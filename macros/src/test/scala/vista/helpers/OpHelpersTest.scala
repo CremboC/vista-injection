@@ -1,13 +1,13 @@
 package vista.helpers
 
-import org.scalatest._
+import vista.WordSpecBase
 
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class OpHelpersTest extends WordSpec with Matchers {
+class OpHelpersTest extends WordSpecBase {
 
   "A union symbol" when {
     "written as ∪" should {

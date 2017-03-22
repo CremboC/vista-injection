@@ -1,4 +1,4 @@
-package util
+package vista.util
 
 import org.scalactic.Equality
 
@@ -23,9 +23,26 @@ trait EqualitySet[T] extends Set[T] with SetLike[T, EqualitySet[T]] { outer =>
 
   /** we need to implements those 4 methods */
   def contains(t: T): Boolean = set.exists(equality.areEqual(_, t))
-  def +(t: T): EqualitySet[T] = { if (!contains(t)) set += t; this }
-  def -(t: T): EqualitySet[T] = { set -= t; this }
-  def iterator: Iterator[T]   = set.iterator
+
+  def +(t: T): EqualitySet[T] = {
+    if (contains(t)) {
+      val (_, index) = set.zipWithIndex.find {
+        case (el, _) => equality.areEqual(el, t)
+      }.get
+      set.remove(index)
+      set += t
+    } else {
+      set += t
+    }
+    this
+  }
+
+  def -(t: T): EqualitySet[T] = {
+    set -= t
+    this
+  }
+
+  def iterator: Iterator[T] = set.iterator
 
   /** we must be able to provide an empty set with the proper equality definition */
   override def empty = new EqualitySet[T] {
@@ -65,7 +82,7 @@ object EqualitySet {
   }
 
   /** @return an EqualitySet for a type T having an Equals instance */
-  def apply[T : Equality](ts: T*) = {
+  def apply[T: Equality](ts: T*) = {
     var set = new EqualitySet[T] {
       def equality: Equality[T] = implicitly[Equality[T]]
     }.empty
@@ -76,7 +93,7 @@ object EqualitySet {
   }
 
   /** @return an EqualitySet for a type T having an Equals instance */
-  def apply[T : Equality](ts: Iterable[T]) = {
+  def apply[T: Equality](ts: Iterable[T]) = {
     var set = new EqualitySet[T] {
       def equality: Equality[T] = implicitly[Equality[T]]
     }.empty

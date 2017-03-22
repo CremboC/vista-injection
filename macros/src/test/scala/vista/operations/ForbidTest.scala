@@ -1,10 +1,9 @@
 package vista.operations
 
-import org.scalatest._
 import vista.helpers.OpHelpers.isForbid
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.parsers.OpOverload
-import vista.{ResetsDatabase, termBlockStructureEquality, treeStructureEquality}
+import vista.{WordSpecBase, termBlockStructureEquality, treeStructureEquality}
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -12,7 +11,7 @@ import scala.meta._
 /**
   * @author Paulius Imbrasas
   */
-class ForbidTest extends WordSpec with Matchers with ResetsDatabase {
+class ForbidTest extends WordSpecBase {
   "Forbid" when {
     "given a val definition" should {
       "create correct classes" in {

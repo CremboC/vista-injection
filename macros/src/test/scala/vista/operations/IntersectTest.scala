@@ -1,16 +1,15 @@
 package vista.operations
 
-import org.scalatest._
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.parsers.OpVistas
-import vista.{ResetsDatabase, semantics}
+import vista.{WordSpecBase, semantics}
 
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
-class IntersectTest extends WordSpec with Matchers with ResetsDatabase {
+class IntersectTest extends WordSpecBase {
 
   "Intersect" when {
     "given a val definition" should {
