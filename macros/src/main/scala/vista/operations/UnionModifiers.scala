@@ -10,7 +10,7 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object UnionModifiers {
-  val defnValModifier: PartialFunction[Tree, Term.Block] = {
+  val valVistasModifier: PartialFunction[Tree, Term.Block] = {
     case defn: Defn.Val if OpHelpers.isUnion(defn) =>
       parseAndExpand[Defn.Val, OpVistas, Union](defn)
   }

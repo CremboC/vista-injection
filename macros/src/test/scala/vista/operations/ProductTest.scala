@@ -1,8 +1,8 @@
 package vista.operations
 
+import vista.WordSpecBase
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.parsers.OpVistas
-import vista.{WordSpecBase, termBlockStructureEquality}
 
 import scala.meta._
 

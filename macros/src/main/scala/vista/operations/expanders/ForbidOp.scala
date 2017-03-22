@@ -1,10 +1,13 @@
 package vista.operations.expanders
 
-import vista.operations.parsers.OpOverload
+import vista.meta.xtensions._
+import vista.operations.parsers.{OpOverload, OpVistas}
 import vista.semantics
+import vista.semantics.Database.ClassName
 
 import scala.collection.immutable.Seq
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * Internal API of Forbid
@@ -14,22 +17,55 @@ private[operations] object ForbidOp {
 
   private val db = semantics.Database
 
+  val vistasExpander: Expander[OpVistas, Forbid] = (inp: OpVistas) => {
+    val lclazz = db(inp.lclass)
+    val rclazz = db(inp.rclass)
+
+    val lmethods = lclazz.visibilities
+    val rmethods = rclazz.visibilities
+
+    val allowed    = lmethods.signatures \ rmethods.signatures
+    val disallowed = (lmethods ++ rmethods).signatures \ allowed
+
+    val forbiddenDefns = {
+      def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
+        db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
+
+      val map = visibilitiesMap(inp.lclass) ++ visibilitiesMap(inp.rclass)
+
+      disallowed.map { defn =>
+        val defnn = map(defn.syntax)
+        defnn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
+                   body = q"throw new NoSuchMethodException")
+      }
+    }
+
+    val members = ctorMembersDefns(lclazz, inp.lvar)
+
+    inp.newvar match {
+      case None => ???
+      case Some(nvar) =>
+        q"""
+          trait ${Type.Name(inp.newtype)} extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(
+          inp.rclass)} {
+            ..${forbiddenDefns.toSeq.asInstanceOf[Seq[Stat]]}
+          }
+          val ${Term.Name(nvar).asPat} = new ${Ctor.Name(inp.newtype)} {
+            ..$members
+          }
+        """
+    }
+  }
+
   val expander: Expander[OpOverload, Forbid] = (inp: OpOverload) => {
     val forbidden = inp.methods
-      .map {
-        case Defn.Def(mods, name, gparams, paramss, tpeopt, _) =>
-          val nmods = mods :+ Mod.Override()
-          q"..$nmods def $name[..$gparams](...$paramss): ${tpeopt.getOrElse(Type.Name("None"))} = throw new NoSuchMethodException"
+      .map { defn =>
+        defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
+                  body = q"throw new NoSuchMethodException")
       }
       .asInstanceOf[Seq[Stat]]
 
     val constructor = Ctor.Name(inp.lclass)
-    val traitq =
-      q"""
-         trait ${Type.Name(inp.newtype)} extends $constructor {
-           ..$forbidden
-         }
-      """
 
     val lclazz  = db(inp.lclass)
     val members = ctorMembersDefns(lclazz, inp.lvar)
@@ -37,7 +73,9 @@ private[operations] object ForbidOp {
     inp.newvar match {
       case None =>
         q"""
-           $traitq
+           trait ${Type.Name(inp.newtype)} extends $constructor {
+             ..$forbidden
+           }
            new ${Ctor.Name(inp.newtype)} {
              ..$members
            }

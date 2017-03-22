@@ -57,8 +57,8 @@ class EnableTest extends WordSpecBase {
         q"class A; class B".collect { case c: Defn.Class => semantics.Database.add(c) }
 
         val modifiers = Seq(
-          ForbidModifiers.defnValModifier,
-          UnionModifiers.defnValModifier
+          ForbidModifiers.valOverloadModifier,
+          UnionModifiers.valVistasModifier
         ).reduce(_ orElse _)
 
         val result = source.transform {

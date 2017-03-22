@@ -4,7 +4,7 @@ import vista.meta.xtensions.XDefn
 import vista.operations.parsers.OpVistas
 import vista.semantics
 import vista.semantics.Database.ClassName
-import vista.util.Equalities.defnDefEquality
+import vista.util.Equalities.defEquality
 import vista.util.EqualitySet
 
 import scala.collection.immutable.Seq
@@ -29,10 +29,7 @@ private[operations] object UnionOp {
 
     val methods = {
       def methodsFromSide(methods: Set[Defn.Def], className: ClassName): Set[Defn.Def] = {
-        def visibilitiesSignatureToMethod(className: ClassName): Map[ClassName, Defn.Def] =
-          db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
-
-        val map = visibilitiesSignatureToMethod(className)
+        val map = db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
         val spec = superDefBody(_: ClassName, _: Defn.Def, map)
         methods.map { m =>
           val body = spec(className, m)
@@ -40,7 +37,7 @@ private[operations] object UnionOp {
         }
       }
 
-      val commonBySignature = EqualitySet(common: _*)
+      val commonBySignature = EqualitySet(common)
       val lmethods = lclazz.visibilities.filterNot(commonBySignature.contains)
       val rmethods = rclazz.visibilities.filterNot(commonBySignature.contains)
       methodsFromSide(lmethods, inp.lclass) ++ methodsFromSide(rmethods, inp.rclass)

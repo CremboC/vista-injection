@@ -23,10 +23,15 @@ package object expanders {
   object Expander {
     implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] =
       ForbidOp.expander
+    implicit val forbidVistaExpander: Expander[OpVistas, ForbidOp.Forbid] =
+      ForbidOp.vistasExpander
+
     implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] =
       IntersectOp.expander
+
     implicit val unionExpander: Expander[OpVistas, UnionOp.Union] =
       UnionOp.expander
+
     implicit val productExpander: Expander[OpVistas, ProductOp.Product] =
       ProductOp.expander
 

@@ -1,7 +1,7 @@
 package vista.semantics
 
+import vista.WordSpecBase
 import vista.meta.xtensions._
-import vista.{WordSpecBase, defnStructureEquality}
 
 import scala.meta._
 

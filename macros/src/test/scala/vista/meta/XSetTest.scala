@@ -1,7 +1,7 @@
-package meta
+package vista.meta
 
-import _root_.meta.xtensions._
 import org.scalatest._
+import vista.meta.xtensions._
 
 import scala.meta._
 
@@ -9,7 +9,7 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 class XSetTest extends FlatSpec with Matchers {
-  "A meta iterable" should "find the intersection correctly" in {
+  "A vista.meta iterable" should "find the intersection correctly" in {
     val s1 = Set(q"def one(): Int = 1", q"def two(): Int = 2")
     val s2 = Set(q"def one(): Int = 1", q"def three(): Int = 3")
 
@@ -19,7 +19,7 @@ class XSetTest extends FlatSpec with Matchers {
       ))
   }
 
-  "A meta iterable" should "find the disjoint union correctly" in {
+  "A vista.meta iterable" should "find the disjoint union correctly" in {
     val s1 =
       q"""
           def a: String = "a"

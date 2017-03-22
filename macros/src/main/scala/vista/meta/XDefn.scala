@@ -39,7 +39,7 @@ trait XDefn {
   }
 
   implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
-    import vista.util.Equalities.defnDefEquality
+    import vista.util.Equalities.defEquality
 
     @inline
     def signatures: Set[Defn.Def] = EqualitySet(self.map(_.signature))

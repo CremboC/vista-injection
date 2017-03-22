@@ -1,6 +1,6 @@
 package vista.semantics
 
-import vista.util.Equalities.defnDefEquality
+import vista.util.Equalities.defEquality
 import vista.util.EqualitySet
 
 import scala.collection.immutable.Seq
@@ -12,11 +12,12 @@ sealed trait Inst {
 
   protected val db = vista.semantics.Database
 
-  protected def members: Seq[Defn] = body.templ.collect[Defn] {
-    case defn: Defn.Def => defn
-    case valf: Defn.Val => valf
-    case varf: Defn.Var => varf
-  }
+  protected def members: Seq[Defn] =
+    body.templ.collect[Defn] {
+      case defn: Defn.Def => defn
+      case valf: Defn.Val => valf
+      case varf: Defn.Var => varf
+    }
 
   def name: String = body.name.value
 
@@ -34,6 +35,11 @@ sealed trait Inst {
 
   def visibilities: Set[Defn.Def] =
     methods.filterNot { d =>
+      d.body isEqual q"throw new NoSuchMethodException"
+    }
+
+  def forbidden: Set[Defn.Def] =
+    methods.filter { d =>
       d.body isEqual q"throw new NoSuchMethodException"
     }
 }

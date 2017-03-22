@@ -1,12 +1,14 @@
 package vista.operations
 
+import vista.WordSpecBase
 import vista.helpers.OpHelpers.isForbid
+import vista.meta.xtensions._
 import vista.operations.expanders.ForbidOp.Forbid
-import vista.operations.parsers.OpOverload
-import vista.{WordSpecBase, termBlockStructureEquality, treeStructureEquality}
+import vista.operations.parsers.{OpOverload, OpVistas}
 
 import scala.collection.immutable.Seq
 import scala.meta._
+import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
@@ -89,7 +91,7 @@ class ForbidTest extends WordSpecBase {
         val result = input.transform {
           case b: Term.Block if isForbid(b) =>
             val modified = b.stats
-              .collect(ForbidModifiers.defnValModifier orElse {
+              .collect(ForbidModifiers.valOverloadModifier orElse {
                 case o => Term.Block(Seq(o))
               })
               .flatMap(_.stats)
@@ -97,6 +99,44 @@ class ForbidTest extends WordSpecBase {
             Term.Block(modified)
         }
         result should equal(expected)
+      }
+
+      "expand a vista diff vista operation" in {
+        val classes =
+          q"class A { def a: Int = 1; def b: Int = 3 }; class B { def b: Int = 2; def g: Double = 2.1 } "
+        classes |> addInsts
+
+        val source =
+          q"""
+            val ab: AB = ∖[A, B](a, b)
+          """
+
+        val expected =
+          q"""
+              trait AB extends A with B {
+                override def b: Int = throw new NoSuchMethodException
+                override def g: Double = throw new NoSuchMethodException
+              }
+              val ab = new AB {}
+          """
+
+        val expanded = source |> parseAndExpand[Defn.Val, OpVistas, Forbid]
+        expanded |> addInsts
+
+        expanded.syntax should equal(expected.syntax)
+
+        val visibilities = db("AB").visibilities
+        visibilities should not be empty
+        visibilities.signatures should contain only {
+          q"def a: Int = 1".signature
+        }
+
+        val forbidden = db("AB").forbidden
+        forbidden should not be empty
+        forbidden.signatures should contain only (
+          q"def b: Int = {}".signature,
+          q"def g: Double = {}".signature
+        )
       }
     }
 

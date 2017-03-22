@@ -10,7 +10,7 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object IntersectModifiers {
-  val defnValModifier: PartialFunction[Tree, Term.Block] = {
+  val valVistasModifier: PartialFunction[Tree, Term.Block] = {
     case defn: Defn.Val if OpHelpers.isIntersect(defn) =>
       parseAndExpand[Defn.Val, OpVistas, Intersect](defn)
   }

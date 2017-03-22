@@ -82,17 +82,6 @@ object EqualitySet {
   }
 
   /** @return an EqualitySet for a type T having an Equals instance */
-  def apply[T: Equality](ts: T*) = {
-    var set = new EqualitySet[T] {
-      def equality: Equality[T] = implicitly[Equality[T]]
-    }.empty
-    ts.foreach { t =>
-      set += t
-    }
-    set
-  }
-
-  /** @return an EqualitySet for a type T having an Equals instance */
   def apply[T: Equality](ts: Iterable[T]) = {
     var set = new EqualitySet[T] {
       def equality: Equality[T] = implicitly[Equality[T]]

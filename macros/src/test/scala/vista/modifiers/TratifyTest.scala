@@ -1,6 +1,6 @@
 package vista.modifiers
 
-import vista.{FlatSpecBase, treeStructureEquality}
+import vista.FlatSpecBase
 
 import scala.meta._
 

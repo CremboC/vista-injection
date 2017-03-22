@@ -1,7 +1,7 @@
 package vista
 
-import meta.xtensions.XTemplate
 import vista.helpers.OpHelpers._
+import vista.meta.xtensions.XTemplate
 import vista.modifiers._
 import vista.operations._
 
@@ -30,10 +30,11 @@ class enable extends StaticAnnotation {
         // merge them into a single partial function so we can apply them at
         // the "same time"
         val modifiers = Seq(
-          ForbidModifiers.defnValModifier,
-          UnionModifiers.defnValModifier,
-          IntersectModifiers.defnValModifier,
-          ProductModifiers.defnValModifier
+          ForbidModifiers.valOverloadModifier,
+          ForbidModifiers.valVistasModifier,
+          UnionModifiers.valVistasModifier,
+          IntersectModifiers.valVistasModifier,
+          ProductModifiers.valVistasModifier
         ).reduce(_ orElse _)
 
         // if non of the modifiers match, we simply convert

@@ -10,7 +10,7 @@ import scala.meta.contrib._
   * Created by Crembo on 2017-03-22.
   */
 object Equalities {
-  implicit val defnDefEquality: Equality[Defn.Def] =
+  implicit val defEquality: Equality[Defn.Def] =
     (a: Defn.Def, b: Any) =>
       b match {
         case b: Defn.Def => a.signature isEqual b.signature
