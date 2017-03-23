@@ -3,6 +3,7 @@ package vista.operations
 import vista.WordSpecBase
 import vista.helpers.OpHelpers.isForbid
 import vista.meta.xtensions._
+import vista.operations.expanders.Expander
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.parsers.{OpOverload, OpVistas}
 
@@ -198,6 +199,29 @@ class ForbidTest extends WordSpecBase {
 ////        result should equal (expected)
 //        ???
 //      }
+    }
+
+    "given variety of classes" should {
+      "only have the correct visibilities" in {
+        val classes =
+          q"""
+              class A { def a: Int = 1; def b: Int = 3 }
+              class B { def b: Int = 2; def g: Double = 2.1 }
+            """
+        classes |> addInsts
+
+        val expanded = Expander[OpVistas, Forbid].expand(OpVistas("A", "B", "a", "b", "AB", Some("ab")))
+        expanded |> addInsts
+
+        db("AB").visibilities.signatures should contain only (
+          q"def a: Int = {}".signature
+        )
+
+        db("AB").forbidden.signatures should contain only (
+          q"def b:Int = {}".signature,
+          q"def g:Double = {}".signature
+        )
+      }
     }
   }
 

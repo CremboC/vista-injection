@@ -1,6 +1,7 @@
 package vista.operations
 
 import vista.FlatSpecBase
+import vista.meta.xtensions._
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.{OpOverload, OpVistas}
@@ -8,18 +9,14 @@ import vista.operations.parsers.{OpOverload, OpVistas}
 import scala.meta._
 import scalaz.Scalaz.ToIdOps
 
-/**
-  * Created by Crembo on 2017-03-22.
-  */
 class MixedOpTest extends FlatSpecBase {
   "Forbid and then union" should "produce the correct result" in {
     val classes = q"class A { def a: Int = 1; def b: Int = 2 }"
     classes |> addInsts
 
-    val union: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpVistas, Union]
+    val union: (Defn.Val => Tree)  = parseAndExpand[Defn.Val, OpVistas, Union]
     val forbid: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpOverload, Forbid]
 
-    // forbid a
     val forbidA =
       q"""
         val ab: Ab = ∖[A](a, {
@@ -42,9 +39,12 @@ class MixedOpTest extends FlatSpecBase {
       """
     unionAaAb |> union |> addInsts
 
+    db("AauAb").visibilities.signatures should contain only (
+      q"def a: Int = {}".signature,
+      q"def b: Int = {}".signature
+    )
 
-
-    db("AauAb").visibilities
+    db("AauAb").forbidden.signatures shouldBe empty
   }
 
 }

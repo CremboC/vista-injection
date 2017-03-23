@@ -1,6 +1,6 @@
 package vista.operations
 
-import vista.WordSpecBase
+import vista.{FlatSpecBase, WordSpecBase}
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.OpVistas
 
@@ -10,158 +10,128 @@ import scalaz.Scalaz.ToIdOps
 /**
   * @author Paulius Imbrasas
   */
-class UnionTest extends WordSpecBase {
+class UnionTest extends FlatSpecBase {
 
-  "A union" when {
-    "expanding a simple case" should {
-      "expand correctly" in {
-        val expected =
-          q"""
-              trait AB extends A with B {}
-              val ab = new AB {}
-            """
-        val source =
-          q"""
-              val ab: AB = ∪[A, B](a, b)
-            """
+  behavior of "Union"
 
-        q"""class A; class B""" |> addInsts
+  it should "expand two simple classes" in {
+    val expected =
+      q"""
+          trait AB extends A with B {}
+          val ab = new AB {}
+        """
+    val source = q"""val ab: AB = ∪[A, B](a, b)"""
 
-        val result = parseAndExpand[Defn.Val, OpVistas, Union](source)
-        result should equal(expected)
-      }
-    }
+    q"""class A; class B""" |> addInsts
 
-    "expanding a case with common methods" should {
-      "expand correctly" in {
-        val classes =
-          q"""
-              class A {
-                def a: Int = 1
-                def b: Int = 2
-                def o(p: String): String = p
-                def g[T]: Int = 5
-              }
+    val result = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    result should equal(expected)
+  }
 
-              class B {
-                def a: Int = 1
-                def c: Int = 3
-                def o(p: String): String = p
-                def g[T]: Int = 3
-              }
-            """
-        val source =
-          q"""
-              val ab: AB = ∪[A, B](a, b)
-            """
+  it should "expand classes with common methods" in {
+    val classes =
+      q"""
+          class A {
+            def a: Int = 1
+            def b: Int = 2
+            def o(p: String): String = p
+            def g[T]: Int = 5
+          }
 
-        val expected =
-          q"""
-            trait AB extends A with B {
-              override def a: Int = super[A].a
-              override def b: Int = super[A].b
-              override def c: Int = super[B].c
-              override def g[T]: Int = super[A].g[T]
-              override def o(p: String): String = super[A].o(p)
-            }
-            val ab = new AB {}
-          """
+          class B {
+            def a: Int = 1
+            def c: Int = 3
+            def o(p: String): String = p
+            def g[T]: Int = 3
+          }
+        """
+    val source =
+      q"""
+          val ab: AB = ∪[A, B](a, b)
+        """
 
-        classes |> addInsts
-        val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
-        expanded.syntax should equal(expected.syntax)
-      }
-    }
-
-    "expanding a parametrised class" should {
-      "work correctly" in {
-        val classes =
-          q"""
-              class A(val a: Seq[Int]) {
-                def a: Int = 1
-                def b: Int = 2
-              }
-
-              class B(f: () => Unit, var o: Int) {
-                def a: Int = 1
-                def c: Int = 3
-              }
-            """
-        val source =
-          q"""
-              val ab: AB = ∪[A, B](a, b)
-            """
-
-        val expected =
-          q"""
-              trait AB extends A with B {
-                override def a: Int = super[A].a
-                override def b: Int = super[A].b
-                override def c: Int = super[B].c
-              }
-              val ab = new AB {
-                override val a: Seq[Int] = a.a
-                override val f: () => Unit = b.f
-                override var o: Int = b.o
-              }
-            """
-
-        classes |> addInsts
-        val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
-        expanded.syntax should equal(expected.syntax)
-      }
-    }
-
-    "expanding a hierarchy of classes" should {
-      "expand correct" in {
-        val source =
-          q"""
-            class AB {
-              def a: Int = 1
-              def b: Int = 2
-            }
-
-            trait Aa extends AB {
-              override def b: Int = throw new NoSuchMethodException
-            }
-
-            trait Ab extends AB {
-              override def a: Int = throw new NoSuchMethodException
-            }
-          """
-
-        source |> addInsts
-
-        val op = q"val a: A = ∪[Aa, Ab](aa, bb)"
-        val expanded = parseAndExpand[Defn.Val, OpVistas, Union](op).collect {
-          case t: Defn.Trait => t
-        }.head
-
-        expanded.syntax should equal {
-          q"""
-              trait A extends Aa with Ab {
-                override def a: Int = super[Aa].a
-                override def b: Int = super[Ab].b
-              }
-          """.syntax
+    val expected =
+      q"""
+        trait AB extends A with B {
+          override def a: Int = super[A].a
+          override def b: Int = super[A].b
+          override def c: Int = super[B].c
+          override def g[T]: Int = super[A].g[T]
+          override def o(p: String): String = super[A].o(p)
         }
-      }
-    }
+        val ab = new AB {}
+      """
 
-    "expanding a wrong union" should {
-      "fail when one of the types is missing" in {
-        val source = q"val ab: AB = ∪[A](a, b)"
-        an[Exception] should be thrownBy {
-          parseAndExpand[Defn.Val, OpVistas, Union](source)
-        }
-      }
+    classes |> addInsts
+    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    expanded.syntax should equal(expected.syntax)
+  }
 
-      "fail when the result type is missing" in {
-        val source = q"val ab = ∪[A, B](a, b)"
-        an[Exception] should be thrownBy {
-          parseAndExpand[Defn.Val, OpVistas, Union](source)
+  it should "expand a class with a constructor" in {
+    val classes =
+      q"""
+          class A(val a: Seq[Int]) {
+            def a: Int = 1
+            def b: Int = 2
+          }
+
+          class B(f: () => Unit, var o: Int) {
+            def a: Int = 1
+            def c: Int = 3
+          }
+        """
+    val source =
+      q"""
+          val ab: AB = ∪[A, B](a, b)
+        """
+
+    val expected =
+      q"""
+          trait AB extends A with B {
+            override def a: Int = super[A].a
+            override def b: Int = super[A].b
+            override def c: Int = super[B].c
+          }
+          val ab = new AB {
+            override val a: Seq[Int] = a.a
+            override val f: () => Unit = b.f
+            override var o: Int = b.o
+          }
+        """
+
+    classes |> addInsts
+    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    expanded.syntax should equal(expected.syntax)
+  }
+
+  it should "expand a class hierarchy" in {
+    q"""
+        class AB {
+          def a: Int = 1
+          def b: Int = 2
         }
-      }
+
+        trait Aa extends AB {
+          override def b: Int = throw new NoSuchMethodException
+        }
+
+        trait Ab extends AB {
+          override def a: Int = throw new NoSuchMethodException
+        }
+      """ |> addInsts
+
+    val op = q"val a: A = ∪[Aa, Ab](aa, bb)"
+    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](op).collect {
+      case t: Defn.Trait => t
+    }.head
+
+    expanded.syntax should equal {
+      q"""
+          trait A extends Aa with Ab {
+            override def a: Int = super[Aa].a
+            override def b: Int = super[Ab].b
+          }
+      """.syntax
     }
   }
 }
