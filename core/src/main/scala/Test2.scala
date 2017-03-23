@@ -1,4 +1,3 @@
-//import vista.vistacise
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -18,7 +17,7 @@ import scala.io.Source
   * [1] Mehran, A., Saeidi, S., Khademzadeh, A. and Afzali-Kusha, A. (2007). Spiral: A heuristic mapping algorithm for network on chip. IEICE Electron. Express, 4(15), pp.478-484.
   *
   */
-//@vistacise
+//@vista.enable
 object Test2 extends App {
 
   // NoC topology

@@ -2,6 +2,7 @@ package vista.operations
 
 import vista.FlatSpecBase
 import vista.meta.xtensions.{XDefnIterable, XSet}
+import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.expanders.UnionOp.Union
@@ -456,7 +457,7 @@ class IdentityTest extends FlatSpecBase {
     disjoint shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.signatures >+< auabMethods.normalized
+    val normalizedDisjoint = aMethods.normalized >+< auabMethods.normalized
     normalizedDisjoint should not be empty
   }
 
@@ -491,14 +492,52 @@ class IdentityTest extends FlatSpecBase {
     disjoint shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.signatures >+< anabMethods.normalized
+    val normalizedDisjoint = aMethods.normalized >+< anabMethods.normalized
     normalizedDisjoint should not be empty
   }
 
   // intersection as difference
   // A ∩ B = A \ (A \ B)
   "Intersection" should "be the same as difference" in {
-    ???
+    val classes =
+      q"""
+        class A {
+          def a: Int = 1
+          def b: Int = 2
+          def c: Int = 2
+        }
+
+        class B {
+          def c: Int = 1
+          def d: Int = 3
+          def e: Int = 3
+        }
+      """
+
+    classes |> addInsts
+
+    val inter: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpVistas, Intersect]
+    val forbid: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpVistas, Forbid]
+
+    // left side
+    // A ∩ B
+    q"val ab: AB = ∩[A, B](a, b)" |> inter |> addInsts
+
+    // right side
+    // A \ (A \ B)
+    val tree1 = q"val abb: AdB = ∖[A, B](a, b)" |> forbid
+    tree1 |> addInsts
+    val tree = q"val abb: AdAdB = ∖[A, AdB](a, b)" |> forbid
+    tree |> addInsts
+
+    val leftMethods = db("AB").visibilities
+    val rightMethods = db("AdAdB").visibilities
+
+    val disjoint = leftMethods.signatures >+< rightMethods.signatures
+    disjoint shouldBe empty
+
+    val normalized = leftMethods.normalized >+< rightMethods.normalized
+    normalized shouldBe empty
   }
 
   // product non-communtativity and non-associativity
@@ -529,7 +568,7 @@ class IdentityTest extends FlatSpecBase {
     val disjoint = abMethods.signatures >+< baMethods.signatures
     disjoint should not be empty
 
-    val normalizedDisjoint = abMethods.signatures >+< baMethods.normalized
+    val normalizedDisjoint = abMethods.normalized >+< baMethods.normalized
     normalizedDisjoint should not be empty
   }
 
@@ -572,7 +611,7 @@ class IdentityTest extends FlatSpecBase {
     val disjoint = leftMethods.signatures >+< rightMethods.signatures
     disjoint should not be empty
 
-    val normalizedDisjoint = leftMethods.signatures >+< rightMethods.normalized
+    val normalizedDisjoint = leftMethods.normalized >+< rightMethods.normalized
     normalizedDisjoint should not be empty
   }
 }

@@ -27,10 +27,10 @@ private[operations] object ForbidOp {
     val allowed    = lmethods.signatures \ rmethods.signatures
     val disallowed = (lmethods ++ rmethods).signatures \ allowed
 
-    val forbiddenDefns = {
-      def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
-        db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
+    def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
+      db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
 
+    val forbiddenDefns = {
       val map = visibilitiesMap(inp.lclass) ++ visibilitiesMap(inp.rclass)
 
       disallowed.map { defn =>
@@ -40,7 +40,18 @@ private[operations] object ForbidOp {
       }
     }
 
+    val allowedDefns = {
+      val map  = visibilitiesMap(inp.lclass)
+      val spec = superDefBody(inp.lclass, _: Defn.Def, map)
+      allowed.map { defn =>
+        val body = spec(defn)
+        map(defn.signature.syntax).copy(mods = (defn.mods :+ Mod.Override()).toSet.to, body = body)
+      }
+    }
+
     val members = ctorMembersDefns(lclazz, inp.lvar)
+
+    val result = (forbiddenDefns ++ allowedDefns).to[Seq].sortBy(_.name.syntax)
 
     inp.newvar match {
       case None => ???
@@ -48,7 +59,7 @@ private[operations] object ForbidOp {
         q"""
           trait ${Type.Name(inp.newtype)} extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(
           inp.rclass)} {
-            ..${forbiddenDefns.toSeq.asInstanceOf[Seq[Stat]]}
+            ..$result
           }
           val ${Term.Name(nvar).asPat} = new ${Ctor.Name(inp.newtype)} {
             ..$members

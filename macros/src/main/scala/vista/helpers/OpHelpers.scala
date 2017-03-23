@@ -28,4 +28,6 @@ object OpHelpers {
 
   def hasOp(expr: Tree): Boolean =
     isUnion(expr) || isForbid(expr) || isIntersect(expr) || isProduct(expr)
+
+  def hasCaseMod(cls: Defn.Class): Boolean = cls.mods.exists(_.is[Mod.Case])
 }

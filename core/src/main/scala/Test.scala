@@ -68,15 +68,15 @@ object Test extends App {
 
     println(inter.common)
 
-//    val comb: FG = ⨯[F, G](f, g)
-//    println(comb.ab()())
-//
-//    val ff: Ff = ∖[F](b, {
-//      def c(): Int= ???
-//    })
-//
-//    val ffxg: FfxG = ⨯[Ff, G](f, g)
-//    println(ffxg.ab()())
+    val comb: FG = ⨯[F, G](f, g)
+    println(comb.ab()())
+
+    val ff: Ff = ∖[F](b, {
+      def c(): Int= ???
+    })
+
+    val ffxg: FfxG = ⨯[Ff, G](f, g)
+    println(ffxg.ab()())
   }
 
   func()

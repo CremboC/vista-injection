@@ -114,6 +114,7 @@ class ForbidTest extends WordSpecBase {
         val expected =
           q"""
               trait AB extends A with B {
+                override def a: Int = super[A].a
                 override def b: Int = throw new NoSuchMethodException
                 override def g: Double = throw new NoSuchMethodException
               }

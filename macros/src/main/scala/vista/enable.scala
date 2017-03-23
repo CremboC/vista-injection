@@ -1,5 +1,6 @@
 package vista
 
+import vista.helpers.OpHelpers
 import vista.helpers.OpHelpers._
 import vista.meta.xtensions.XTemplate
 import vista.modifiers._
@@ -72,7 +73,7 @@ class enable extends StaticAnnotation {
 
         val Block(nstats) = Block(stats)
           .transform { // first convert all classes into traits
-            case classdefn: Defn.Class => Tratify(classdefn)
+            case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
           }
           .transform {
             // since we converted classes into traits we need to make sure they are instantiable
@@ -101,4 +102,3 @@ class enable extends StaticAnnotation {
     }
   }
 }
-
