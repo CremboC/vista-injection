@@ -48,13 +48,13 @@ class IdentityTest extends FlatSpecBase {
     // implies that union is commutative
     // which is only true when one looks at signatures only
     // hence, we first ensure it is commutative by signature
-    val disjoint = ab1methods.signatures >+< ab2methods.signatures
-    disjoint shouldBe empty
+    val diff = ab1methods.signatures <-> ab2methods.signatures
+    diff shouldBe empty
 
     // actual behaviour is different since the overrides are different
     // then, we ensure it is not commutative by normalised signature
-    val normalizedDisjoint = ab1methods.normalized >+< ab2methods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = ab1methods.normalized <-> ab2methods.normalized
+    normalizedDiff should not be empty
   }
 
   // commutativity
@@ -86,12 +86,12 @@ class IdentityTest extends FlatSpecBase {
     // implies that intersection is commutative
     // which is only true when one looks at signatures only
     // which is true when only signatures are considered
-    val disjoint = ab1methods.signatures >+< ab2methods.signatures
-    disjoint shouldBe empty
+    val diff = ab1methods.signatures <-> ab2methods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = ab1methods.normalized >+< ab2methods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = ab1methods.normalized <-> ab2methods.normalized
+    normalizedDiff should not be empty
   }
 
   // associativity
@@ -132,12 +132,12 @@ class IdentityTest extends FlatSpecBase {
     val abc2methods = db("ABC2").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = abcmethods.signatures >+< abc2methods.signatures
-    disjoint shouldBe empty
+    val diff = abcmethods.signatures <-> abc2methods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = abcmethods.normalized >+< abc2methods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = abcmethods.normalized <-> abc2methods.normalized
+    normalizedDiff should not be empty
   }
 
   // associativity
@@ -178,12 +178,12 @@ class IdentityTest extends FlatSpecBase {
     val abc2Methods = db("ABC2").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = abcMethods.signatures >+< abc2Methods.signatures
-    disjoint shouldBe empty
+    val diff = abcMethods.signatures <-> abc2Methods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = abcMethods.normalized >+< abc2Methods.normalized
-    normalizedDisjoint shouldBe empty
+    val normalizedDiff = abcMethods.normalized <-> abc2Methods.normalized
+    normalizedDiff shouldBe empty
   }
 
   // distributivity
@@ -226,12 +226,12 @@ class IdentityTest extends FlatSpecBase {
     val abnacMethods = db("ABnAC").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aubcMethods.signatures >+< abnacMethods.signatures
-    disjoint shouldBe empty
+    val diff = aubcMethods.signatures <-> abnacMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aubcMethods.normalized >+< abnacMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = aubcMethods.normalized <-> abnacMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // distributivity
@@ -274,12 +274,12 @@ class IdentityTest extends FlatSpecBase {
     val abuacMethods = db("ABuAC").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = anbcMethods.signatures >+< abuacMethods.signatures
-    disjoint shouldBe empty
+    val diff = anbcMethods.signatures <-> abuacMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = anbcMethods.normalized >+< abuacMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = anbcMethods.normalized <-> abuacMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // identity laws
@@ -303,12 +303,12 @@ class IdentityTest extends FlatSpecBase {
     val abMethods = db("AO").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aMethods.signatures >+< abMethods.signatures
-    disjoint shouldBe empty
+    val diff = aMethods.signatures <-> abMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.normalized >+< abMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = aMethods.normalized <-> abMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // identity laws
@@ -354,12 +354,12 @@ class IdentityTest extends FlatSpecBase {
     val aaMethods = db("AA").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aMethods.signatures >+< aaMethods.signatures
-    disjoint shouldBe empty
+    val diff = aMethods.signatures <-> aaMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.normalized >+< aaMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = aMethods.normalized <-> aaMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // idempotent
@@ -381,13 +381,13 @@ class IdentityTest extends FlatSpecBase {
     val aaMethods = db("AA").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aMethods.signatures >+< aaMethods.signatures
-    disjoint shouldBe empty
+    val diff = aMethods.signatures <-> aaMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.normalized >+< aaMethods.normalized
+    val normalizedDiff = aMethods.normalized <-> aaMethods.normalized
     // FIXME: technically produces the same thing so should be "not empty"
-    normalizedDisjoint should not be empty
+    normalizedDiff should not be empty
   }
 
   // domination
@@ -418,12 +418,12 @@ class IdentityTest extends FlatSpecBase {
     val aoMethods = db("AO").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = Set.empty[Defn.Def] >+< aoMethods.signatures
-    disjoint shouldBe empty
+    val diff = Set.empty[Defn.Def] <-> aoMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = Set.empty[Defn.Def] >+< aoMethods.normalized
-    normalizedDisjoint shouldBe empty
+    val normalizedDiff = Set.empty[Defn.Def] <-> aoMethods.normalized
+    normalizedDiff shouldBe empty
   }
 
   // absorption
@@ -453,12 +453,12 @@ class IdentityTest extends FlatSpecBase {
     val aMethods    = db("A").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aMethods.signatures >+< auabMethods.signatures
-    disjoint shouldBe empty
+    val diff = aMethods.signatures <-> auabMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.normalized >+< auabMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = aMethods.normalized <-> auabMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // absorption
@@ -488,12 +488,12 @@ class IdentityTest extends FlatSpecBase {
     val aMethods    = db("A").visibilities
 
     // which is true when only signatures are considered
-    val disjoint = aMethods.signatures >+< anabMethods.signatures
-    disjoint shouldBe empty
+    val diff = aMethods.signatures <-> anabMethods.signatures
+    diff shouldBe empty
 
     // we can compare by normalised defns
-    val normalizedDisjoint = aMethods.normalized >+< anabMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = aMethods.normalized <-> anabMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // intersection as difference
@@ -516,7 +516,7 @@ class IdentityTest extends FlatSpecBase {
 
     classes |> addInsts
 
-    val inter: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpVistas, Intersect]
+    val inter: (Defn.Val => Tree)  = parseAndExpand[Defn.Val, OpVistas, Intersect]
     val forbid: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpVistas, Forbid]
 
     // left side
@@ -530,18 +530,18 @@ class IdentityTest extends FlatSpecBase {
     val tree = q"val abb: AdAdB = ∖[A, AdB](a, b)" |> forbid
     tree |> addInsts
 
-    val leftMethods = db("AB").visibilities
+    val leftMethods  = db("AB").visibilities
     val rightMethods = db("AdAdB").visibilities
 
-    val disjoint = leftMethods.signatures >+< rightMethods.signatures
-    disjoint shouldBe empty
+    val diff = leftMethods.signatures <-> rightMethods.signatures
+    diff shouldBe empty
 
-    val normalized = leftMethods.normalized >+< rightMethods.normalized
+    val normalized = leftMethods.normalized <-> rightMethods.normalized
     normalized shouldBe empty
   }
 
   // product non-communtativity and non-associativity
-  // A ⨯ B ≠ B ⨯ A
+  // A ⨯ B ≠ B ⨯ A, unless A=B or there exists in {A,B} that is empty
   "Product" should "not be commutative" in {
     val source =
       q"""
@@ -564,12 +564,11 @@ class IdentityTest extends FlatSpecBase {
     val abMethods = db("AB").visibilities
     val baMethods = db("BA").visibilities
 
-    // which is true when only signatures are considered
-    val disjoint = abMethods.signatures >+< baMethods.signatures
-    disjoint should not be empty
+    val diff = abMethods.signatures <-> baMethods.signatures
+    diff should not be empty
 
-    val normalizedDisjoint = abMethods.normalized >+< baMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = abMethods.normalized <-> baMethods.normalized
+    normalizedDiff should not be empty
   }
 
   // (A ⨯ B) ⨯ C ≠ A ⨯ (B ⨯ C) -- unless one is empty
@@ -604,14 +603,13 @@ class IdentityTest extends FlatSpecBase {
     q"val ab: BC = x[B, C](a, b)" |> prod |> addInsts
     q"val ab: AxBC = x[A, BC](a, b)" |> prod |> addInsts
 
-    val leftMethods = db("ABxC").visibilities
+    val leftMethods  = db("ABxC").visibilities
     val rightMethods = db("AxBC").visibilities
 
-    // which is true when only signatures are considered
-    val disjoint = leftMethods.signatures >+< rightMethods.signatures
-    disjoint should not be empty
+    val diff = leftMethods.signatures <-> rightMethods.signatures
+    diff should not be empty
 
-    val normalizedDisjoint = leftMethods.normalized >+< rightMethods.normalized
-    normalizedDisjoint should not be empty
+    val normalizedDiff = leftMethods.normalized <-> rightMethods.normalized
+    normalizedDiff should not be empty
   }
 }

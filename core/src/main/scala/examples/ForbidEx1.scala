@@ -1,6 +1,6 @@
 package examples
 
-import vistas.Vista.∖
+import vistas.Vista.{∖, ∪}
 
 /**
   * @author paulius
@@ -22,14 +22,25 @@ object ForbidEx1 {
       def two: Int = ???
     })
 
-    try af.one catch {
+    try af.one
+    catch {
       case e: NoSuchMethodException => println(e.getClass)
     }
 
-    try af.two catch {
+    try af.two
+    catch {
       case e: NoSuchMethodException => println(e.getClass)
     }
 
     println(af.isInstanceOf[A])
+
+    val aAgain: AA = ∪[A, Af](a, af)
+
+    try {
+      println(aAgain.one)
+      println(aAgain.two)
+    } catch {
+      case e: NoSuchElementException => println(e.getClass)
+    }
   }
 }

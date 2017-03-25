@@ -31,7 +31,7 @@ private[operations] object IntersectOp {
     // we're only overriding the methods that are no longer allowed
     // mintersect will return a list of methods which are allowed, but
     // we can only disallow methods, hence that is used here
-    val disjointMethods = lsignatures >+< rsignatures
+    val disjointMethods = lsignatures <-> rsignatures
     val forbidden = disjointMethods.map { m =>
       m.copy(body = q"throw new NoSuchMethodException", mods = m.mods :+ Mod.Override())
     }

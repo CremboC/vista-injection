@@ -29,17 +29,17 @@ trait XSet {
       selfStr.intersect(otherStr).map(_.tree)
     }
 
-    def disjointUnion(other: Set[A]): Set[A] = {
+    /**
+      * A <-> B = (A \ B) u (B \ A)
+      */
+    def symmDiff(other: Set[A]): Set[A] = {
       val selfStr  = self.structurally
       val otherStr = other.structurally
 
       (selfStr.diff(otherStr) ++ otherStr.diff(selfStr)).map(_.tree)
     }
 
-    /**
-      * Alias for disjoint union
-      */
-    def >+<(other: Set[A]): Set[A] = disjointUnion(other)
+    def <->(other: Set[A]): Set[A] = symmDiff(other)
 
     /**
       * Difference
