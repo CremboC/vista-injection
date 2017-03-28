@@ -13,9 +13,14 @@ package object parsers {
   }
 
   object Parser {
-    implicit val defnValToNormal: Parser[Defn.Val, OpVistas] =
-      (defn: Defn.Val) => {
+
+    /** Handles the parsing of a val definition with two type arguments
+      * {{{val a: AB' = op[A, B](a, b)}}}
+      */
+    implicit object ValTwoVistasParser extends Parser[Defn.Val, OpVistas] {
+      override def parse(defn: Defn.Val): Option[OpVistas] = {
         val typ = defn.decltpe.getOrElse { throw new MatchError("Must provide decltpe") }
+
         val (leftVar, leftType, rightVar, rightType) = defn.rhs.children match {
           case op :: left :: right :: Nil =>
             val q"$_[$leftType, $rightType]" = op
@@ -34,9 +39,13 @@ package object parsers {
                    typ.syntax,
                    Option(defn.pats.head.syntax)))
       }
+    }
 
-    implicit val defnValToOverloaded: Parser[Defn.Val, OpOverload] =
-      (defn: Defn.Val) => {
+    /** Handles the parsing of a val definition with a single type argument.
+      * {{{val a: AB' = op[A](a, {...})}}}
+      */
+    implicit object ValOverloadParser extends Parser[Defn.Val, OpOverload] {
+      override def parse(defn: Defn.Val): Option[OpOverload] = {
         val newtype                    = defn.decltpe.getOrElse { throw new MatchError("Must provide decltpe") }
         val q"$_[..$typargs](..$args)" = defn.rhs
         val lclass                     = typargs.head
@@ -54,6 +63,7 @@ package object parsers {
         Option(
           OpOverload(lclass.syntax, lvar.syntax, newtype.syntax, methods, Some(paramname.syntax)))
       }
+    }
 
     def apply[I, O <: OpInput](implicit parser: Parser[I, O]): Parser[I, O] = parser
   }

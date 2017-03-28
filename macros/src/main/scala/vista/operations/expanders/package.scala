@@ -1,7 +1,7 @@
 package vista.operations
 
 import vista.meta.xtensions._
-import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
+import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics.Database.ClassName
 import vista.semantics.Inst
 
@@ -21,19 +21,6 @@ package object expanders {
   }
 
   object Expander {
-    implicit val forbidExpander: Expander[OpOverload, ForbidOp.Forbid] =
-      ForbidOp.expander
-    implicit val forbidVistaExpander: Expander[OpVistas, ForbidOp.Forbid] =
-      ForbidOp.vistasExpander
-
-    implicit val intersectExpander: Expander[OpVistas, IntersectOp.Intersect] =
-      IntersectOp.expander
-
-    implicit val unionExpander: Expander[OpVistas, UnionOp.Union] =
-      UnionOp.expander
-
-    implicit val productExpander: Expander[OpVistas, ProductOp.Product] =
-      ProductOp.expander
 
     def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] =
       expander

@@ -140,7 +140,6 @@ class TratifyTest extends FlatSpecBase {
           }
         """
 
-
     val term = q"""new A("hello")"""
 
     val db = vista.semantics.Database
@@ -159,7 +158,7 @@ class TratifyTest extends FlatSpecBase {
             override var b: Int = 5
           }
         """
-    
+
     val term = q"""new A("hello", 5)"""
 
     val db = vista.semantics.Database

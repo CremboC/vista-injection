@@ -19,37 +19,38 @@ private[operations] object UnionOp {
 
   private val db = semantics.Database
 
-  val expander: Expander[OpVistas, Union] = (inp: OpVistas) => {
-    val traitName = Type.Name(inp.newtype)
+  implicit object VistaExpander extends Expander[OpVistas, Union] {
+    override def expand(inp: OpVistas): Term.Block = {
+      val traitName = Type.Name(inp.newtype)
 
-    val lclazz = db.get(inp.lclass)
-    val rclazz = db.get(inp.rclass)
+      val lclazz = db.get(inp.lclass)
+      val rclazz = db.get(inp.rclass)
 
-    val common = commonMethods(inp).to[Seq]
+      val common = commonMethods(inp).to[Seq]
 
-    val methods = {
-      def methodsFromSide(methods: Set[Defn.Def], className: ClassName): Set[Defn.Def] = {
-        val map = db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
-        val spec = superDefBody(_: ClassName, _: Defn.Def, map)
-        methods.map { m =>
-          val body = spec(className, m)
-          m.copy(mods = (m.mods :+ Mod.Override()).toSet.to, body = body)
+      val methods = {
+        def methodsFromSide(methods: Set[Defn.Def], className: ClassName): Set[Defn.Def] = {
+          val map  = db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
+          val spec = superDefBody(_: ClassName, _: Defn.Def, map)
+          methods.map { m =>
+            val body = spec(className, m)
+            m.copy(mods = (m.mods :+ Mod.Override()).toSet.to, body = body)
+          }
         }
+
+        val commonBySignature = EqualitySet(common)
+        val lmethods          = lclazz.visibilities.filterNot(commonBySignature.contains)
+        val rmethods          = rclazz.visibilities.filterNot(commonBySignature.contains)
+        methodsFromSide(lmethods, inp.lclass) ++ methodsFromSide(rmethods, inp.rclass)
       }
 
-      val commonBySignature = EqualitySet(common)
-      val lmethods = lclazz.visibilities.filterNot(commonBySignature.contains)
-      val rmethods = rclazz.visibilities.filterNot(commonBySignature.contains)
-      methodsFromSide(lmethods, inp.lclass) ++ methodsFromSide(rmethods, inp.rclass)
-    }
+      val result = (common ++ methods).sortBy(_.name.syntax)
 
-    val result = (common ++ methods).sortBy(_.name.syntax)
+      val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
 
-    val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
-
-    inp.newvar match {
-      case None =>
-        q"""
+      inp.newvar match {
+        case None =>
+          q"""
             trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
               ..$result
             }
@@ -58,8 +59,8 @@ private[operations] object UnionOp {
             }
         """
 
-      case Some(nvar) =>
-        q"""
+        case Some(nvar) =>
+          q"""
             trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
               ..$result
             }
@@ -67,6 +68,7 @@ private[operations] object UnionOp {
               ..$members
             }
         """
+      }
     }
   }
 }

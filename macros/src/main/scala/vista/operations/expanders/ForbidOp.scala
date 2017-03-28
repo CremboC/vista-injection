@@ -17,73 +17,77 @@ private[operations] object ForbidOp {
 
   private val db = semantics.Database
 
-  val vistasExpander: Expander[OpVistas, Forbid] = (inp: OpVistas) => {
-    val lclazz = db(inp.lclass)
-    val rclazz = db(inp.rclass)
+  implicit object VistaExpander extends Expander[OpVistas, Forbid] {
+    override def expand(inp: OpVistas): Term.Block = {
+      val lclazz = db(inp.lclass)
+      val rclazz = db(inp.rclass)
 
-    val lmethods = lclazz.visibilities
-    val rmethods = rclazz.visibilities
+      val lmethods = lclazz.visibilities
+      val rmethods = rclazz.visibilities
 
-    val allowed    = lmethods.signatures \ rmethods.signatures
-    val disallowed = (lmethods ++ rmethods).signatures \ allowed
+      val allowed    = lmethods.signatures \ rmethods.signatures
+      val disallowed = (lmethods ++ rmethods).signatures \ allowed
 
-    def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
-      db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
+      def visibilitiesMap(className: ClassName): Map[ClassName, Defn.Def] =
+        db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap
 
-    val forbiddenDefns = {
-      val map = visibilitiesMap(inp.lclass) ++ visibilitiesMap(inp.rclass)
+      val forbiddenDefns = {
+        val map = visibilitiesMap(inp.lclass) ++ visibilitiesMap(inp.rclass)
 
-      disallowed.map { defn =>
-        val defnn = map(defn.syntax)
-        defnn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
-                   body = q"throw new NoSuchMethodException")
+        disallowed.map { defn =>
+          val defnn = map(defn.syntax)
+          defnn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
+                     body = q"throw new NoSuchMethodException")
+        }
       }
-    }
 
-    val allowedDefns = {
-      val map  = visibilitiesMap(inp.lclass)
-      val spec = superDefBody(inp.lclass, _: Defn.Def, map)
-      allowed.map { defn =>
-        val body = spec(defn)
-        map(defn.signature.syntax).copy(mods = (defn.mods :+ Mod.Override()).toSet.to, body = body)
+      val allowedDefns = {
+        val map  = visibilitiesMap(inp.lclass)
+        val spec = superDefBody(inp.lclass, _: Defn.Def, map)
+        allowed.map { defn =>
+          val body = spec(defn)
+          map(defn.signature.syntax)
+            .copy(mods = (defn.mods :+ Mod.Override()).toSet.to, body = body)
+        }
       }
-    }
 
-    val members = ctorMembersDefns(lclazz, inp.lvar)
+      val members = ctorMembersDefns(lclazz, inp.lvar)
 
-    val result = (forbiddenDefns ++ allowedDefns).to[Seq].sortBy(_.name.syntax)
+      val result = (forbiddenDefns ++ allowedDefns).to[Seq].sortBy(_.name.syntax)
 
-    inp.newvar match {
-      case None => ???
-      case Some(nvar) =>
-        q"""
+      inp.newvar match {
+        case None => ???
+        case Some(nvar) =>
+          q"""
           trait ${Type.Name(inp.newtype)} extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(
-          inp.rclass)} {
+            inp.rclass)} {
             ..$result
           }
           val ${Term.Name(nvar).asPat} = new ${Ctor.Name(inp.newtype)} {
             ..$members
           }
         """
+      }
     }
   }
 
-  val expander: Expander[OpOverload, Forbid] = (inp: OpOverload) => {
-    val forbidden = inp.methods
-      .map { defn =>
-        defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
-                  body = q"throw new NoSuchMethodException")
-      }
-      .asInstanceOf[Seq[Stat]]
+  implicit object OverloadExpander extends Expander[OpOverload, Forbid] {
+    override def expand(inp: OpOverload): Term.Block = {
+      val forbidden = inp.methods
+        .map { defn =>
+          defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
+                    body = q"throw new NoSuchMethodException")
+        }
+        .asInstanceOf[Seq[Stat]]
 
-    val constructor = Ctor.Name(inp.lclass)
+      val constructor = Ctor.Name(inp.lclass)
 
-    val lclazz  = db(inp.lclass)
-    val members = ctorMembersDefns(lclazz, inp.lvar)
+      val lclazz  = db(inp.lclass)
+      val members = ctorMembersDefns(lclazz, inp.lvar)
 
-    inp.newvar match {
-      case None =>
-        q"""
+      inp.newvar match {
+        case None =>
+          q"""
            trait ${Type.Name(inp.newtype)} extends $constructor {
              ..$forbidden
            }
@@ -91,9 +95,9 @@ private[operations] object ForbidOp {
              ..$members
            }
         """
-      case Some(vr) =>
-        val vrr = Pat.Var.Term(Term.Name(vr))
-        q"""
+        case Some(vr) =>
+          val vrr = Pat.Var.Term(Term.Name(vr))
+          q"""
           trait ${Type.Name(inp.newtype)} extends $constructor {
             ..$forbidden
           }
@@ -101,6 +105,7 @@ private[operations] object ForbidOp {
             ..$members
           }
         """
+      }
     }
   }
 }
