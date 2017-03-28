@@ -21,7 +21,6 @@ package object expanders {
   }
 
   object Expander {
-
     def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] =
       expander
   }

@@ -8,7 +8,10 @@ import scala.meta._
 class ParserTest extends FlatSpecBase with Inside with OptionValues {
   behavior of "Parser"
 
-  private val valParser = Parser[Defn.Val, OpVistas].parse _
+  private val valParser          = Parser[Defn.Val, OpVistas].parse _
+  private val valOverloadParser  = Parser[Defn.Val, OpOverload].parse _
+  private val defnParser         = Parser[Defn.Def, OpVistas].parse _
+  private val defnOverloadParser = Parser[Defn.Def, OpOverload].parse _
 
   it should "parse a val definition of two vistas of union" in {
     val parsed = valParser(q"val ab: AB = ∪[A, B](a, b)")
@@ -20,7 +23,7 @@ class ParserTest extends FlatSpecBase with Inside with OptionValues {
         lvar should be("a")
         rvar should be("b")
         newtype should be("AB")
-        nvar.value should be ("ab")
+        nvar.value should be("ab")
     }
   }
 
@@ -34,7 +37,7 @@ class ParserTest extends FlatSpecBase with Inside with OptionValues {
         lvar should be("a")
         rvar should be("b")
         newtype should be("AB")
-        nvar.value should be ("ab")
+        nvar.value should be("ab")
     }
   }
 
@@ -48,7 +51,7 @@ class ParserTest extends FlatSpecBase with Inside with OptionValues {
         lvar should be("a")
         rvar should be("b")
         newtype should be("AB")
-        nvar.value should be ("ab")
+        nvar.value should be("ab")
     }
   }
 
@@ -62,7 +65,34 @@ class ParserTest extends FlatSpecBase with Inside with OptionValues {
         lvar should be("a")
         rvar should be("b")
         newtype should be("AB")
-        nvar.value should be ("ab")
+        nvar.value should be("ab")
+    }
+  }
+
+  it should "parse a method definition of two vistas" in {
+    val parsed = defnParser(q"def ab(a: A, b: B): AB = ∪[A, B](a, b)")
+    parsed should not be empty
+    inside(parsed.get) {
+      case OpVistas(lclass, rclass, lvar, rvar, newtype, nvar) =>
+        lclass should be("A")
+        rclass should be("B")
+        lvar should be("a")
+        rvar should be("b")
+        newtype should be("AB")
+        nvar shouldBe empty
+    }
+  }
+
+  it should "parse a method definition of a vista and a set of names" in {
+    val parsed = defnOverloadParser(q"def ab(a: A): AB = ∖[A](a, { def a: Int = ??? })")
+    parsed should not be empty
+    inside(parsed.get) {
+      case OpOverload(lclass, lvar, newtype, methods, nvar) =>
+        lclass should be("A")
+        lvar should be("a")
+        newtype should be("AB")
+        methods should contain only q"def a: Int = ???"
+        nvar shouldBe empty
     }
   }
 

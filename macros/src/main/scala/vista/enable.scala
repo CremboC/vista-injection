@@ -56,7 +56,7 @@ class enable extends StaticAnnotation {
           term.copy(term.templ.copy(parents = ctors))
         }
 
-        def instantiationRequiresConversion(term: Term.New): Boolean =
+        def classIsRecorded(term: Term.New): Boolean =
           if (term.templ.parents.isEmpty) false
           else {
             val className = term.templ.parents.head.syntax.takeWhile(_ != '(')
@@ -77,10 +77,10 @@ class enable extends StaticAnnotation {
           }
           .transform {
             // since we converted classes into traits we need to make sure they are instantiable
-            case term: Term.New if instantiationRequiresConversion(term) && !inheritsVistaTrait(term) =>
+            case term: Term.New if classIsRecorded(term) && !inheritsVistaTrait(term) =>
               convertCtor(term)
 
-            case term: Term.New if instantiationRequiresConversion(term) && constructingTrait(term) =>
+            case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
               Tratify(term)
 
             case v: Defn.Val =>
