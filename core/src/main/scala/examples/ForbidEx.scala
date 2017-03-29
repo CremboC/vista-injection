@@ -1,6 +1,6 @@
 package examples
 
-import vistas.Vista._
+import vista.lib._
 
 /**
   * @author paulius
@@ -19,7 +19,7 @@ object ForbidEx {
     println(a.sum(Seq(1, 2, 3))) // should work
 
     // forbid the sum method
-    val aWithoutSum: AnoSum = ∖[A](a, {
+    val aWithoutSum = ∖[A ~> AnoSum](a, {
       def sum(items: Seq[Int]): Int = ???
     })
 

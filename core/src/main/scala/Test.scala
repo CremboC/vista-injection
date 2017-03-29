@@ -1,5 +1,4 @@
-
-import vistas.Vista._
+import vista.lib._
 
 /**
   * @author paulius
@@ -51,7 +50,7 @@ object Test extends App {
   def func(): Unit = {
     val b = new B
 
-    val b1: Bf = ∖[B](b, {
+    val b1 = ∖[B ~> Bf](b, {
       def multi(a: Int)(b: Int): Int = ???
     })
 
@@ -60,26 +59,25 @@ object Test extends App {
 
     val a = new A
     a.common()
-    val ab: AB = ∪[A, B](a, b)
+    val ab = ∪[A & B ~> AB](a, b)
     ab.nonBDef()
     ab.say("Hello from B")
 
-    val inter: AxB = ∩[A, B](a, b)
+    val inter: AxB = ∩[A & B ~> AxB](a, b)
 
     println(inter.common)
 
-    val comb: FG = ⨯[F, G](f, g)
+    val comb: FG = ⨯[F & G ~> FG](f, g)
     println(comb.ab()())
 
-    val ff: Ff = ∖[F](b, {
-      def c(): Int= ???
+    val ff = ∖[F ~> Ff](b, {
+      def c(): Int = ???
     })
 
-    val ffxg: FfxG = ⨯[Ff, G](f, g)
+    val ffxg = ⨯[Ff & G ~> FfxG](f, g)
     println(ffxg.ab()())
   }
 
   func()
 
 }
-

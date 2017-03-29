@@ -17,12 +17,20 @@ package object expanders {
   sealed trait Op[A]
 
   trait Expander[A <: OpInput, B <: Op[_]] {
-    def expand(input: A): Term.Block
+    def expand(input: A): Defn.Trait
   }
 
   object Expander {
     def apply[A <: OpInput, B <: Op[_]](implicit expander: Expander[A, B]): Expander[A, B] =
       expander
+  }
+
+  trait Constructable[A <: Op[_]] {
+    def members(input: OpInput): Seq[Defn]
+  }
+
+  object Constructable {
+    def apply[A <: Op[_]: Constructable]: Constructable[A] = implicitly
   }
 
   /**

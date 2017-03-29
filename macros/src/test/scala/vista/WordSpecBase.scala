@@ -9,7 +9,6 @@ import scala.meta.contrib._
 /**
   * Created by Crembo on 2017-03-22.
   */
-
 sealed trait BaseTest extends Matchers with ResetsDatabase {
   protected val db = semantics.Database
   protected val addInsts: Tree => Unit = _.traverse {
@@ -35,12 +34,21 @@ sealed trait BaseTest extends Matchers with ResetsDatabase {
         }
     }
 
+  implicit val defStructureEquality =
+    new Equality[Defn] {
+      def areEqual(a: Defn, b: Any): Boolean =
+        b match {
+          case bt: Defn => a isEqual bt
+          case _        => false
+        }
+    }
+
   implicit val traitStructureEquality =
     new Equality[Defn.Trait] {
       def areEqual(a: Defn.Trait, b: Any): Boolean =
         b match {
           case bt: Defn.Trait => a isEqual bt
-          case _            => false
+          case _              => false
         }
     }
 

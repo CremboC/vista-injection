@@ -29,12 +29,11 @@ class ProductTest extends FlatSpecBase {
         trait AB extends A with B {
           def ab()() = (a(), b())
         }
-        val ab = new AB {}
       """
 
-    val input = q"val ab: AB = x[A, B](a, b)"
+    val input = q"x[A & B ~> AB](a, b)"
 
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
   }
 
@@ -54,12 +53,11 @@ class ProductTest extends FlatSpecBase {
           trait AB extends A with B {
             def ab(v: String)() = (a(v), b())
           }
-          val ab = new AB {}
         """
 
-    val input = q"val ab: AB = x[A, B](a, b)"
+    val input = q"x[A & B ~> AB](a, b)"
 
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
   }
 
@@ -79,12 +77,11 @@ class ProductTest extends FlatSpecBase {
         trait AB extends A with B {
           def ab[Tvista1, Tvista2, Tvista3](v: Tvista1)(s: Tvista3) = (a[Tvista1, Tvista2](v), b[Tvista3](s))
         }
-        val ab = new AB {}
       """
 
-    val input = q"val ab: AB = x[A, B](a, b)"
+    val input = q"x[A & B ~> AB](a, b)"
 
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
   }
 
@@ -104,15 +101,11 @@ class ProductTest extends FlatSpecBase {
           trait AB extends A with B {
             def ab(v: String)() = (a(v), b())
           }
-          val ab = new AB {
-            override val p: Int = a.p
-            override val p1: Int = b.p1
-          }
         """
 
-    val input = q"val ab: AB = x[A, B](a, b)"
+    val input = q"x[A & B ~> AB](a, b)"
 
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Product](input)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
   }
 }

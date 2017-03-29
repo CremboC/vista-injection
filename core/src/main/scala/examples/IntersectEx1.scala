@@ -1,6 +1,6 @@
 package examples
 
-import vistas.Vista.∩
+import vista.lib._
 
 @vista.enable
 object IntersectEx1 extends ExampleBase {
@@ -27,7 +27,7 @@ object IntersectEx1 extends ExampleBase {
 
     val c = new C("test")
 
-    val ab: AuB = ∩[A, B](a, b)
+    val ab = ∩[A & B ~> AuB](a, b)
 
     try println(ab.zero)
     catch {

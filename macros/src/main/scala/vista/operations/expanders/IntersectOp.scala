@@ -1,27 +1,35 @@
 package vista.operations.expanders
 
 import vista.meta.xtensions._
-import vista.operations.parsers.OpVistas
+import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 
 import scala.collection.immutable.Seq
 import scala.meta._
-import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
   */
-private[operations] object IntersectOp {
+object IntersectOp {
   type Intersect = Op[IntersectOp.type]
 
   private val db = semantics.Database
 
+  implicit object IntersectCtor extends Constructable[Intersect] {
+    override def members(input: OpInput): Seq[Defn] = input match {
+      case input: OpVistas =>
+        ctorMembersDefns(db(input.lclass), input.lvar) ++
+          ctorMembersDefns(db(input.rclass), input.rvar)
+      case input: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+    }
+  }
+
   implicit object VistaExpander extends Expander[OpVistas, Intersect] {
-    override def expand(inp: OpVistas): Term.Block = {
+    override def expand(inp: OpVistas): Defn.Trait = {
       val traitName = Type.Name(inp.newtype)
 
-      val leftTypeCtor  = Ctor.Name(inp.lclass)
-      val rightTypeCtor = Ctor.Name(inp.rclass)
+      val leftTypeCtor  = db.ctor(inp.lclass)
+      val rightTypeCtor = db.ctor(inp.rclass)
 
       val lclazz = db(inp.lclass)
       val rclazz = db(inp.rclass)
@@ -41,20 +49,11 @@ private[operations] object IntersectOp {
       val common = commonMethods(inp)
       val result = (forbidden ++ common).to[Seq].sortBy(_.name.syntax)
 
-      val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
-
-      inp.newvar match {
-        case None => ???
-        case Some(nvar) =>
-          q"""
-           trait $traitName extends $leftTypeCtor with $rightTypeCtor {
-             ..$result
-           }
-           val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
-             ..$members
-           }
-        """
-      }
+      q"""
+         trait $traitName extends $leftTypeCtor with $rightTypeCtor {
+           ..$result
+         }
+      """
     }
   }
 }

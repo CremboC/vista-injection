@@ -1,9 +1,9 @@
 package vista.operations
 
+import vista.FlatSpecBase
+import vista.meta.xtensions._
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.parsers.OpVistas
-import vista.meta.xtensions._
-import vista.FlatSpecBase
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps
@@ -15,8 +15,8 @@ class IntersectTest extends FlatSpecBase {
 
   behavior of "Intersect"
 
-  private val parseExpandAndRecord = { tree: Defn.Val =>
-    val expanded = tree |> parseAndExpand[Defn.Val, OpVistas, Intersect]
+  private val parseExpandAndRecord = { tree: Term.Apply =>
+    val expanded = tree |> parseAndExpand[Term.Apply, OpVistas, Intersect]
     expanded |> addInsts
     expanded
   }
@@ -44,13 +44,9 @@ class IntersectTest extends FlatSpecBase {
            override def c() = throw new NoSuchMethodException
            override def d(): Int = super[A].d()
          }
-         val ab = new AB {}
       """
 
-    val source =
-      q"""
-            val ab: AB = ∩[A, B](a, b)
-          """
+    val source = q"""∩[A & B ~> AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
 
@@ -93,13 +89,9 @@ class IntersectTest extends FlatSpecBase {
            override def c(): Int = super[A].c()
            override def d: Int = super[A].d
          }
-         val ab = new AB {}
       """
 
-    val source =
-      q"""
-        val ab: AB = ∩[A, B](a, b)
-      """
+    val source = q"""∩[A & B ~> AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)
@@ -110,9 +102,7 @@ class IntersectTest extends FlatSpecBase {
       q"def d: Int = {}".signature
     )
 
-    db("AB").forbidden.signatures should contain only (
-      q"def b(): Int = {}".signature
-    )
+    db("AB").forbidden.signatures should contain only q"def b(): Int = {}".signature
   }
 
   it should "expand correctly with common functions" in {
@@ -141,13 +131,9 @@ class IntersectTest extends FlatSpecBase {
            override def common: Int = super[A].common
            override def d(): Int = super[A].d()
          }
-         val ab = new AB {}
       """
 
-    val source =
-      q"""
-          val ab: AB = ∩[A, B](a, b)
-        """
+    val source = q"""∩[A & B ~> AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)
@@ -180,22 +166,13 @@ class IntersectTest extends FlatSpecBase {
           trait AB extends A with B {
             override def a: Int = super[A].a
           }
-          val ab = new AB {
-            override val b: Int = a.b
-            override val n: Int = b.n
-          }
        """
 
-    val source =
-      q"""
-          val ab: AB = ∩[A, B](a, b)
-        """
+    val source = q"""∩[A & B ~> AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)
-    db("AB").visibilities.signatures should contain only (
-      q"def a(): Int = {}".signature
-    )
+    db("AB").visibilities.signatures should contain only q"def a(): Int = {}".signature
 
     db("AB").forbidden shouldBe empty
   }

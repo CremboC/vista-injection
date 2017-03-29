@@ -1,7 +1,7 @@
 package vista.operations.expanders
 
 import vista.meta.xtensions.XDefn
-import vista.operations.parsers.OpVistas
+import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 import vista.semantics.Database.ClassName
 import vista.util.Equalities.defEquality
@@ -9,18 +9,26 @@ import vista.util.EqualitySet
 
 import scala.collection.immutable.Seq
 import scala.meta._
-import scala.meta.contrib._
 
 /**
   * Internal API implementation
   */
-private[operations] object UnionOp {
+object UnionOp {
   type Union = Op[UnionOp.type]
 
   private val db = semantics.Database
 
+  implicit object UnionCtor extends Constructable[Union] {
+    override def members(input: OpInput): Seq[Defn] = input match {
+      case input: OpVistas =>
+        ctorMembersDefns(db(input.lclass), input.lvar) ++
+          ctorMembersDefns(db(input.rclass), input.rvar)
+      case input: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+    }
+  }
+
   implicit object VistaExpander extends Expander[OpVistas, Union] {
-    override def expand(inp: OpVistas): Term.Block = {
+    override def expand(inp: OpVistas): Defn.Trait = {
       val traitName = Type.Name(inp.newtype)
 
       val lclazz = db.get(inp.lclass)
@@ -46,29 +54,11 @@ private[operations] object UnionOp {
 
       val result = (common ++ methods).sortBy(_.name.syntax)
 
-      val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
-
-      inp.newvar match {
-        case None =>
-          q"""
-            trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
-              ..$result
-            }
-            new ${Ctor.Name(traitName.value)} {
-              ..$members
-            }
-        """
-
-        case Some(nvar) =>
-          q"""
-            trait $traitName extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(inp.rclass)} {
-              ..$result
-            }
-            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
-              ..$members
-            }
-        """
-      }
+      q"""
+        trait $traitName extends ${db.ctor(inp.lclass)} with ${db.ctor(inp.rclass)} {
+          ..$result
+        }
+      """
     }
   }
 }

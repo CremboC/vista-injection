@@ -14,12 +14,12 @@ class MixedOpTest extends FlatSpecBase {
     val classes = q"class A { def a: Int = 1; def b: Int = 2 }"
     classes |> addInsts
 
-    val union: (Defn.Val => Tree)  = parseAndExpand[Defn.Val, OpVistas, Union]
-    val forbid: (Defn.Val => Tree) = parseAndExpand[Defn.Val, OpOverload, Forbid]
+    val union: (Term.Apply => Tree)  = parseAndExpand[Term.Apply, OpVistas, Union]
+    val forbid: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpOverload, Forbid]
 
     val forbidA =
       q"""
-        val ab: Ab = ∖[A](a, {
+        ∖[A ~> Ab](a, {
           def a: Int = ???
         })
       """
@@ -27,7 +27,7 @@ class MixedOpTest extends FlatSpecBase {
 
     val forbidB =
       q"""
-        val aa: Aa = ∖[A](a, {
+        ∖[A ~> Aa](a, {
           def b: Int = ???
         })
       """
@@ -35,7 +35,7 @@ class MixedOpTest extends FlatSpecBase {
 
     val unionAaAb =
       q"""
-        val ab: AauAb = ∪[Aa, Ab](aa, ab)
+        ∪[Aa & Ab ~> AauAb](aa, ab)
       """
     unionAaAb |> union |> addInsts
 

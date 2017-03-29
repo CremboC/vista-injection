@@ -1,6 +1,6 @@
 package examples
 
-import vistas.Vista.∪
+import vista.lib._
 
 /**
   * @author paulius
@@ -17,7 +17,7 @@ object UnionEx1 extends ExampleBase {
   }
 
   class B {
-    def two(): Int = 2
+    def two(): Int   = 2
     def three(): Int = 3
   }
 
@@ -25,7 +25,7 @@ object UnionEx1 extends ExampleBase {
     val a = new A
     val b = new B
 
-    val ab: AB = ∪[A, B](a, b)
+    val ab = ∪[A & B ~> AB](a, b)
 
     println(ab.zero)
     println(ab.one())

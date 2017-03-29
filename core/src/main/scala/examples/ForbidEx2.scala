@@ -1,6 +1,6 @@
 package examples
 
-import vistas.Vista.{∖, ∪}
+import vista.lib._
 
 /**
   * @author paulius
@@ -12,8 +12,8 @@ object ForbidEx2 {
     def two: Int = 2
   }
 
-  def mkForbid(a: A): Af =
-    ∖[A](a, {
+  def mkForbid(a: A) =
+    ∖[A ~> Af](a, {
       def one: Int = ???
       def two: Int = ???
     })
@@ -37,7 +37,7 @@ object ForbidEx2 {
 
     println(af.isInstanceOf[A])
 
-    val aAgain: AA = ∪[A, Af](a, af)
+    val aAgain = ∪[A & Af ~> AA](a, af)
 
     try {
       println(aAgain.one)

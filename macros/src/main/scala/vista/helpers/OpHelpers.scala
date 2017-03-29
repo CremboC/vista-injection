@@ -1,30 +1,33 @@
 package vista.helpers
 
+import vista.Constants
+import vista.util.Extractable._
+
 import scala.meta._
 
 /**
   * @author Paulius Imbrasas
   */
 object OpHelpers {
-  private final val opVistasR = """.\[(.*), (.*)\]""".r
-  private final val overloadR = """.\[(.*)]""".r
+  private final val opVistasR = """.\[.+ & .+ ~> .+\]""".r
+  private final val overloadR = """.\[[^&]+ ~> .+\]""".r
 
-  def isUnion(expr: Tree): Boolean     = expr.syntax.contains("∪")
-  def isForbid(expr: Tree): Boolean    = expr.syntax.contains("∖")
-  def isIntersect(expr: Tree): Boolean = expr.syntax.contains("∩")
-  def isProduct(expr: Tree): Boolean   = expr.syntax.contains("⨯")
+  def extractor(char: String): Extractable = (arg: Tree) => arg.syntax.contains(char)
+  val Forbid: Extractable                  = extractor(Constants.Forbid)
+  val Intersect: Extractable               = extractor(Constants.Intersect)
+  val Union: Extractable                   = extractor(Constants.Union)
+  val Product: Extractable                 = extractor(Constants.Product)
 
-  def isOpVistas(tree: Tree): Boolean =
-    tree match {
-      case d: Defn.Val => opVistasR.findFirstMatchIn(d.syntax).isDefined
-      case _           => false
-    }
+  val OpVistas: Extractable   = (arg: Tree) => opVistasR.findFirstMatchIn(arg.syntax).isDefined
+  val OpOverload: Extractable = (arg: Tree) => overloadR.findFirstMatchIn(arg.syntax).isDefined
 
-  def isOpOverload(tree: Tree): Boolean =
-    tree match {
-      case d: Defn.Val => overloadR.findFirstMatchIn(d.syntax).isDefined
-      case _           => false
-    }
+  def isUnion(expr: Tree): Boolean     = Union.asPartial(expr)
+  def isForbid(expr: Tree): Boolean    = Forbid.asPartial(expr)
+  def isIntersect(expr: Tree): Boolean = Intersect.asPartial(expr)
+  def isProduct(expr: Tree): Boolean   = Product.asPartial(expr)
+
+  def isOpVistas(tree: Tree): Boolean   = OpVistas.asPartial(tree)
+  def isOpOverload(tree: Tree): Boolean = OpOverload.asPartial(tree)
 
   def hasOp(expr: Tree): Boolean =
     isUnion(expr) || isForbid(expr) || isIntersect(expr) || isProduct(expr)

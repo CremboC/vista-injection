@@ -1,8 +1,9 @@
 package vista.operations
 
-import vista.{FlatSpecBase, WordSpecBase}
+import vista.FlatSpecBase
+import vista.operations.expanders.Constructable
 import vista.operations.expanders.UnionOp.Union
-import vista.operations.parsers.OpVistas
+import vista.operations.parsers.{OpVistas, Parser}
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps
@@ -15,16 +16,14 @@ class UnionTest extends FlatSpecBase {
   behavior of "Union"
 
   it should "expand two simple classes" in {
-    val expected =
-      q"""
-          trait AB extends A with B {}
-          val ab = new AB {}
-        """
-    val source = q"""val ab: AB = ∪[A, B](a, b)"""
+    val expected = q"""trait AB extends A with B {}"""
+    val source   = q"""∪[A & B ~> AB](a, b)"""
 
     q"""class A; class B""" |> addInsts
 
-    val result = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    val result = parseAndExpand[Term.Apply, OpVistas, Union](source)
+    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    Constructable[Union].members(parsed) shouldBe empty
     result should equal(expected)
   }
 
@@ -45,10 +44,7 @@ class UnionTest extends FlatSpecBase {
             def g[T]: Int = 3
           }
         """
-    val source =
-      q"""
-          val ab: AB = ∪[A, B](a, b)
-        """
+    val source = q"""∪[A & B ~> AB](a, b)"""
 
     val expected =
       q"""
@@ -59,12 +55,14 @@ class UnionTest extends FlatSpecBase {
           override def g[T]: Int = super[A].g[T]
           override def o(p: String): String = super[A].o(p)
         }
-        val ab = new AB {}
       """
 
     classes |> addInsts
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Union](source)
     expanded.syntax should equal(expected.syntax)
+
+    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    Constructable[Union].members(parsed) shouldBe empty
   }
 
   it should "expand a class with a constructor" in {
@@ -80,10 +78,7 @@ class UnionTest extends FlatSpecBase {
             def c: Int = 3
           }
         """
-    val source =
-      q"""
-          val ab: AB = ∪[A, B](a, b)
-        """
+    val source = q"""∪[A & B ~> AB](a, b)"""
 
     val expected =
       q"""
@@ -92,16 +87,18 @@ class UnionTest extends FlatSpecBase {
             override def b: Int = super[A].b
             override def c: Int = super[B].c
           }
-          val ab = new AB {
-            override val a: Seq[Int] = a.a
-            override val f: () => Unit = b.f
-            override var o: Int = b.o
-          }
         """
 
     classes |> addInsts
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](source)
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Union](source)
     expanded.syntax should equal(expected.syntax)
+
+    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    Constructable[Union].members(parsed) should contain only (
+      q"override val a: Seq[Int] = a.a",
+      q"override val f: () => Unit = b.f",
+      q"override var o: Int = b.o"
+    )
   }
 
   it should "expand a class hierarchy" in {
@@ -120,10 +117,8 @@ class UnionTest extends FlatSpecBase {
         }
       """ |> addInsts
 
-    val op = q"val a: A = ∪[Aa, Ab](aa, bb)"
-    val expanded = parseAndExpand[Defn.Val, OpVistas, Union](op).collect {
-      case t: Defn.Trait => t
-    }.head
+    val op       = q"∪[Aa & Ab ~> A](aa, bb)"
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Union](op)
 
     expanded.syntax should equal {
       q"""

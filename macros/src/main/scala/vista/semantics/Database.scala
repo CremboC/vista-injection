@@ -1,5 +1,6 @@
 package vista.semantics
 
+import vista.Constants
 import vista.modifiers.Tratify
 
 import scala.collection.mutable
@@ -32,19 +33,24 @@ object Database {
 
   def apply(value: ClassName): Inst = get(value)
 
-  def add(c: Defn.Class): Unit = {
+  def add(c: Defn.Class): Unit = add(c, generated = false)
+
+  // FIXME: add "generated" parameter
+  def add(c: Defn.Class, generated: Boolean): Unit = {
     import vista.meta.xtensions.{XDeclVal, XDeclVar}
 
     val decls = Tratify.ctorToDecls(c).map {
       case d: Decl.Val => d.asDefnVal
       case d: Decl.Var => d.asDefnVar
     }
-    store.add(Inst.Class(c, decls))
+    store.add(Inst.Class(c, decls, generated))
   }
 
-  def add(c: Defn.Trait): Unit = {
+  def add(c: Defn.Trait): Unit = add(c, generated = false)
+
+  def add(c: Defn.Trait, generated: Boolean): Unit = {
     if (!exists(c.name.value))
-      store.add(Inst.Trait(c))
+      store.add(Inst.Trait(c, generated))
   }
 
   def get(value: ClassName): Inst = {
@@ -54,6 +60,10 @@ object Database {
   }
 
   def exists(name: ClassName): Boolean = store.get(name).isDefined
+
+  def ctor(name: ClassName): Ctor.Name =
+    if (this(name).generated) Ctor.Name(s"${Constants.GenName}.$name")
+    else Ctor.Name(name)
 
   def classes: Set[Inst] = store.classes
 

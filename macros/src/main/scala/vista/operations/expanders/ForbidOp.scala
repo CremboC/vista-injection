@@ -1,24 +1,31 @@
 package vista.operations.expanders
 
 import vista.meta.xtensions._
-import vista.operations.parsers.{OpOverload, OpVistas}
+import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 import vista.semantics.Database.ClassName
 
 import scala.collection.immutable.Seq
 import scala.meta._
-import scala.meta.contrib._
 
 /**
   * Internal API of Forbid
   */
-private[operations] object ForbidOp {
+object ForbidOp {
   type Forbid = Op[ForbidOp.type]
 
   private val db = semantics.Database
 
+  // FIXME: are you sure?
+  implicit object ForbidCtor extends Constructable[Forbid] {
+    override def members(input: OpInput): Seq[Defn] = input match {
+      case _: OpVistas   => ctorMembersDefns(db(input.lclass), input.lvar)
+      case _: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+    }
+  }
+
   implicit object VistaExpander extends Expander[OpVistas, Forbid] {
-    override def expand(inp: OpVistas): Term.Block = {
+    override def expand(inp: OpVistas): Defn.Trait = {
       val lclazz = db(inp.lclass)
       val rclazz = db(inp.rclass)
 
@@ -51,61 +58,35 @@ private[operations] object ForbidOp {
         }
       }
 
-      val members = ctorMembersDefns(lclazz, inp.lvar)
-
       val result = (forbiddenDefns ++ allowedDefns).to[Seq].sortBy(_.name.syntax)
 
-      inp.newvar match {
-        case None => ???
-        case Some(nvar) =>
-          q"""
-          trait ${Type.Name(inp.newtype)} extends ${Ctor.Name(inp.lclass)} with ${Ctor.Name(
-            inp.rclass)} {
-            ..$result
-          }
-          val ${Term.Name(nvar).asPat} = new ${Ctor.Name(inp.newtype)} {
-            ..$members
-          }
-        """
-      }
+      val lctor = db.ctor(inp.lclass)
+      val rctor = db.ctor(inp.rclass)
+
+      q"""
+        trait ${Type.Name(inp.newtype)} extends $lctor with $rctor {
+          ..$result
+        }
+      """
     }
   }
 
   implicit object OverloadExpander extends Expander[OpOverload, Forbid] {
-    override def expand(inp: OpOverload): Term.Block = {
+    override def expand(inp: OpOverload): Defn.Trait = {
       val forbidden = inp.methods
         .map { defn =>
           defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
                     body = q"throw new NoSuchMethodException")
         }
-        .asInstanceOf[Seq[Stat]]
+        .to[Seq]
 
-      val constructor = Ctor.Name(inp.lclass)
+      val constructor = db.ctor(inp.lclass)
 
-      val lclazz  = db(inp.lclass)
-      val members = ctorMembersDefns(lclazz, inp.lvar)
-
-      inp.newvar match {
-        case None =>
-          q"""
-           trait ${Type.Name(inp.newtype)} extends $constructor {
-             ..$forbidden
-           }
-           new ${Ctor.Name(inp.newtype)} {
-             ..$members
-           }
-        """
-        case Some(vr) =>
-          val vrr = Pat.Var.Term(Term.Name(vr))
-          q"""
-          trait ${Type.Name(inp.newtype)} extends $constructor {
-            ..$forbidden
-          }
-          val $vrr = new ${Ctor.Name(inp.newtype)} {
-            ..$members
-          }
-        """
-      }
+      q"""
+        trait ${Type.Name(inp.newtype)} extends $constructor {
+          ..$forbidden
+        }
+      """
     }
   }
 }

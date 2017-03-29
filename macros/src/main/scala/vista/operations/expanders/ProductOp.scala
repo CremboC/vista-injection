@@ -1,7 +1,7 @@
 package vista.operations.expanders
 
 import vista.meta.xtensions._
-import vista.operations.parsers.OpVistas
+import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 
 import scala.collection.immutable.{Map, Seq}
@@ -11,13 +11,22 @@ import scala.meta.contrib._
 /**
   * @author Paulius Imbrasas
   */
-private[operations] object ProductOp {
+object ProductOp {
   type Product = Op[ProductOp.type]
 
   private val db = semantics.Database
 
+  implicit object ProductCtor extends Constructable[Product] {
+    override def members(input: OpInput): Seq[Defn] = input match {
+      case input: OpVistas =>
+        ctorMembersDefns(db(input.lclass), input.lvar) ++
+          ctorMembersDefns(db(input.rclass), input.rvar)
+      case input: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+    }
+  }
+
   implicit object VistaExpander extends Expander[OpVistas, Product] {
-    override def expand(inp: OpVistas): Term.Block = {
+    override def expand(inp: OpVistas): Defn.Trait = {
       val lclazz = db(inp.lclass)
       val rclazz = db(inp.rclass)
 
@@ -64,25 +73,14 @@ private[operations] object ProductOp {
 
       val traitName = Type.Name(inp.newtype)
 
-      val leftTypeCtor  = Ctor.Name(inp.lclass)
-      val rightTypeCtor = Ctor.Name(inp.rclass)
+      val leftTypeCtor  = db.ctor(inp.lclass)
+      val rightTypeCtor = db.ctor(inp.rclass)
 
-      val members = ctorMembersDefns(lclazz, inp.lvar) ++ ctorMembersDefns(rclazz, inp.rvar)
-
-      // TODO: common methods?
-
-      inp.newvar match {
-        case None => ???
-        case Some(nvar) =>
-          q"""
-            trait $traitName extends $leftTypeCtor with $rightTypeCtor {
-              ..$pairDefs
-            }
-            val ${Term.Name(nvar).asPat} = new ${traitName.asCtorRef} {
-              ..$members
-            }
-          """
-      }
+      q"""
+          trait $traitName extends $leftTypeCtor with $rightTypeCtor {
+            ..$pairDefs
+          }
+      """
     }
 
     private def generateTParams(tparams: Seq[Type.Param]): Map[String, Type.Param] =

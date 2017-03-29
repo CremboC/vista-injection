@@ -42,17 +42,23 @@ sealed trait Inst {
     methods.filter { d =>
       d.body isEqual q"throw new NoSuchMethodException"
     }
+
+  def generated: Boolean
 }
 
 object Inst {
-  case class Class(override val body: Defn.Class, ctorMembers: Seq[Defn] = Seq.empty)
+  case class Class(override val body: Defn.Class,
+                   ctorMembers: Seq[Defn] = Seq.empty,
+                   generated: Boolean = false)
       extends Inst {
     val ctor: Ctor.Primary = body.ctor
 
     override protected val members: Seq[Defn] = ctorMembers ++ super.members
+
+//    override def generated: Boolean = ???
   }
 
-  case class Trait(tbody: Defn.Trait) extends Inst {
+  case class Trait(tbody: Defn.Trait, generated: Boolean = false) extends Inst {
     override val body: Defn.Class =
       q"..${tbody.mods} class ${tbody.name}[..${tbody.tparams}] extends ${tbody.templ}"
   }
