@@ -26,8 +26,18 @@ object ForbidEx {
     // make dummy classes for convert method
     class T
     class Ta extends T
-    println(aWithoutSum.convert[T, Ta](new T)) // run convert, should work
 
-    aWithoutSum.sum(Seq(1, 2, 3)) // should throw a NoSuchMethodException
+    if ({ def convert[A, B <: A](a: A) = ??? } ⊆ [AnoSum] aWithoutSum) {
+      println(aWithoutSum.convert[T, Ta](new T)) // run convert, should work
+    } else {
+      println(s"convert is not part of $aWithoutSum")
+    }
+
+    if ({ def sum(items: Seq[Int]) = ??? } ⊆ [AnoSum] aWithoutSum) {
+      aWithoutSum.sum(Seq(1, 2, 3))
+    } else {
+      println(s"Sum is not part of $aWithoutSum")
+    }
+
   }
 }

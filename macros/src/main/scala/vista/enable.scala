@@ -48,19 +48,19 @@ class enable extends StaticAnnotation {
         val generated = defn.collect {
           case t: Term.Apply if OpHelpers.hasOp(t) =>
             val parser = t match {
-              case OpHelpers.Forbid()       => t match {
+              case OpHelpers.Forbid(_)       => t match {
                   case OpHelpers.OpVistas()   => parseAndExpand[Term.Apply, OpVistas, ForbidOp.Forbid] _
                   case OpHelpers.OpOverload() => parseAndExpand[Term.Apply, OpOverload, ForbidOp.Forbid] _
                 }
-              case OpHelpers.Union()        => t match {
+              case OpHelpers.Union(_)        => t match {
                   case OpHelpers.OpVistas()   => parseAndExpand[Term.Apply, OpVistas, UnionOp.Union] _
   //                case OpHelpers.OpOverload() => parseAndExpand[Term.Apply, OpOverload, UnionOp.Union](t)
                 }
-              case OpHelpers.Intersect() => t match {
+              case OpHelpers.Intersect(_) => t match {
                   case OpHelpers.OpVistas()   => parseAndExpand[Term.Apply, OpVistas, IntersectOp.Intersect] _
   //                case OpHelpers.OpOverload() => parseAndExpand[Term.Apply, OpOverload, IntersectOp.Intersect](t)
                 }
-              case OpHelpers.Product()      => t match {
+              case OpHelpers.Product(_)      => t match {
                 case OpHelpers.OpVistas()   => parseAndExpand[Term.Apply, OpVistas, ProductOp.Product] _
   //              case OpHelpers.OpOverload() => parseAndExpand[Term.Apply, OpOverload, ProductOp.Product](t)
               }
@@ -95,7 +95,10 @@ class enable extends StaticAnnotation {
                 case _ => v
               }
 
-            case t: Term.Apply if OpHelpers.hasOp(t) =>
+            case OpHelpers.Subset(t) =>
+              Subset(t)
+
+            case OpHelpers.HasOp(t) =>
               val parser = t match {
                 case OpHelpers.OpVistas() => Parser[Term.Apply, OpVistas]
                 case OpHelpers.OpOverload() => Parser[Term.Apply, OpOverload]
@@ -104,10 +107,10 @@ class enable extends StaticAnnotation {
               val op = parser.parse(t).getOrElse { abort("Fatal error occurred when parsing an op") }
 
               val ctorable = t match {
-                case OpHelpers.Forbid() => Constructable[ForbidOp.Forbid]
-                case OpHelpers.Union() => Constructable[UnionOp.Union]
-                case OpHelpers.Intersect() => Constructable[IntersectOp.Intersect]
-                case OpHelpers.Product() => Constructable[ProductOp.Product]
+                case OpHelpers.Forbid(_) => Constructable[ForbidOp.Forbid]
+                case OpHelpers.Union(_) => Constructable[UnionOp.Union]
+                case OpHelpers.Intersect(_) => Constructable[IntersectOp.Intersect]
+                case OpHelpers.Product(_) => Constructable[ProductOp.Product]
               }
 
               val members = ctorable.members(op)

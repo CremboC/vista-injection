@@ -314,24 +314,24 @@ class IdentityTest extends FlatSpecBase {
   // identity laws
   // A ∩ U = A
   "Union of A with universal" should "be universal" in {
-    assertThrows[IllegalArgumentException] {
-      throw new IllegalArgumentException("Universal set cannot exists in vistas")
+    assertThrows[UnsupportedOperationException] {
+      throw new UnsupportedOperationException("Universal set cannot exists in vistas")
     }
   }
 
   // complement laws
   // A ∪ A' = U
   "Union of A with its complement" should "be universal" in {
-    assertThrows[IllegalArgumentException] {
-      throw new IllegalArgumentException("Complement does not exist in vistas")
+    assertThrows[UnsupportedOperationException] {
+      throw new UnsupportedOperationException("Complement does not exist in vistas")
     }
   }
 
   // complement laws
   // A ∩ A' = ∅
   "Intersection of A with its complement" should "be empty set" in {
-    assertThrows[IllegalArgumentException] {
-      throw new IllegalArgumentException("Complement does not exist in vistas")
+    assertThrows[UnsupportedOperationException] {
+      throw new UnsupportedOperationException("Complement does not exist in vistas")
     }
   }
 

@@ -85,4 +85,24 @@ class OpHelpersTest extends WordSpecBase {
       }
     }
   }
+
+  "HasOp" when {
+    "used as an extractor" should {
+      "succeed" in {
+        val apply1 = q"⨯[A, B](a, b)"
+        apply1 match {
+          case OpHelpers.HasOp(i) => i
+        }
+      }
+
+      "fail" in {
+        val apply1 = q"f[A, B](a, b)"
+        assertThrows[MatchError] {
+          apply1 match {
+            case OpHelpers.HasOp(i) => i
+          }
+        }
+      }
+    }
+  }
 }

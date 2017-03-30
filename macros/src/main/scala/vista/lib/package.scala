@@ -30,4 +30,8 @@ package object lib {
   // product
   def ⨯[A <: ~>[&[_, _], _]](left: Any, right: Any): Any =
     throw new RuntimeException("Should be compiled out")
+
+  implicit class VistaOps(val f: {}) extends AnyVal {
+    def ⊆[A](a: A): Boolean = ???
+  }
 }

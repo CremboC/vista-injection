@@ -11,6 +11,7 @@ import scala.meta.contrib._
   */
 sealed trait BaseTest extends Matchers with ResetsDatabase {
   protected val db = vista.semantics.Database
+
   protected val addInsts: Tree => Unit = _.traverse {
     case c: Defn.Class => db.add(c)
     case c: Defn.Trait => db.add(c)
@@ -58,6 +59,15 @@ sealed trait BaseTest extends Matchers with ResetsDatabase {
         b match {
           case bt: Term.Block => a isEqual bt
           case _              => false
+        }
+    }
+
+  implicit val litStructureEquality =
+    new Equality[Lit] {
+      def areEqual(a: Lit, b: Any): Boolean =
+        b match {
+          case bt: Lit => a isEqual bt
+          case _       => false
         }
     }
 }
