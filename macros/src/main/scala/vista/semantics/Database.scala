@@ -53,11 +53,12 @@ object Database {
       store.add(Inst.Trait(c, generated))
   }
 
-  def get(value: ClassName): Inst = {
-    store.get(value).getOrElse {
+  def get(value: ClassName): Inst =
+    getOption(value).getOrElse {
       throw new IllegalStateException(s"Class <$value> not recorded in SemDB.")
     }
-  }
+
+  def getOption(value: ClassName): Option[Inst] = store.get(value)
 
   def exists(name: ClassName): Boolean = store.get(name).isDefined
 

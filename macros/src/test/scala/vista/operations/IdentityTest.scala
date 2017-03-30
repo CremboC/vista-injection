@@ -16,14 +16,6 @@ import scalaz.Scalaz.ToIdOps
   */
 class IdentityTest extends FlatSpecBase {
 
-//  def vistaTemplate(
-//      op: String)(lc: String, rc: String, result: String, lv: String, rv: String): Term.Apply =
-//    s"$op[$lc & $rc ~> $result]($lv, $rv)".parse[Term.Apply].get
-//
-//  val union     = vistaTemplate("∪") _
-//  val intersect = vistaTemplate("∩") _
-//  val forbid    = vistaTemplate("∖") _
-
   // commutativity
   // A ∪ B = B ∪ A
   "Union" should "not be commutative" in {

@@ -10,7 +10,7 @@ import scala.meta.contrib._
   * Created by Crembo on 2017-03-22.
   */
 sealed trait BaseTest extends Matchers with ResetsDatabase {
-  protected val db = semantics.Database
+  protected val db = vista.semantics.Database
   protected val addInsts: Tree => Unit = _.traverse {
     case c: Defn.Class => db.add(c)
     case c: Defn.Trait => db.add(c)

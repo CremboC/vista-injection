@@ -3,7 +3,7 @@ package vista
 /**
   * Created by Crembo on 2017-03-29.
   */
-object lib extends {
+package object lib {
   type ~>[A, B] = (A, B)
   type &[A, B]  = (A, B)
 

@@ -3,7 +3,7 @@ package vista
 /**
   * Created by Crembo on 2017-03-29.
   */
-object Constants {
+private[vista] object Constants {
   final val GenName = "gen$vista"
   final val AnyV    = "vista.lib.AnyV"
 
