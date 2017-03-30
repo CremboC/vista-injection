@@ -30,11 +30,9 @@ class OpHelpersTest extends WordSpecBase {
       "be detected correctly" in {
         val success =
           q"""
-          {
-            val test: Af = ∖[A](a, {
+            ∖[A](a, {
               def a(): Int = ???
             })
-          }
         """
         OpHelpers.isForbid(success) should be(true)
       }
@@ -44,11 +42,11 @@ class OpHelpersTest extends WordSpecBase {
       "not be detected" in {
         val fail =
           q"""
-         {
-            ∪[A](a, {})
-            ⨯[A, B](a, b)
-         }
-       """
+             {
+                ∪[A](a, {})
+                ⨯[A, B](a, b)
+             }
+           """
         OpHelpers.isForbid(fail) should be(false)
       }
     }
