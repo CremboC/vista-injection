@@ -50,7 +50,7 @@ object Test extends App {
   def func(): Unit = {
     val b = new B
 
-    val b1 = ∖[B ~> Bf](b, {
+    val b1 = ∖[B, Bf](b, {
       def multi(a: Int)(b: Int): Int = ???
     })
 
@@ -59,22 +59,22 @@ object Test extends App {
 
     val a = new A
     a.common()
-    val ab = ∪[A & B ~> AB](a, b)
+    val ab = ∪[A, B, AB](a, b)
     ab.nonBDef()
     ab.say("Hello from B")
 
-    val inter: AxB = ∩[A & B ~> AxB](a, b)
+    val inter: AxB = ∩[A, B, AxB](a, b)
 
     println(inter.common)
 
-    val comb: FG = ⨯[F & G ~> FG](f, g)
+    val comb: FG = ⨯[F, G, FG](f, g)
     println(comb.ab()())
 
-    val ff = ∖[F ~> Ff](b, {
+    val ff = ∖[F, Ff](b, {
       def c(): Int = ???
     })
 
-    val ffxg = ⨯[Ff & G ~> FfxG](f, g)
+    val ffxg = ⨯[Ff, G, FfxG](f, g)
     println(ffxg.ab()())
   }
 

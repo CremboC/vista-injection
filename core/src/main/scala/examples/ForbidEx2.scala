@@ -13,7 +13,7 @@ object ForbidEx2 {
   }
 
   def mkForbid(a: A) =
-    ∖[A ~> Af](a, {
+    ∖[A, Af](a, {
       def one: Int = ???
       def two: Int = ???
     })
@@ -27,17 +27,26 @@ object ForbidEx2 {
 
     try af.one
     catch {
-      case e: NoSuchMethodException => println(e.getClass)
+      case e: NoSuchMethodException => println("Failed to invoke af.one")
     }
 
     try af.two
     catch {
-      case e: NoSuchMethodException => println(e.getClass)
+      case e: NoSuchMethodException => println("Failed to invoke af.two")
+    }
+
+    try {
+      val partial = af.one _
+      partial()
+      println("Should not reach this point")
+    } catch {
+      case e: NoSuchMethodException =>
+        println("Failed to invoke af.one as a partial function")
     }
 
     println(af.isInstanceOf[A])
 
-    val aAgain = ∪[A & Af ~> AA](a, af)
+    val aAgain = ∪[A, Af, AA](a, af)
 
     try {
       println(aAgain.one)

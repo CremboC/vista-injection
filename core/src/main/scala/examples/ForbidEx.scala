@@ -19,7 +19,7 @@ object ForbidEx {
     println(a.sum(Seq(1, 2, 3))) // should work
 
     // forbid the sum method
-    val aWithoutSum = ∖[A ~> AnoSum](a, {
+    val aWithoutSum = ∖[A, AnoSum](a, {
       def sum(items: Seq[Int]): Int = ???
     })
 

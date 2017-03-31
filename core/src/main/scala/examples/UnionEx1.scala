@@ -25,7 +25,7 @@ object UnionEx1 extends ExampleBase {
     val a = new A
     val b = new B
 
-    val ab = ∪[A & B ~> AB](a, b)
+    val ab = ∪[A, B, AB](a, b)
 
     println(ab.zero)
     println(ab.one())

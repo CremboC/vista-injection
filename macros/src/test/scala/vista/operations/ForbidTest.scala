@@ -26,7 +26,7 @@ class ForbidTest extends WordSpecBase {
           """
         val source =
           q"""
-            ∖[A ~> Af](a, {
+            ∖[A, Af](a, {
               def a(s: String): Int = ???
               def b(): Int = ???
             })
@@ -48,7 +48,7 @@ class ForbidTest extends WordSpecBase {
           """
         val source =
           q"""
-          ∖[B ~> Bf](b, {
+          ∖[B, Bf](b, {
             def sayHi(a: Int): Unit = ???
           })
           """
@@ -62,7 +62,7 @@ class ForbidTest extends WordSpecBase {
           q"class A { def a: Int = 1; def b: Int = 3 }; class B { def b: Int = 2; def g: Double = 2.1 } "
         classes |> addInsts
 
-        val source = q"""∖[A & B ~> AB](a, b)"""
+        val source = q"""∖[A, B, AB](a, b)"""
 
         val expected =
           q"""

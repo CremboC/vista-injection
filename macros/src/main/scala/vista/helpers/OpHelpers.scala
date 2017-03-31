@@ -9,8 +9,8 @@ import scala.meta._
   * @author Paulius Imbrasas
   */
 object OpHelpers {
-  private final val opVistasR = """.\[.+ & .+ ~> .+\]""".r
-  private final val overloadR = """.\[[^&]+ ~> .+\]""".r
+  private final val opVistasR = """.\[.+, .+, .+\]""".r
+  private final val overloadR = """.\[[^&]+, .+\]""".r
 
   def extractor(char: String): Extractable1[Term.Apply] = new Extractable1[Term.Apply] {
     override def unapply[A <: Tree](arg: A): Option[Term.Apply] = arg match {

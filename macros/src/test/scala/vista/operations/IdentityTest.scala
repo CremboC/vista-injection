@@ -32,8 +32,8 @@ class IdentityTest extends FlatSpecBase {
         }
       """
 
-    val source1 = q"""∪[A & B ~> AB1](a, b)"""
-    val source2 = q"""∪[B & A ~> AB2](b, a)"""
+    val source1 = q"""∪[A, B, AB1](a, b)"""
+    val source2 = q"""∪[B, A, AB2](b, a)"""
 
     classes |> addInsts
 
@@ -77,8 +77,8 @@ class IdentityTest extends FlatSpecBase {
 
     val f: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Intersect]
 
-    q"∩[A & B ~> AiB1](a, b)" |> f |> addInsts
-    q"∩[B & A ~> AiB2](b, a)" |> f |> addInsts
+    q"∩[A, B, AiB1](a, b)" |> f |> addInsts
+    q"∩[B, A, AiB2](b, a)" |> f |> addInsts
 
     val ab1methods = db("AiB1").visibilities
     val ab2methods = db("AiB2").visibilities
@@ -119,15 +119,15 @@ class IdentityTest extends FlatSpecBase {
 
     // simulate left side
     // (A ∪ B) ∪ C
-    q"∪[A & B ~> AB](a, b)" |> f |> addInsts
-    q"∪[AB & C ~> ABC](ab, c)" |> f |> addInsts
+    q"∪[A, B, AB](a, b)" |> f |> addInsts
+    q"∪[AB, C, ABC](ab, c)" |> f |> addInsts
 
     val abcmethods = db("ABC").visibilities
 
     // simulate right side
     // A ∪ (B ∪ C)
-    q"∪[B & C ~> BC](b, c)" |> f |> addInsts
-    q"∪[A & BC ~> ABC2](a, bc)" |> f |> addInsts
+    q"∪[B, C, BC](b, c)" |> f |> addInsts
+    q"∪[A, BC, ABC2](a, bc)" |> f |> addInsts
 
     val abc2methods = db("ABC2").visibilities
 
@@ -165,15 +165,15 @@ class IdentityTest extends FlatSpecBase {
 
     // simulate left side
     // (A ∪ B) ∪ C
-    q"∩[A & B ~> AB](a, b)" |> inter |> addInsts
-    q"∩[AB & C ~> ABC](ab, c)" |> inter |> addInsts
+    q"∩[A, B, AB](a, b)" |> inter |> addInsts
+    q"∩[AB, C, ABC](ab, c)" |> inter |> addInsts
 
     val abcMethods = db("ABC").visibilities
 
     // simulate right side
     // A ∪ (B ∪ C)
-    q"∩[B & C ~> BC](b, c)" |> inter |> addInsts
-    q"∩[A & BC ~> ABC2](a, bc)" |> inter |> addInsts
+    q"∩[B, C, BC](b, c)" |> inter |> addInsts
+    q"∩[A, BC, ABC2](a, bc)" |> inter |> addInsts
 
     val abc2Methods = db("ABC2").visibilities
 
@@ -212,16 +212,16 @@ class IdentityTest extends FlatSpecBase {
 
     // left side
     // A ∪ (B ∩ C)
-    q"∩[B & C ~> BC](b, c)" |> inter |> addInsts
-    q"∪[A & BC ~> AuBC](a, bc)" |> union |> addInsts
+    q"∩[B, C, BC](b, c)" |> inter |> addInsts
+    q"∪[A, BC, AuBC](a, bc)" |> union |> addInsts
 
     val aubcMethods = db("AuBC").visibilities
 
     // right side
     // (A ∪ B) ∩ (A ∪ C)
-    q"∪[A & B ~> AB](a, b)" |> union |> addInsts
-    q"∪[A & C ~> AC](a, C)" |> union |> addInsts
-    q"∩[AB & AC ~> ABnAC](ab, ac)" |> inter |> addInsts
+    q"∪[A, B, AB](a, b)" |> union |> addInsts
+    q"∪[A, C, AC](a, C)" |> union |> addInsts
+    q"∩[AB, AC, ABnAC](ab, ac)" |> inter |> addInsts
 
     val abnacMethods = db("ABnAC").visibilities
 
@@ -260,16 +260,16 @@ class IdentityTest extends FlatSpecBase {
 
     // left side
     // A ∩ (B ∪ C)
-    q"∪[B & C ~> BC](b, c)" |> union |> addInsts
-    q"∩[A & BC ~> AnBC](a, bc)" |> inter |> addInsts
+    q"∪[B, C, BC](b, c)" |> union |> addInsts
+    q"∩[A, BC, AnBC](a, bc)" |> inter |> addInsts
 
     val anbcMethods = db("AnBC").visibilities
 
     // right side
     // (A ∩ B) ∪ (A ∩ C)
-    q"∩[A & B ~> AB](a, b)" |> inter |> addInsts
-    q"∩[A & C ~> AC](a, C)" |> inter |> addInsts
-    q"∪[AB & AC ~> ABuAC](ab, ac)" |> union |> addInsts
+    q"∩[A, B, AB](a, b)" |> inter |> addInsts
+    q"∩[A, C, AC](a, C)" |> inter |> addInsts
+    q"∪[AB, AC, ABuAC](ab, ac)" |> union |> addInsts
 
     val abuacMethods = db("ABuAC").visibilities
 
@@ -297,7 +297,7 @@ class IdentityTest extends FlatSpecBase {
 
     classes |> addInsts
     val union: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Union]
-    q"∪[A & O ~> AO](a, o)" |> union |> addInsts
+    q"∪[A, O, AO](a, o)" |> union |> addInsts
 
     val aMethods  = db("A").visibilities
     val abMethods = db("AO").visibilities
@@ -348,7 +348,7 @@ class IdentityTest extends FlatSpecBase {
 
     classes |> addInsts
     val union: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Union]
-    q"∪[A & A ~> AA](a, a)" |> union |> addInsts
+    q"∪[A, A, AA](a, a)" |> union |> addInsts
 
     val aMethods  = db("A").visibilities
     val aaMethods = db("AA").visibilities
@@ -375,7 +375,7 @@ class IdentityTest extends FlatSpecBase {
 
     classes |> addInsts
     val inter: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Intersect]
-    q"∩[A & A ~> AA](a, a)" |> inter |> addInsts
+    q"∩[A, A, AA](a, a)" |> inter |> addInsts
 
     val aMethods  = db("A").visibilities
     val aaMethods = db("AA").visibilities
@@ -413,7 +413,7 @@ class IdentityTest extends FlatSpecBase {
 
     classes |> addInsts
     val inter: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Intersect]
-    q"∩[A & O ~> AO](a, o)" |> inter |> addInsts
+    q"∩[A, O, AO](a, o)" |> inter |> addInsts
 
     val aoMethods = db("AO").visibilities
 
@@ -446,8 +446,8 @@ class IdentityTest extends FlatSpecBase {
     val union: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Union]
     val inter: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Intersect]
 
-    q"∩[A & B ~> AB](a, b)" |> inter |> addInsts
-    q"∪[A & AB ~> AuAB](a, ab)" |> union |> addInsts
+    q"∩[A, B, AB](a, b)" |> inter |> addInsts
+    q"∪[A, AB, AuAB](a, ab)" |> union |> addInsts
 
     val auabMethods = db("AuAB").visibilities
     val aMethods    = db("A").visibilities
@@ -481,8 +481,8 @@ class IdentityTest extends FlatSpecBase {
     val union: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Union]
     val inter: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Intersect]
 
-    q"∪[A & B ~> AB](a, b)" |> union |> addInsts
-    q"∩[A & AB ~> AnAB](a, ab)" |> inter |> addInsts
+    q"∪[A, B, AB](a, b)" |> union |> addInsts
+    q"∩[A, AB, AnAB](a, ab)" |> inter |> addInsts
 
     val anabMethods = db("AnAB").visibilities
     val aMethods    = db("A").visibilities
@@ -521,13 +521,13 @@ class IdentityTest extends FlatSpecBase {
 
     // left side
     // A ∩ B
-    q"∩[A & B ~> AB](a, b)" |> inter |> addInsts
+    q"∩[A, B, AB](a, b)" |> inter |> addInsts
 
     // right side
     // A \ (A \ B)
-    val tree1 = q"∖[A & B ~> AdB](a, b)" |> forbid
+    val tree1 = q"∖[A, B, AdB](a, b)" |> forbid
     tree1 |> addInsts
-    val tree = q"∖[A & AdB ~> AdAdB](a, b)" |> forbid
+    val tree = q"∖[A, AdB, AdAdB](a, b)" |> forbid
     tree |> addInsts
 
     val leftMethods  = db("AB").visibilities
@@ -558,8 +558,8 @@ class IdentityTest extends FlatSpecBase {
 
     val prod: (Term.Apply => Tree) = parseAndExpand[Term.Apply, OpVistas, Product]
 
-    q"x[A & B ~> AB](a, b)" |> prod |> addInsts
-    q"x[B & A ~> BA](b, a)" |> prod |> addInsts
+    q"x[A, B, AB](a, b)" |> prod |> addInsts
+    q"x[B, A, BA](b, a)" |> prod |> addInsts
 
     val abMethods = db("AB").visibilities
     val baMethods = db("BA").visibilities
@@ -595,13 +595,13 @@ class IdentityTest extends FlatSpecBase {
 
     // left side
     // (A ⨯ B) ⨯ C
-    q"x[A & B ~> AB](a, b)" |> prod |> addInsts
-    q"x[AB & C ~> ABxC](a, b)" |> prod |> addInsts
+    q"x[A, B, AB](a, b)" |> prod |> addInsts
+    q"x[AB, C, ABxC](a, b)" |> prod |> addInsts
 
     // right side
     // A ⨯ (B ⨯ C)
-    q"x[B & C ~> BC](a, b)" |> prod |> addInsts
-    q"x[A & BC ~> AxBC](a, b)" |> prod |> addInsts
+    q"x[B, C, BC](a, b)" |> prod |> addInsts
+    q"x[A, BC, AxBC](a, b)" |> prod |> addInsts
 
     val leftMethods  = db("ABxC").visibilities
     val rightMethods = db("AxBC").visibilities

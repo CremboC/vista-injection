@@ -17,7 +17,7 @@ class UnionTest extends FlatSpecBase {
 
   it should "expand two simple classes" in {
     val expected = q"""trait AB extends A with B {}"""
-    val source   = q"""∪[A & B ~> AB](a, b)"""
+    val source   = q"""∪[A, B, AB](a, b)"""
 
     q"""class A; class B""" |> addInsts
 
@@ -44,7 +44,7 @@ class UnionTest extends FlatSpecBase {
             def g[T]: Int = 3
           }
         """
-    val source = q"""∪[A & B ~> AB](a, b)"""
+    val source = q"""∪[A, B, AB](a, b)"""
 
     val expected =
       q"""
@@ -78,7 +78,7 @@ class UnionTest extends FlatSpecBase {
             def c: Int = 3
           }
         """
-    val source = q"""∪[A & B ~> AB](a, b)"""
+    val source = q"""∪[A, B, AB](a, b)"""
 
     val expected =
       q"""
@@ -117,7 +117,7 @@ class UnionTest extends FlatSpecBase {
         }
       """ |> addInsts
 
-    val op       = q"∪[Aa & Ab ~> A](aa, bb)"
+    val op       = q"∪[Aa, Ab, A](aa, bb)"
     val expanded = parseAndExpand[Term.Apply, OpVistas, Union](op)
 
     expanded.syntax should equal {

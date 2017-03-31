@@ -16,7 +16,7 @@ package object parsers {
 
     implicit object TermApplyOverloadParser extends Parser[Term.Apply, OpOverload] {
       override def parse(defn: Term.Apply): Option[OpOverload] = {
-        val q"$_[$source ~> $result]($lvar, $defs)" = defn
+        val q"$_[$source, $result]($lvar, $defs)" = defn
 
         val methods = {
           val q"..$stats" = defs
@@ -31,7 +31,7 @@ package object parsers {
 
     implicit object TermApplyVistasParser extends Parser[Term.Apply, OpVistas] {
       override def parse(defn: Term.Apply): Option[OpVistas] = {
-        val q"$_[$leftType & $rightType ~> $newType](${leftVar: Term.Name}, ${rightVar: Term.Name})" =
+        val q"$_[$leftType, $rightType, $newType](${leftVar: Term.Name}, ${rightVar: Term.Name})" =
           defn
 
         Option(

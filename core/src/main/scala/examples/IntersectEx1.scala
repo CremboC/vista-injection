@@ -27,11 +27,13 @@ object IntersectEx1 extends ExampleBase {
 
     val c = new C("test")
 
-    val ab = ∩[A & B ~> AuB](a, b)
+    type AuB = A with B
+    val ab = ∩[A, B, AuB](a, b)
 
-    try println(ab.zero)
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
+    if ({ def zero: Int = ??? }.⊆[AuB](ab)) {
+      ab.zero
+    } else {
+      println("ab.zero is not allowed")
     }
 
     try println(ab.one())

@@ -19,7 +19,7 @@ class MixedOpTest extends FlatSpecBase {
 
     val forbidA =
       q"""
-        ∖[A ~> Ab](a, {
+        ∖[A, Ab](a, {
           def a: Int = ???
         })
       """
@@ -27,7 +27,7 @@ class MixedOpTest extends FlatSpecBase {
 
     val forbidB =
       q"""
-        ∖[A ~> Aa](a, {
+        ∖[A, Aa](a, {
           def b: Int = ???
         })
       """
@@ -35,7 +35,7 @@ class MixedOpTest extends FlatSpecBase {
 
     val unionAaAb =
       q"""
-        ∪[Aa & Ab ~> AauAb](aa, ab)
+        ∪[Aa, Ab, AauAb](aa, ab)
       """
     unionAaAb |> union |> addInsts
 

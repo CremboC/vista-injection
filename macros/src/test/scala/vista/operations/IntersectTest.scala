@@ -46,7 +46,7 @@ class IntersectTest extends FlatSpecBase {
          }
       """
 
-    val source = q"""∩[A & B ~> AB](a, b)"""
+    val source = q"""∩[A, B, AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
 
@@ -91,7 +91,7 @@ class IntersectTest extends FlatSpecBase {
          }
       """
 
-    val source = q"""∩[A & B ~> AB](a, b)"""
+    val source = q"""∩[A, B, AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)
@@ -133,7 +133,7 @@ class IntersectTest extends FlatSpecBase {
          }
       """
 
-    val source = q"""∩[A & B ~> AB](a, b)"""
+    val source = q"""∩[A, B, AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)
@@ -168,7 +168,7 @@ class IntersectTest extends FlatSpecBase {
           }
        """
 
-    val source = q"""∩[A & B ~> AB](a, b)"""
+    val source = q"""∩[A, B, AB](a, b)"""
 
     val expanded = parseExpandAndRecord(source)
     expanded.syntax should equal(expected.syntax)

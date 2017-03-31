@@ -31,7 +31,7 @@ class ProductTest extends FlatSpecBase {
         }
       """
 
-    val input = q"x[A & B ~> AB](a, b)"
+    val input = q"x[A, B, AB](a, b)"
 
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
@@ -55,7 +55,7 @@ class ProductTest extends FlatSpecBase {
           }
         """
 
-    val input = q"x[A & B ~> AB](a, b)"
+    val input = q"x[A, B, AB](a, b)"
 
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
@@ -79,7 +79,7 @@ class ProductTest extends FlatSpecBase {
         }
       """
 
-    val input = q"x[A & B ~> AB](a, b)"
+    val input = q"x[A, B, AB](a, b)"
 
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
@@ -103,7 +103,7 @@ class ProductTest extends FlatSpecBase {
           }
         """
 
-    val input = q"x[A & B ~> AB](a, b)"
+    val input = q"x[A, B, AB](a, b)"
 
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
