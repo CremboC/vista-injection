@@ -8,8 +8,9 @@ import vista.lib._
 @vista.enable
 object ForbidEx2 {
   class A {
-    def one: Int = 1
-    def two: Int = 2
+    def one: Int   = 1
+    def two: Int   = 2
+    def three: Int = 3
   }
 
   def mkForbid(a: A) =

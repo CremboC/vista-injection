@@ -27,7 +27,7 @@ sealed trait Inst {
     val parentMethods = parents.flatMap(db.get(_).methods)
 
     val memberDefns = members.collect {
-      case d: Defn.Def => d
+      case d: Defn.Def if !d.mods.exists(_.is[Mod.Private]) => d
     }
 
     EqualitySet(parentMethods ++ memberDefns)

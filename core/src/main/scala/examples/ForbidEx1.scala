@@ -9,7 +9,9 @@ import vista.lib._
 object ForbidEx1 {
   class A {
     def one: Int = 1
-    def two: Int = 2
+    def two: Int = multiplier(2)
+
+    private def multiplier: Int => Int = _ * 3
   }
 
   def main(args: Array[String]): Unit = {

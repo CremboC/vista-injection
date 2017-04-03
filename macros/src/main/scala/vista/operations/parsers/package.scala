@@ -3,9 +3,6 @@ package vista.operations
 import scala.annotation.implicitNotFound
 import scala.meta._
 
-/**
-  * @author Paulius
-  */
 package object parsers {
   @implicitNotFound("No parser found from ${I} to ${O}")
   trait Parser[I <: Tree, O <: OpInput] {
@@ -16,7 +13,7 @@ package object parsers {
 
     implicit object TermApplyOverloadParser extends Parser[Term.Apply, OpOverload] {
       override def parse(defn: Term.Apply): Option[OpOverload] = {
-        val q"$_[$source, $result]($lvar, $defs)" = defn
+        val q"$_[$source, $result](${lvar: Term.Name}, $defs)" = defn
 
         val methods = {
           val q"..$stats" = defs
