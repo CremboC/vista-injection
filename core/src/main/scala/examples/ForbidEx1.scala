@@ -24,15 +24,8 @@ object ForbidEx1 {
       def two: Int = ???
     })
 
-    try af.one
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
-    }
-
-    try af.two
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
-    }
+//    af.one // compiler error
+//    af.two // compiler error
 
     println(af.isInstanceOf[A])
 

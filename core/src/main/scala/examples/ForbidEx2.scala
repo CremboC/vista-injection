@@ -26,24 +26,10 @@ object ForbidEx2 {
 
     val af = mkForbid(a)
 
-    try af.one
-    catch {
-      case e: NoSuchMethodException => println("Failed to invoke af.one")
-    }
+//    af.one // compiler error
+//    af.two // compiler error
 
-    try af.two
-    catch {
-      case e: NoSuchMethodException => println("Failed to invoke af.two")
-    }
-
-    try {
-      val partial = af.one _
-      partial()
-      println("Should not reach this point")
-    } catch {
-      case e: NoSuchMethodException =>
-        println("Failed to invoke af.one as a partial function")
-    }
+//    val partial = af.one _ // compiler error
 
     println(af.isInstanceOf[A])
 

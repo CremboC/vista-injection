@@ -10,6 +10,7 @@ import vista.operations.parsers.{OpOverload, OpVistas, Parser}
 import scala.annotation.StaticAnnotation
 import scala.meta.Term.Block
 import scala.meta._
+import scala.meta.contrib._
 
 class enable extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
@@ -60,7 +61,12 @@ class enable extends StaticAnnotation {
 
         val addGenerated = (g: Defn.Trait) => { db.add(g, generated = true); g }
         val traits = generated.collect {
-          case (f, t) => f andThen addGenerated apply t
+          case (f, t) =>
+            val trayt = f andThen addGenerated apply t
+            trayt.transform {
+              case d: Defn.Def if d.body isEqual q"throw new NoSuchMethodException" =>
+                d.copy(mods = restrictAnnotation(d.name.value, trayt.name.value) +: d.mods)
+            }.asInstanceOf[Defn.Trait]
         }
 
         val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
@@ -107,6 +113,7 @@ class enable extends StaticAnnotation {
         }
 
         val ntemplate = obj.templ.copy(stats = Option(generatedWrapper +: generatedImport +: nstats))
+//        println(ntemplate)
         obj.copy(templ = ntemplate)
       case _ =>
         abort("Only objects are supported")

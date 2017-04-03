@@ -35,20 +35,14 @@ object IntersectEx1 extends ExampleBase {
       println("ab.zero is not allowed")
     }
 
-    try println(ab.one())
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
+    if ({ def one: Int = ??? }.⊆[AuB](ab)) {
+      ab.one()
+    } else {
+      println("ab.one is not allowed")
     }
 
-    try println(ab.two())
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
-    }
-
-    try println(ab.three())
-    catch {
-      case e: NoSuchMethodException => println(e.getClass)
-    }
-
+//    ab.one()   // compiler error
+    ab.two() // valid
+//    ab.three() // compiler error
   }
 }
