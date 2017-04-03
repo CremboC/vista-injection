@@ -1,8 +1,8 @@
 package vista.operations.expanders
 
-import vista.meta.xtensions._
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
+import vista.util.meta.xtensions._
 
 import scala.collection.immutable.{Map, Seq}
 import scala.meta._
@@ -30,8 +30,8 @@ object ProductOp {
       val lclazz = db(inp.lclass)
       val rclazz = db(inp.rclass)
 
-      val lsignatures = lclazz.methods.signatures
-      val rsignatures = rclazz.methods.signatures
+      val lsignatures = lclazz.visibilities.signatures
+      val rsignatures = rclazz.visibilities.signatures
 
       val pairs = lsignatures >< rsignatures
 

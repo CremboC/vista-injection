@@ -1,5 +1,6 @@
 package vista.semantics
 
+import vista.Constants.forbiddenMethodBody
 import vista.util.Equalities.defEquality
 import vista.util.EqualitySet
 
@@ -35,12 +36,12 @@ sealed trait Inst {
 
   def visibilities: Set[Defn.Def] =
     methods.filterNot { d =>
-      d.body isEqual q"throw new NoSuchMethodException"
+      d.body isEqual forbiddenMethodBody
     }
 
   def forbidden: Set[Defn.Def] =
     methods.filter { d =>
-      d.body isEqual q"throw new NoSuchMethodException"
+      d.body isEqual forbiddenMethodBody
     }
 
   def generated: Boolean

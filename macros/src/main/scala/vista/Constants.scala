@@ -1,8 +1,7 @@
 package vista
 
-/**
-  * Created by Crembo on 2017-03-29.
-  */
+import scala.meta._
+
 private[vista] object Constants {
 
   final val GenName = "gen$vista"
@@ -13,4 +12,6 @@ private[vista] object Constants {
   final val Union     = "∪"
   final val Product   = "⨯"
   final val Subset    = "⊆"
+
+  final val forbiddenMethodBody = q"throw new vista.lib.ForbiddenMethodException"
 }

@@ -37,7 +37,7 @@ object Database {
 
   // FIXME: add "generated" parameter
   def add(c: Defn.Class, generated: Boolean): Unit = {
-    import vista.meta.xtensions.{XDeclVal, XDeclVar}
+    import vista.util.meta.xtensions.{XDeclVal, XDeclVar}
 
     val decls = Tratify.ctorToDecls(c).map {
       case d: Decl.Val => d.asDefnVal

@@ -1,12 +1,12 @@
 package vista.operations
 
 import vista.FlatSpecBase
-import vista.meta.xtensions.{XDefnIterable, XSet}
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.OpVistas
+import vista.util.meta.xtensions.{XDefnIterable, XSet}
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps

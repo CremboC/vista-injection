@@ -1,4 +1,4 @@
-package vista.meta
+package vista.util.meta
 
 import scala.meta._
 

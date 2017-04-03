@@ -1,4 +1,4 @@
-package vista.meta
+package vista.util.meta
 
 import scala.collection.immutable.Seq
 import scala.meta.Ctor

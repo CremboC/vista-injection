@@ -1,8 +1,9 @@
 package vista.operations.expanders
 
-import vista.meta.xtensions._
+import vista.Constants.forbiddenMethodBody
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
+import vista.util.meta.xtensions._
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -42,7 +43,7 @@ object IntersectOp {
       // we can only disallow methods, hence that is used here
       val disjointMethods = lsignatures <-> rsignatures
       val forbidden = disjointMethods.map { m =>
-        m.copy(body = q"throw new NoSuchMethodException", mods = m.mods :+ Mod.Override())
+        m.copy(body = forbiddenMethodBody, mods = (m.mods :+ Mod.Override()).toSet.to)
       }
 
       // get common signatures in order to avoid "trait X inherits conflicting members"

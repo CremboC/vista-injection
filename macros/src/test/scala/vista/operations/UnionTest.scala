@@ -109,11 +109,11 @@ class UnionTest extends FlatSpecBase {
         }
 
         trait Aa extends AB {
-          override def b: Int = throw new NoSuchMethodException
+          override def b: Int = ${vista.Constants.forbiddenMethodBody}
         }
 
         trait Ab extends AB {
-          override def a: Int = throw new NoSuchMethodException
+          override def a: Int = ${vista.Constants.forbiddenMethodBody}
         }
       """ |> addInsts
 

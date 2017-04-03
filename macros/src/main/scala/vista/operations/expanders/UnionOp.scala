@@ -1,11 +1,11 @@
 package vista.operations.expanders
 
-import vista.meta.xtensions.XDefn
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 import vista.semantics.Database.ClassName
 import vista.util.Equalities.defEquality
 import vista.util.EqualitySet
+import vista.util.meta.xtensions.XDefn
 
 import scala.collection.immutable.Seq
 import scala.meta._

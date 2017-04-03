@@ -1,10 +1,10 @@
 package vista.operations
 
 import vista.WordSpecBase
-import vista.meta.xtensions._
 import vista.operations.expanders.Expander
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.parsers.{OpOverload, OpVistas}
+import vista.util.meta.xtensions._
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps
@@ -20,8 +20,8 @@ class ForbidTest extends WordSpecBase {
         val expected =
           q"""
           trait Af extends A {
-            override def a(s: String): Int = throw new NoSuchMethodException
-            override def b(): Int = throw new NoSuchMethodException
+            override def a(s: String): Int = ${vista.Constants.forbiddenMethodBody}
+            override def b(): Int = ${vista.Constants.forbiddenMethodBody}
           }
           """
         val source =
@@ -43,7 +43,7 @@ class ForbidTest extends WordSpecBase {
         val expected =
           q"""
             trait Bf extends B {
-              override def sayHi(a: Int): Unit = throw new NoSuchMethodException
+              override def sayHi(a: Int): Unit = ${vista.Constants.forbiddenMethodBody}
             }
           """
         val source =
@@ -68,8 +68,8 @@ class ForbidTest extends WordSpecBase {
           q"""
               trait AB extends A with B {
                 override def a: Int = super[A].a
-                override def b: Int = throw new NoSuchMethodException
-                override def g: Double = throw new NoSuchMethodException
+                override def b: Int = ${vista.Constants.forbiddenMethodBody}
+                override def g: Double = ${vista.Constants.forbiddenMethodBody}
               }
           """
 

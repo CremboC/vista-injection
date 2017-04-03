@@ -3,6 +3,8 @@ package vista
 package object lib {
   trait AnyV
 
+  case class ForbiddenMethodException(msg: String = "") extends Exception(msg)
+
   // union
   def ∪[A, B, T](left: A, right: B): A with B =
     throw new RuntimeException("Should be compiled out")

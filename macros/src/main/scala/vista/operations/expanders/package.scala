@@ -1,9 +1,9 @@
 package vista.operations
 
-import vista.meta.xtensions._
 import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics.Database.ClassName
 import vista.semantics.Inst
+import vista.util.meta.xtensions._
 
 import scala.collection.immutable.Seq
 import scala.meta._

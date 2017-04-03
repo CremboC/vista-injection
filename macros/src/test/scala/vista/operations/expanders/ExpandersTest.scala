@@ -43,11 +43,11 @@ class ExpandersTest extends FlatSpecBase {
 
         trait Aa extends AB {
           def a: Int = 1
-          override def b: Int = throw new NoSuchMethodException
+          override def b: Int = ${vista.Constants.forbiddenMethodBody}
         }
 
         trait Ab extends AB {
-          override def a: Int = throw new NoSuchMethodException
+          override def a: Int = ${vista.Constants.forbiddenMethodBody}
           def b: Int = 2
         }
       """

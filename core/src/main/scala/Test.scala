@@ -63,11 +63,11 @@ object Test extends App {
     ab.nonBDef()
     ab.say("Hello from B")
 
-    val inter: AxB = ∩[A, B, AxB](a, b)
+    val inter = ∩[A, B, AxB](a, b)
 
     println(inter.common)
 
-    val comb: FG = ⨯[F, G, FG](f, g)
+    val comb = ⨯[F, G, FG](f, g)
     println(comb.ab()())
 
     val ff = ∖[F, Ff](b, {

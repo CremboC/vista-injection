@@ -1,9 +1,10 @@
 package vista.operations.expanders
 
-import vista.meta.xtensions._
+import vista.Constants.forbiddenMethodBody
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
 import vista.semantics
 import vista.semantics.Database.ClassName
+import vista.util.meta.xtensions._
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -43,8 +44,7 @@ object ForbidOp {
 
         disallowed.map { defn =>
           val defnn = map(defn.syntax)
-          defnn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
-                     body = q"throw new NoSuchMethodException")
+          defnn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to, body = forbiddenMethodBody)
         }
       }
 
@@ -75,8 +75,7 @@ object ForbidOp {
     override def expand(inp: OpOverload): Defn.Trait = {
       val forbidden = inp.methods
         .map { defn =>
-          defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to,
-                    body = q"throw new NoSuchMethodException")
+          defn.copy(mods = (defn.mods :+ Mod.Override()).toSet.to, body = forbiddenMethodBody)
         }
         .to[Seq]
 

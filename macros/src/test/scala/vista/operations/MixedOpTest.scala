@@ -1,10 +1,10 @@
 package vista.operations
 
 import vista.FlatSpecBase
-import vista.meta.xtensions._
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.{OpOverload, OpVistas}
+import vista.util.meta.xtensions._
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps

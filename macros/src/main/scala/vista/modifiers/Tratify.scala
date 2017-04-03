@@ -1,8 +1,8 @@
 package vista.modifiers
 
-import vista.meta.xtensions._
 import vista.semantics
 import vista.semantics.Inst
+import vista.util.meta.xtensions._
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -57,7 +57,7 @@ object Tratify {
       val paramss = cls.ctor.paramss
 
       def extractDecltpe(p: Term.Param): Type = p.decltpe match {
-        case None => throw new IllegalArgumentException("Type must be declared for this")
+        case None      => throw new IllegalArgumentException("Type must be declared for this")
         case Some(typ) => typ.asInstanceOf[Type]
       }
 

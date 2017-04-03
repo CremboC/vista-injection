@@ -1,11 +1,12 @@
 package vista
 
+import vista.Constants.forbiddenMethodBody
 import vista.helpers.OpHelpers
-import vista.meta.xtensions.XTemplate
 import vista.modifiers._
 import vista.operations._
 import vista.operations.expanders._
 import vista.operations.parsers.{OpOverload, OpVistas, Parser}
+import vista.util.meta.xtensions.XTemplate
 
 import scala.annotation.StaticAnnotation
 import scala.meta.Term.Block
@@ -64,7 +65,7 @@ class enable extends StaticAnnotation {
           case (f, t) =>
             val trayt = f andThen addGenerated apply t
             trayt.transform {
-              case d: Defn.Def if d.body isEqual q"throw new NoSuchMethodException" =>
+              case d: Defn.Def if d.body isEqual forbiddenMethodBody =>
                 d.copy(mods = restrictAnnotation(d.name.value, trayt.name.value) +: d.mods)
             }.asInstanceOf[Defn.Trait]
         }

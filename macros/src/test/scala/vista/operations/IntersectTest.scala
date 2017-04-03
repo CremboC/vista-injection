@@ -1,9 +1,9 @@
 package vista.operations
 
 import vista.FlatSpecBase
-import vista.meta.xtensions._
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.parsers.OpVistas
+import vista.util.meta.xtensions._
 
 import scala.meta._
 import scalaz.Scalaz.ToIdOps
@@ -40,8 +40,8 @@ class IntersectTest extends FlatSpecBase {
       q"""
          trait AB extends A with B {
            override def a(): Int = super[A].a()
-           override def b() = throw new NoSuchMethodException
-           override def c() = throw new NoSuchMethodException
+           override def b() = ${vista.Constants.forbiddenMethodBody}
+           override def c() = ${vista.Constants.forbiddenMethodBody}
            override def d(): Int = super[A].d()
          }
       """
@@ -85,7 +85,7 @@ class IntersectTest extends FlatSpecBase {
       q"""
          trait AB extends A with B {
            override def a(): Int = super[A].a()
-           override def b() = throw new NoSuchMethodException
+           override def b() = ${vista.Constants.forbiddenMethodBody}
            override def c(): Int = super[A].c()
            override def d: Int = super[A].d
          }
@@ -126,8 +126,8 @@ class IntersectTest extends FlatSpecBase {
       q"""
          trait AB extends A with B {
            override def a: Int = super[A].a
-           override def b() = throw new NoSuchMethodException
-           override def c() = throw new NoSuchMethodException
+           override def b() = ${vista.Constants.forbiddenMethodBody}
+           override def c() = ${vista.Constants.forbiddenMethodBody}
            override def common: Int = super[A].common
            override def d(): Int = super[A].d()
          }

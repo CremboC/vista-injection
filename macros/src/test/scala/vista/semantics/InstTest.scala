@@ -1,7 +1,7 @@
 package vista.semantics
 
 import vista.WordSpecBase
-import vista.meta.xtensions.XSet
+import vista.util.meta.xtensions.XSet
 
 import scala.meta._
 import scala.meta.contrib._
