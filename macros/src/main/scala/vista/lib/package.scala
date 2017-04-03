@@ -23,7 +23,7 @@ package object lib {
   def ⨯[A, B, T](left: A, right: B): T =
     throw new RuntimeException("Should be compiled out")
 
-  implicit class VistaOpsUnit(val f: Unit) extends AnyVal {
+  implicit class VistaOpsUnit(val f: {}) extends AnyVal {
     def ⊆[A](a: A): Boolean =
       throw new RuntimeException("Should be compiled out")
   }

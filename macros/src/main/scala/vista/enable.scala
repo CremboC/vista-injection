@@ -15,22 +15,11 @@ class enable extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     val db = semantics.Database
 
-    def convertCtor(term: Term.New): Term.New = {
-      val ctors = term.templ.parents :+ Ctor.Name(Constants.AnyV)
-      term.copy(term.templ.copy(parents = ctors))
-    }
-
     def classIsRecorded(term: Term.New): Boolean =
       if (term.templ.parents.isEmpty) false
       else {
         val className = term.templ.parents.head.syntax.takeWhile(_ != '(')
         db.exists(className)
-      }
-
-    def inheritsVistaTrait(term: Term.New): Boolean =
-      if (term.templ.parents.isEmpty) false
-      else {
-        term.templ.parents.map(_.syntax).contains(Constants.AnyV)
       }
 
     def constructingTrait(term: Term.New): Boolean = term.templ.ctorsWithArguments.isDefined
@@ -82,18 +71,8 @@ class enable extends StaticAnnotation {
             case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
           }
           .transform {
-            // since we converted classes into traits we need to make sure they are instantiable
-            case term: Term.New if classIsRecorded(term) && !inheritsVistaTrait(term) =>
-              convertCtor(term)
-
             case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
               Tratify(term)
-
-            case v: Defn.Val =>
-              v.rhs match {
-                case term: Term.New if !inheritsVistaTrait(term) => v.copy(rhs = convertCtor(term))
-                case _ => v
-              }
 
             case OpHelpers.Subset(t) =>
               Subset(t)
@@ -117,8 +96,17 @@ class enable extends StaticAnnotation {
               q"new ${db.ctor(op.newtype)} { ..$members }"
           }
 
+        val unparsed = nstats.find {
+          case s: Stat if OpHelpers.hasOp(s) => true
+          case _ => false
+        }
+
+        unparsed match {
+          case Some(s) => abort(s"An operation was not expanded in $s (${s.pos})")
+          case None =>
+        }
+
         val ntemplate = obj.templ.copy(stats = Option(generatedWrapper +: generatedImport +: nstats))
-//        println(ntemplate)
         obj.copy(templ = ntemplate)
       case _ =>
         abort("Only objects are supported")

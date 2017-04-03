@@ -27,7 +27,6 @@ object IntersectEx1 extends ExampleBase {
 
     val c = new C("test")
 
-    type AuB = A with B
     val ab = ∩[A, B, AuB](a, b)
 
     if ({ def zero: Int = ??? }.⊆[AuB](ab)) {
