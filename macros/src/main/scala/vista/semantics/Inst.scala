@@ -45,6 +45,7 @@ sealed trait Inst {
     }
 
   def generated: Boolean
+  def notGenerated: Boolean = !generated
 }
 
 object Inst {

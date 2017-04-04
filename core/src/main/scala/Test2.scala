@@ -1,4 +1,3 @@
-
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.io.Source
@@ -17,7 +16,7 @@ import scala.io.Source
   * [1] Mehran, A., Saeidi, S., Khademzadeh, A. and Afzali-Kusha, A. (2007). Spiral: A heuristic mapping algorithm for network on chip. IEICE Electron. Express, 4(15), pp.478-484.
   *
   */
-//@vista.enable
+@vista.enable
 object Test2 extends App {
 
   // NoC topology
@@ -26,21 +25,30 @@ object Test2 extends App {
 
   // weight of terms for the heuristic function
   val BANDWIDTH_TERM = 0.6
-  val SLACK_TERM = 0.4
+  val SLACK_TERM     = 0.4
 
   // wrapper for a task
-  case class Task(id: Int, period: Double, compTime: Double, messageSize: Int, destination: Int, priority: Int, slack: Double)
+  case class Task(id: Int,
+                  period: Double,
+                  compTime: Double,
+                  messageSize: Int,
+                  destination: Int,
+                  priority: Int,
+                  slack: Double)
 
   // represents a processing core
   case class PE(x: Int, y: Int) {
+
     /**
       * Finds all connected PEs (in shape of cross from given PE). Handles corners automatically.
       */
     def connected: Seq[PE] = {
       // find all PEs that are in the same Y level
-      val sameY: Seq[Option[PE]] = for (x <- this.x - 1 to this.x + 1) yield pes.find(p => p.x == x && p.y == this.y)
+      val sameY: Seq[Option[PE]] = for (x <- this.x - 1 to this.x + 1)
+        yield pes.find(p => p.x == x && p.y == this.y)
       // find all PEs that are in the same X level
-      val sameX: Seq[Option[PE]] = for (y <- this.y - 1 to this.y + 1) yield pes.find(p => p.y == y && p.x == this.x)
+      val sameX: Seq[Option[PE]] = for (y <- this.y - 1 to this.y + 1)
+        yield pes.find(p => p.y == y && p.x == this.x)
 
       // combine PEs that have been found and remove the PE which is the same one we're looking at.
       // sameY and sameX are actually Seq[Option[PE]] because this method also handles edge PEs.
@@ -58,9 +66,10 @@ object Test2 extends App {
       */
     def neighbors(size: Int = 1): Seq[PE] = {
       // simply check all the surrounding coordinates
-      val maybeNeighbors: Seq[Option[PE]] = for (x <- this.x - size to this.x + size; y <- this.y - size to this.y + size) yield {
-        pes.find(p => p.x == x && p.y == y)
-      }
+      val maybeNeighbors: Seq[Option[PE]] =
+        for (x <- this.x - size to this.x + size; y <- this.y - size to this.y + size) yield {
+          pes.find(p => p.x == x && p.y == y)
+        }
       // just like for "connected", we handle corners by attempting to get them, and
       // when they're not there, simply None is returned. We then only get the neighbours
       // which are defined. Finally remove the PE that we're looking at
@@ -73,11 +82,21 @@ object Test2 extends App {
     """(\d+) (\d+\.\d+) (\d+\.\d+) (\d+) (\d+) (\d+)""".r
 
   // parse tasks into wrapper objects
-  val tasks = Source.fromFile("tasks.txt").getLines().map {
-    case regex(id, period, compTime, messageSize, destination, priority) =>
-      val slack = period.toDouble - compTime.toDouble
-      Task(id.toInt, period.toDouble, compTime.toDouble, messageSize.toInt, destination.toInt, priority.toInt, slack)
-  }.toVector
+  val tasks = Source
+    .fromFile("tasks.txt")
+    .getLines()
+    .map {
+      case regex(id, period, compTime, messageSize, destination, priority) =>
+        val slack = period.toDouble - compTime.toDouble
+        Task(id.toInt,
+             period.toDouble,
+             compTime.toDouble,
+             messageSize.toInt,
+             destination.toInt,
+             priority.toInt,
+             slack)
+    }
+    .toVector
 
   // we get those values so we can later scale and give a weight without creating bias
   val minMessageSize = tasks.minBy(_.messageSize).messageSize
@@ -108,7 +127,11 @@ object Test2 extends App {
     * @param limitUpper upper bound, e.g 1
     * @return scaled value. Can convert a parameter to a zero-mean
     */
-  def scale(value: Double, min: Double, max: Double, limitLower: Double, limitUpper: Double): Double = {
+  def scale(value: Double,
+            min: Double,
+            max: Double,
+            limitLower: Double,
+            limitUpper: Double): Double = {
     ((limitUpper - limitLower) * (value - min) / (max - min)) + limitLower
   }
 
@@ -127,29 +150,30 @@ object Test2 extends App {
 
     // add up their bandwidth, their relative deadlines and their priority
     // values are scaled so the message size would create enormous bias (as the numbers are much bigger than the slack's)
-    val totalBandwidth = comms.foldLeft(0.0) {
-      (carry, t) => scale(t.messageSize, minMessageSize, maxMessageSize, 0, 1) + carry
+    val totalBandwidth = comms.foldLeft(0.0) { (carry, t) =>
+      scale(t.messageSize, minMessageSize, maxMessageSize, 0, 1) + carry
     }
-    val totalSlack = comms.foldLeft(0.0) {
-      (carry, t) => scale(t.slack, minSlack, maxSlack, 0, 1) + carry
+    val totalSlack = comms.foldLeft(0.0) { (carry, t) =>
+      scale(t.slack, minSlack, maxSlack, 0, 1) + carry
     }
 
     // priority is flipped because we want that tasks with higher priority will have bigger value
-    val totalPriority = comms.foldLeft(0) {
-      (carry, t) => (maxPriority - t.priority) + carry
+    val totalPriority = comms.foldLeft(0) { (carry, t) =>
+      (maxPriority - t.priority) + carry
     }
 
     // then we look at the task we're analysing and add its bandwidth, relative deadline
     // multiplied by its reversed priority as a term
     val selfBandwidth = scale(task.messageSize, minMessageSize, maxMessageSize, 0, 1)
-    val selfSlack = scale(task.slack, minSlack, maxSlack, 0, 1)
+    val selfSlack     = scale(task.slack, minSlack, maxSlack, 0, 1)
 
     // since a task may have no tasks communicating with it, we must check it first.
     // if there aren't any – the term is simply 0 –– the task, despite not having anyone
     // communicating with it, may still be important
     val commTerm =
-    if (comms.nonEmpty) (totalBandwidth * BANDWIDTH_TERM + totalSlack * SLACK_TERM) * (totalPriority / comms.size)
-    else 0.0
+      if (comms.nonEmpty)
+        (totalBandwidth * BANDWIDTH_TERM + totalSlack * SLACK_TERM) * (totalPriority / comms.size)
+      else 0.0
 
     // now calculate our own term using a similar fashion as for the communications term
     val selfTerm = (selfBandwidth * BANDWIDTH_TERM + selfSlack * SLACK_TERM) * (maxPriority - task.priority)
@@ -182,12 +206,17 @@ object Test2 extends App {
     *                is failed to be found (one that satisfies the pre-filter) then any schedulable PE is given (i.e filter is ignored)
     * @return least used PEs, in the correct order
     */
-  def findLeastUtilisedPe(taskToMap: Task, mapping: Map[PE, Seq[Task]], filter: (PE => Boolean) = pe => true): Seq[PE] = {
-    val potentialPEs: Seq[PE] = mapping.toSeq.filter {
-      case (_, mappedTasks) => isSchedulable(taskToMap, mappedTasks)
-    }.sortBy {
-      case (_, mappedTasks) => mappedTasks.map(_.slack).sum
-    }.map(_._1)
+  def findLeastUtilisedPe(taskToMap: Task,
+                          mapping: Map[PE, Seq[Task]],
+                          filter: (PE => Boolean) = pe => true): Seq[PE] = {
+    val potentialPEs: Seq[PE] = mapping.toSeq
+      .filter {
+        case (_, mappedTasks) => isSchedulable(taskToMap, mappedTasks)
+      }
+      .sortBy {
+        case (_, mappedTasks) => mappedTasks.map(_.slack).sum
+      }
+      .map(_._1)
 
     // first attempt to find a PE with the provided filter
     val filtered = potentialPEs.filter(filter)
@@ -207,6 +236,7 @@ object Test2 extends App {
     * @param mapping the current mapping
     */
   def attemptNearbyMapping(pe: PE, task: Task, mapping: Mapping): PE = {
+
     /**
       * Find the PE in an ever-increasing neighborhood size.
       * Start with size 1 (only check nearest neighbors) and gradually expand
@@ -252,7 +282,7 @@ object Test2 extends App {
       val currentTask = tasks(taskId)
 
       // get communicating tasks and order them by importance
-      val commTasks = tasks.filter(_.destination == taskId).map(_.id)
+      val commTasks  = tasks.filter(_.destination == taskId).map(_.id)
       val commSorted = tasksByImportance.filter(t => commTasks.contains(t._1))
 
       // depending on the number of tasks communicating with the tasks being analysed
@@ -264,7 +294,7 @@ object Test2 extends App {
           // we just find any PE which is least utilised
           taskToPe(tasks(currentTask.destination)) match {
             case Some(pe) => attemptNearbyMapping(pe, currentTask, mapping)
-            case None => findLeastUtilisedPe(currentTask, mapping).head
+            case None     => findLeastUtilisedPe(currentTask, mapping).head
           }
         case 1 => // if we communicate to only one task, we need to choose between:
           // 1. task communicating with me
@@ -281,7 +311,7 @@ object Test2 extends App {
           // we can now finally find an appropriate PE
           taskToPe(tasks(beNearThisTaskId)) match {
             case Some(pe) => attemptNearbyMapping(pe, currentTask, mapping)
-            case None => findLeastUtilisedPe(currentTask, mapping).head
+            case None     => findLeastUtilisedPe(currentTask, mapping).head
           }
         case 2 => // if we communicate with 2 tasks
           //  we can put the task in the corner or any PE that has at least 2 connected PEs
@@ -310,14 +340,17 @@ object Test2 extends App {
   }
 
   // initialise mapping map
-  val mapping: Map[PE, Seq[Task]] = pes.map(pe => pe -> Seq.empty[Task]).toMap
+  val mapping: Map[PE, Seq[Task]]             = pes.map(pe => pe -> Seq.empty[Task]).toMap
   var taskToPe: mutable.Map[Task, Option[PE]] = mutable.Map.empty ++ tasks.map(_ -> None)
 
   // We can now calculate the importance of each task. We will then sort the list by importance
   // so we first analyse the task with the highest value.
-  val tasksByImportance = tasks.map { t =>
-    t.id -> heuristic(t, tasks)
-  }.sortBy(_._2).reverse
+  val tasksByImportance = tasks
+    .map { t =>
+      t.id -> heuristic(t, tasks)
+    }
+    .sortBy(_._2)
+    .reverse
 
   // finally, create the mapping
   val finalMapping = mkMap(mapping, tasksByImportance)

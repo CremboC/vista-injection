@@ -2,6 +2,7 @@ package vista
 
 package object lib {
   trait AnyV
+  type Vista[A] = A
 
   case class ForbiddenMethodException(msg: String = "") extends Exception(msg)
 

@@ -29,12 +29,14 @@ object ForbidEx {
 
     if ({ def convert[A, B <: A](a: A) = ??? } ⊆ [AnoSum] aWithoutSum) {
       println(aWithoutSum.convert[T, Ta](new T)) // run convert, should work
+      println("Converted")
     } else {
       println(s"convert is not part of $aWithoutSum")
     }
 
     if ({ def sum(items: Seq[Int]) = ??? } ⊆ [AnoSum] aWithoutSum) {
       aWithoutSum.sum(Seq(1, 2, 3))
+      println("Summed")
     } else {
       println(s"Sum is not part of $aWithoutSum")
     }

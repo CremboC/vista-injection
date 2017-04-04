@@ -16,7 +16,11 @@ object Subset {
       case _                                 => abort("Must be a subset of three formats")
     }
 
-    db.getOption(typ.syntax) match {
+    val className =
+      if (typ.syntax.contains(".")) typ.syntax.split("""\.""").last
+      else typ.syntax
+
+    db.getOption(className) match {
       case Some(clazz) if f.stats.head.is[Defn.Def] =>
         val defn = f.stats.head.asInstanceOf[Defn.Def]
         if (clazz.visibilities.contains(defn)) q"true" else q"false"

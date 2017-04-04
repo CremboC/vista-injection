@@ -3,6 +3,7 @@ package vista
 import scala.meta._
 
 private[vista] object Constants {
+  final val VistaTypeR = """Vista\[(.+)\]"""
 
   final val GenName = "gen$vista"
   final val AnyV    = "vista.lib.AnyV"

@@ -54,7 +54,7 @@ object Database {
 
   def get(value: ClassName): Inst =
     getOption(value).getOrElse {
-      throw new IllegalStateException(s"Class <$value> not recorded in SemDB.")
+      abort(s"Class <$value> not recorded in the semantic database.")
     }
 
   def getOption(value: ClassName): Option[Inst] = store.get(value)

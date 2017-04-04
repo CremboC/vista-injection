@@ -75,11 +75,17 @@ class enable extends StaticAnnotation {
         }
 
         val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
-        val generatedImport  = q"import ${Term.Name(Constants.GenName)}._"
 
         val Block(nstats) = Block(stats)
           .transform { // first convert all classes into traits
             case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
+          }
+          .transform { // then ensure all Vista checks are expanded
+            case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
+              require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
+              val clazzName = t.args.head.syntax
+              if (db(clazzName).notGenerated) abort("The Vista[A] operator must be used with a generated vista type.")
+              Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
           }
           .transform {
             case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
@@ -118,10 +124,10 @@ class enable extends StaticAnnotation {
         }
 
         val ntemplate =
-          obj.templ.copy(stats = Option(generatedWrapper +: generatedImport +: nstats))
+          obj.templ.copy(stats = Option(generatedWrapper +: nstats))
         obj.copy(templ = ntemplate)
       case _ =>
-        abort("Only objects are supported")
+        abort("This annotation must be placed on an object")
     }
   }
 }

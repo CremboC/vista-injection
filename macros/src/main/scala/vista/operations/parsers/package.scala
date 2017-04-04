@@ -11,6 +11,10 @@ package object parsers {
 
   object Parser {
 
+    private def parseType(typ: Type): String =
+      if (typ.syntax.contains(".")) typ.syntax.split("""\.""").last
+      else typ.syntax
+
     implicit object TermApplyOverloadParser extends Parser[Term.Apply, OpOverload] {
       override def parse(defn: Term.Apply): OpOverload = {
         val q"$_[$source, $result](${lvar: Term.Name}, $defs)" = defn
@@ -22,7 +26,7 @@ package object parsers {
           }
         }
 
-        OpOverload(source.syntax, lvar.syntax, result.syntax, methods)
+        OpOverload(parseType(source), lvar.syntax, result.syntax, methods)
       }
     }
 
@@ -31,8 +35,8 @@ package object parsers {
         val q"$_[$leftType, $rightType, $newType](${leftVar: Term.Name}, ${rightVar: Term.Name})" =
           defn
 
-        OpVistas(leftType.syntax,
-                 rightType.syntax,
+        OpVistas(parseType(leftType),
+                 parseType(rightType),
                  leftVar.syntax,
                  rightVar.syntax,
                  newType.syntax)

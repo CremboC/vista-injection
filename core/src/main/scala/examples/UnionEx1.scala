@@ -2,11 +2,16 @@ package examples
 
 import vista.lib._
 
-/**
-  * @author paulius
-  */
+object Other {
+  class F {
+    def five: Int = 5
+  }
+}
+
 @vista.enable
 object UnionEx1 extends ExampleBase {
+  import Other.F
+
   class Ap {
     def zero: Int = 0
   }
@@ -21,6 +26,8 @@ object UnionEx1 extends ExampleBase {
     def three(): Int = 3
   }
 
+  def acceptsAB(ab: Vista[AB]): Boolean = ab.isInstanceOf[Vista[AB]]
+
   def main(args: Array[String]): Unit = {
     val a = new A
     val b = new B
@@ -34,6 +41,10 @@ object UnionEx1 extends ExampleBase {
 
     println(ab.isInstanceOf[A])
     println(ab.isInstanceOf[B])
-    println(ab.isInstanceOf[AB])
+
+    println(ab.isInstanceOf[Vista[AB]])
+
+    val f = new F
+    println(f.five)
   }
 }
