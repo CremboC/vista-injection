@@ -5,9 +5,6 @@ import vista.util.EqualitySet
 import scala.collection.immutable.Seq
 import scala.meta._
 
-/**
-  * Created by Crembo on 2017-03-21.
-  */
 trait XDefn {
 
   /**
@@ -16,7 +13,17 @@ trait XDefn {
   implicit class XDefn(defn: Defn.Def) {
     def signature: Defn.Def = {
       // ensures that def g() === def g
-      val paramss = if (defn.paramss.isEmpty) Seq(Seq.empty) else defn.paramss
+      val name    = "p"
+      var current = 0
+
+      val paramss =
+        if (defn.paramss.isEmpty) Seq(Seq.empty)
+        else
+          defn.paramss.map(_.map { p =>
+            current += 1
+            p.copy(name = Term.Name(s"$name$current"))
+          })
+
       defn.copy(mods = Seq.empty, body = Term.Block(Seq.empty), decltpe = None, paramss = paramss)
     }
 

@@ -59,7 +59,7 @@ object Database {
 
   def getOption(value: ClassName): Option[Inst] = store.get(value)
 
-  def exists(name: ClassName): Boolean = store.get(name).isDefined
+  def exists(name: ClassName): Boolean = getOption(name).isDefined
 
   def ctor(name: ClassName): Ctor.Name =
     if (get(name).generated) Ctor.Name(s"${Constants.GenName}.$name")

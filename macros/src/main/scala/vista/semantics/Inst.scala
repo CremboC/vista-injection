@@ -56,13 +56,10 @@ object Inst {
     val ctor: Ctor.Primary = body.ctor
 
     override protected val members: Seq[Defn] = ctorMembers ++ super.members
-
-//    override def generated: Boolean = ???
   }
 
   case class Trait(tbody: Defn.Trait, generated: Boolean = false) extends Inst {
     override val body: Defn.Class =
       q"..${tbody.mods} class ${tbody.name}[..${tbody.tparams}] extends ${tbody.templ}"
   }
-
 }

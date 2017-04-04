@@ -6,6 +6,7 @@ import vista.helpers.OpHelpers
 import vista.modifiers._
 import vista.operations.expanders._
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas, Parser}
+import vista.util.Pipe._
 import vista.util.meta.xtensions.XTemplate
 
 import scala.annotation.StaticAnnotation
@@ -46,13 +47,13 @@ private[vista] object EnableTools {
           d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
       }.asInstanceOf[Defn.Trait]
 
-    def evaluate(results: Queue[Result]): Seq[Defn.Trait] = {
-      if (results.isEmpty) Seq.empty
+    def evaluate(queue: Queue[Result]): Seq[Defn.Trait] = {
+      if (queue.isEmpty) Seq.empty
       else {
-        val (res +: rest) = results
-        val (parsed :: expander :: HNil) = res
+        val (head +: tail) = queue
+        val (input :: expander :: HNil) = head
 
-        val canExpand = parsed match {
+        val canExpand = input match {
           case OpVistas(lclass, rclass, _, _, newtype) =>
             db.exists(lclass) && db.exists(rclass)
           case OpOverload(lclass, _, newtype, _) =>
@@ -60,9 +61,9 @@ private[vista] object EnableTools {
         }
 
         if (canExpand) {
-          val expanded = expander andThen addGenerated andThen forbidMethods apply parsed
-          expanded +: evaluate(rest)
-        } else evaluate(rest.enqueue(res))
+          val expanded = input |> (expander andThen addGenerated andThen forbidMethods)
+          expanded +: evaluate(tail)
+        } else evaluate(tail.enqueue(head))
       }
     }
 

@@ -51,7 +51,7 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
           trait AB extends A with B {
-            def ab(v: String)() = (a(v), b())
+            def ab(p1: String)() = (a(p1), b())
           }
         """
 
@@ -75,7 +75,7 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
         trait AB extends A with B {
-          def ab[Tvista1, Tvista2, Tvista3](v: Tvista1)(s: Tvista3) = (a[Tvista1, Tvista2](v), b[Tvista3](s))
+          def ab[Tvista1, Tvista2, Tvista3](p1: Tvista1)(p2: Tvista3) = (a[Tvista1, Tvista2](p1), b[Tvista3](p2))
         }
       """
 
@@ -88,7 +88,7 @@ class ProductTest extends FlatSpecBase {
   it should "expand classes with constructors" in {
     q"""
         class A(p: Int) {
-          def a(v: String): Int = v.toInt
+          def a(v: String, m: String): Int = v.toInt
         }
 
         class B(p1: Int) {
@@ -99,7 +99,7 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
           trait AB extends A with B {
-            def ab(v: String)() = (a(v), b())
+            def ab(p1: String, p2: String)() = (a(p1, p2), b())
           }
         """
 

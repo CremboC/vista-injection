@@ -46,10 +46,11 @@ object ProductOp {
             val rtparams = generateTParams(rdef.tparams)
 
             // generate the list of params for the left def
-            val newldefparams = extractParams(ldef.paramss.head, ltparams)
+            val newldefparams = extractParams(ldef.paramss.head, ltparams, start = 0)
 
             // generate the list of params for the right def
-            val newrdefparams = extractParams(rdef.paramss.head, rtparams)
+            val newrdefparams =
+              extractParams(rdef.paramss.head, rtparams, start = newldefparams.size)
 
             // merge into two separate param lists
             val paramss = Seq(newldefparams, newrdefparams)
@@ -87,17 +88,23 @@ object ProductOp {
       tparams.map(t => (t.name.value, t.copy(name = Type.fresh("Tvista")))).toMap
 
     private def extractParams(params: Seq[Term.Param],
-                              tparams: Map[String, Type.Param]): Seq[Term.Param] =
+                              tparams: Map[String, Type.Param],
+                              start: Int): Seq[Term.Param] = {
+      var current = start
       params.map { param =>
         param.decltpe match {
           case None => param
           case Some(typ) =>
             tparams.get(typ.syntax) match {
-              case None          => param
-              case Some(newtype) => param.copy(decltpe = Option(Type.Name(newtype.name.value)))
+              case None => param
+              case Some(newtype) =>
+                current += 1
+                param.copy(name = Term.Name(s"p$current"),
+                           decltpe = Option(Type.Name(newtype.name.value)))
             }
         }
       }
+    }
 
     private def generateTerm(params: Seq[Term.Param], seed: Term.Apply): Term.Apply =
       params.foldLeft(seed) {

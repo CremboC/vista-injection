@@ -54,10 +54,7 @@ trait XSet {
       val selfStr  = self.structurally
       val otherStr = other.structurally
 
-      val pairs = for { s <- selfStr; o <- otherStr } yield (s, o)
-      pairs.map {
-        case (x, y) => (x.tree, y.tree)
-      }
+      for { s <- selfStr; o <- otherStr } yield (s.tree, o.tree)
     }
 
     def ><(other: Set[A]): Set[(A, A)] = cross(other)
