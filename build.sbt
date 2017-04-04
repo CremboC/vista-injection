@@ -34,6 +34,7 @@ lazy val macros = (project in file("macros")).settings(
   libraryDependencies += "org.scalameta" %% "contrib"   % "1.7.0-385-2c036181",
   libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1",
   libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  libraryDependencies += "com.chuusai"   %% "shapeless" % "2.3.2",
   scalacOptions += "-feature"
 )
 

@@ -18,10 +18,15 @@ object Extractable {
     }
   }
 
-  implicit class Extractable1Op(val ex: Extractable1[_]) extends AnyVal {
+  implicit class Extractable1Op[B <: Tree](val ex: Extractable1[B]) extends AnyVal {
     def asPartial[A <: Tree]: PartialFunction[A, Boolean] = {
       case ex(_) => true
       case _     => false
+    }
+
+    def asResultingPartial[A <: Tree]: PartialFunction[A, Option[B]] = {
+      case ex(f) => Option(f)
+      case _     => None
     }
   }
 }

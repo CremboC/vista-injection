@@ -1,17 +1,74 @@
 package vista
 
+import shapeless.{::, HNil}
 import vista.Constants.forbiddenMethodBody
 import vista.helpers.OpHelpers
 import vista.modifiers._
-import vista.operations._
 import vista.operations.expanders._
-import vista.operations.parsers.{OpOverload, OpVistas, Parser}
+import vista.operations.parsers.{OpInput, OpOverload, OpVistas, Parser}
 import vista.util.meta.xtensions.XTemplate
 
 import scala.annotation.StaticAnnotation
+import scala.collection.immutable.{Queue, Seq}
 import scala.meta.Term.Block
 import scala.meta._
 import scala.meta.contrib._
+
+private[vista] object EnableTools {
+  private val db = semantics.Database
+
+  def expandOps(defn: Tree): Seq[Defn.Trait] = {
+    val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
+
+    type Result = OpInput :: (OpInput => Defn.Trait) :: HNil
+    val generated = terms.map {
+      case term@OpHelpers.OpVistas() =>
+        val expander = term match {
+          case OpHelpers.Forbid(_) => Expander[OpVistas, ForbidOp.Forbid]
+          case OpHelpers.Union(_) => Expander[OpVistas, UnionOp.Union]
+          case OpHelpers.Intersect(_) => Expander[OpVistas, IntersectOp.Intersect]
+          case OpHelpers.Product(_) => Expander[OpVistas, ProductOp.Product]
+        }
+
+        Parser[Term.Apply, OpVistas].parse(term) :: expander.expand _ :: HNil
+
+      case term@OpHelpers.OpOverload() =>
+        val expander = term match {
+          case OpHelpers.Forbid(_) => Expander[OpOverload, ForbidOp.Forbid]
+        }
+        Parser[Term.Apply, OpOverload].parse(term) :: expander.expand _ :: HNil
+    }.asInstanceOf[List[Result]]
+
+    val addGenerated = (g: Defn.Trait) => { db.add(g, generated = true); g }
+    val forbidMethods = (g: Defn.Trait) =>
+      g.transform {
+        case d: Defn.Def if d.body isEqual forbiddenMethodBody =>
+          d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
+      }.asInstanceOf[Defn.Trait]
+
+    def evaluate(results: Queue[Result]): Seq[Defn.Trait] = {
+      if (results.isEmpty) Seq.empty
+      else {
+        val (res +: rest) = results
+        val (parsed :: expander :: HNil) = res
+
+        val canExpand = parsed match {
+          case OpVistas(lclass, rclass, _, _, newtype) =>
+            db.exists(lclass) && db.exists(rclass)
+          case OpOverload(lclass, _, newtype, _) =>
+            db.exists(lclass)
+        }
+
+        if (canExpand) {
+          val expanded = expander andThen addGenerated andThen forbidMethods apply parsed
+          expanded +: evaluate(rest)
+        } else evaluate(rest.enqueue(res))
+      }
+    }
+
+    evaluate(Queue(generated:_*))
+  }
+}
 
 class enable extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
@@ -36,44 +93,7 @@ class enable extends StaticAnnotation {
           case t: Defn.Trait => db.add(t)
         }
 
-        val generated = defn.collect {
-          case OpHelpers.HasOp(term) =>
-            val parser = term match {
-              case OpHelpers.OpVistas() =>
-                term match {
-                  case OpHelpers.Forbid(_) =>
-                    parseAndExpand[Term.Apply, OpVistas, ForbidOp.Forbid] _
-                  case OpHelpers.Union(_) =>
-                    parseAndExpand[Term.Apply, OpVistas, UnionOp.Union] _
-                  case OpHelpers.Intersect(_) =>
-                    parseAndExpand[Term.Apply, OpVistas, IntersectOp.Intersect] _
-                  case OpHelpers.Product(_) =>
-                    parseAndExpand[Term.Apply, OpVistas, ProductOp.Product] _
-                }
-              case OpHelpers.OpOverload() =>
-                term match {
-                  case OpHelpers.Forbid(_) =>
-                    parseAndExpand[Term.Apply, OpOverload, ForbidOp.Forbid] _
-//                case OpHelpers.Intersect(_) =>
-//                  parseAndExpand[Term.Apply, OpOverload, IntersectOp.Intersect] _
-                }
-            }
-
-            (parser, term)
-        }
-
-        val addGenerated = (g: Defn.Trait) => { db.add(g, generated = true); g }
-        val traits = generated.collect {
-          case (f, t) =>
-            val trayt = f andThen addGenerated apply t
-            trayt
-              .transform {
-                case d: Defn.Def if d.body isEqual forbiddenMethodBody =>
-                  d.copy(mods = restrictAnnotation(d.name.value, trayt.name.value) +: d.mods)
-              }
-              .asInstanceOf[Defn.Trait]
-        }
-
+        val traits = EnableTools.expandOps(defn)
         val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
 
         val Block(nstats) = Block(stats)

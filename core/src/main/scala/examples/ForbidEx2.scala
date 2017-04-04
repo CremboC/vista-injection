@@ -13,6 +13,8 @@ object ForbidEx2 {
     def three: Int = 3
   }
 
+  def mkForbid2(a: A, af: Vista[Af]) = ∖∖[A, Af, Aff](a, af)
+
   def mkForbid(a: A) =
     ∖[A, Af](a, {
       def one: Int = ???
@@ -25,6 +27,9 @@ object ForbidEx2 {
     println(a.two) // should work
 
     val af = mkForbid(a)
+
+    val result = mkForbid2(a, af)
+    println(result.one)
 
 //    af.one // compiler error
 //    af.two // compiler error
