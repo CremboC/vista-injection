@@ -1,10 +1,3 @@
-package examples
-
-import vista.lib._
-
-import scala.util.Random
-
-@vista.enable
 object StateInconsistency {
   class A(val f: Int) {
     private val xf = f + Random.nextInt(10)

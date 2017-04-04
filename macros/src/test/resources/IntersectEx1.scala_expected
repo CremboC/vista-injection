@@ -1,0 +1,40 @@
+object IntersectEx1 {
+  object gen$vista {
+    trait AuB extends A with B {
+      @scala.annotation.compileTimeOnly("Method <one> in type <AuB> is forbidden.") override def one() = throw new vista.lib.ForbiddenMethodException
+      @scala.annotation.compileTimeOnly("Method <three> in type <AuB> is forbidden.") override def three() = throw new vista.lib.ForbiddenMethodException
+      override def two(): Double = super[A].two()
+      override def zero: Int = super[A].zero
+    }
+  }
+  trait Ap { def zero: Int = 0 }
+  trait A extends Ap {
+    def one(): Int = 1
+    def two(): Double = 2.1d
+  }
+  trait B {
+    def zero: Int = 0
+    def two(): Double = 2.11d
+    def three(): Int = 3
+  }
+  trait C { val a: String }
+  def main(args: Array[String]): Unit = {
+    val a = new A
+    val b = new B
+    val c = new C { override val a: String = "test" }
+    val ab = new gen$vista.AuB {}
+    if (true) {
+      ab.zero
+    } else {
+      println("ab.zero is not allowed")
+    }
+    if (false) {
+      ab.one()
+    } else {
+      println("ab.one is not allowed")
+    }
+    ab.one()
+    ab.two()
+    ab.three()
+  }
+}

@@ -3,9 +3,6 @@ package vista.util.meta
 import scala.collection.immutable.Seq
 import scala.meta.Ctor
 
-/**
-  * Created by Crembo on 2017-03-21.
-  */
 trait XCtor {
   object XCtor {
     @inline

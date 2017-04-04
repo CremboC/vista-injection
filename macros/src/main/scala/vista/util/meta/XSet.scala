@@ -3,9 +3,6 @@ package vista.util.meta
 import scala.meta.Tree
 import scala.meta.contrib.{Structurally, Syntactically}
 
-/**
-  * Created by Crembo on 2017-03-21.
-  */
 trait XSet {
 
   /**

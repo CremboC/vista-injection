@@ -1,17 +1,4 @@
-package examples
-
-import vista.lib._
-
-object Other {
-  class F {
-    def five: Int = 5
-  }
-}
-
-@vista.enable
-object UnionEx1 extends ExampleBase {
-  import Other.F
-
+object UnionEx1 {
   class Ap {
     def zero: Int = 0
   }
@@ -26,13 +13,16 @@ object UnionEx1 extends ExampleBase {
     def three(): Int = 3
   }
 
-  def acceptsAB(ab: Vista[AB]): Boolean = ab.isInstanceOf[Vista[AB]]
+  def acceptsApA(ap: Vista[ApA]): Boolean = ap.isInstanceOf[Vista[ApA]]
 
   def main(args: Array[String]): Unit = {
     val a = new A
     val b = new B
 
-    val ab = ∪[A, B, AB](a, b)
+    val ab = ∪[A, B, AB](
+      a,
+      b
+    )
 
     println(ab.zero)
     println(ab.one())
@@ -44,7 +34,7 @@ object UnionEx1 extends ExampleBase {
 
     println(ab.isInstanceOf[Vista[AB]])
 
-    val f = new F
-    println(f.five)
+    val ap = new Ap
+    acceptsAP(∪[A, Ap, ApA](a, b))
   }
 }

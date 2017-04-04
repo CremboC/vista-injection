@@ -69,12 +69,10 @@ private[vista] object EnableTools {
 
     evaluate(Queue(generated:_*))
   }
-}
 
-class enable extends StaticAnnotation {
-  inline def apply(defn: Any): Any = meta {
-    val db = semantics.Database
 
+
+  def execute(obj: Defn.Object): Defn.Object = {
     def classIsRecorded(term: Term.New): Boolean =
       if (term.templ.parents.isEmpty) false
       else {
@@ -84,71 +82,75 @@ class enable extends StaticAnnotation {
 
     def constructingTrait(term: Term.New): Boolean = term.templ.ctorsWithArguments.isDefined
 
+    val template"{ ..$_ } with ..$_ { $_ => ..$stats }" = obj.templ
+
+    // build up SemDB
+    obj.traverse {
+      case c: Defn.Class => db.add(c)
+      case t: Defn.Trait => db.add(t)
+    }
+
+    val traits = EnableTools.expandOps(obj)
+    val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
+
+    val Block(nstats) = Block(stats)
+      .transform { // first convert all classes into traits
+        case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
+      }
+      .transform { // then ensure all Vista checks are expanded
+        case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
+          require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
+          val clazzName = t.args.head.syntax
+          if (db(clazzName).notGenerated) abort("The Vista[A] operator must be used with a generated vista type.")
+          Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
+      }
+      .transform {
+        case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
+          Tratify(term)
+
+        case OpHelpers.Subset(t) =>
+          Subset(t)
+
+        case OpHelpers.HasOp(t) =>
+          val parser = t match {
+            case OpHelpers.OpVistas()   => Parser[Term.Apply, OpVistas]
+            case OpHelpers.OpOverload() => Parser[Term.Apply, OpOverload]
+          }
+
+          val op = parser.parse(t)
+
+          val ctorable = t match {
+            case OpHelpers.Forbid(_)    => Constructable[ForbidOp.Forbid]
+            case OpHelpers.Union(_)     => Constructable[UnionOp.Union]
+            case OpHelpers.Intersect(_) => Constructable[IntersectOp.Intersect]
+            case OpHelpers.Product(_)   => Constructable[ProductOp.Product]
+          }
+
+          val members = ctorable.members(op)
+          q"new ${db.ctor(op.newtype)} { ..$members }"
+      }
+
+    val unparsed = nstats.find {
+      case s: Stat if OpHelpers.hasOp(s) => true
+      case _                             => false
+    }
+
+    unparsed match {
+      case Some(s) => abort(s"An operation was not expanded in $s (${s.pos})")
+      case None    =>
+    }
+
+    val ntemplate =
+      obj.templ.copy(stats = Option(generatedWrapper +: nstats))
+    obj.copy(templ = ntemplate)
+  }
+}
+
+class enable extends StaticAnnotation {
+  inline def apply(defn: Any): Any = meta {
     defn match {
-      case obj: Defn.Object =>
-        val template"{ ..$_ } with ..$_ { $_ => ..$stats }" = obj.templ
-
-        // build up SemDB
-        defn.traverse {
-          case c: Defn.Class => db.add(c)
-          case t: Defn.Trait => db.add(t)
-        }
-
-        val traits = EnableTools.expandOps(defn)
-        val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
-
-        val Block(nstats) = Block(stats)
-          .transform { // first convert all classes into traits
-            case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
-          }
-          .transform { // then ensure all Vista checks are expanded
-            case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
-              require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
-              val clazzName = t.args.head.syntax
-              if (db(clazzName).notGenerated) abort("The Vista[A] operator must be used with a generated vista type.")
-              Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
-          }
-          .transform {
-            case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
-              Tratify(term)
-
-            case OpHelpers.Subset(t) =>
-              Subset(t)
-
-            case OpHelpers.HasOp(t) =>
-              val parser = t match {
-                case OpHelpers.OpVistas()   => Parser[Term.Apply, OpVistas]
-                case OpHelpers.OpOverload() => Parser[Term.Apply, OpOverload]
-              }
-
-              val op = parser.parse(t)
-
-              val ctorable = t match {
-                case OpHelpers.Forbid(_)    => Constructable[ForbidOp.Forbid]
-                case OpHelpers.Union(_)     => Constructable[UnionOp.Union]
-                case OpHelpers.Intersect(_) => Constructable[IntersectOp.Intersect]
-                case OpHelpers.Product(_)   => Constructable[ProductOp.Product]
-              }
-
-              val members = ctorable.members(op)
-              q"new ${db.ctor(op.newtype)} { ..$members }"
-          }
-
-        val unparsed = nstats.find {
-          case s: Stat if OpHelpers.hasOp(s) => true
-          case _                             => false
-        }
-
-        unparsed match {
-          case Some(s) => abort(s"An operation was not expanded in $s (${s.pos})")
-          case None    =>
-        }
-
-        val ntemplate =
-          obj.templ.copy(stats = Option(generatedWrapper +: nstats))
-        obj.copy(templ = ntemplate)
-      case _ =>
-        abort("This annotation must be placed on an object")
+      case obj: Defn.Object => EnableTools.execute(obj)
+      case _ => abort("This annotation must be placed on an object")
     }
   }
 }

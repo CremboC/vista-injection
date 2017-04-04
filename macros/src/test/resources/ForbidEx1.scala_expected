@@ -1,0 +1,34 @@
+object ForbidEx1 {
+  object gen$vista {
+    trait Af extends A {
+      @scala.annotation.compileTimeOnly("Method <one> in type <Af> is forbidden.") override def one: Int = throw new vista.lib.ForbiddenMethodException
+      @scala.annotation.compileTimeOnly("Method <two> in type <Af> is forbidden.") override def two: Int = throw new vista.lib.ForbiddenMethodException
+    }
+    trait AA extends A with gen$vista.Af {
+      override def one: Int = super[A].one
+      override def two: Int = super[A].two
+    }
+  }
+  trait A {
+    def one: Int = 1
+    def two: Int = multiplier(2)
+    private def multiplier: Int => Int = _ * 3
+  }
+  def main(args: Array[String]): Unit = {
+    val a = new A
+    println(a.one)
+    println(a.two)
+    val af = new gen$vista.Af {}
+    af.one
+    af.two
+    println(af.isInstanceOf[A])
+    val aAgain = new gen$vista.AA {}
+    try {
+      println(aAgain.one)
+      println(aAgain.two)
+    } catch {
+      case e: NoSuchElementException =>
+        println(e.getClass)
+    }
+  }
+}

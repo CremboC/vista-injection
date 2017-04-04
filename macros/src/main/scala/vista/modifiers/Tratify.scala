@@ -29,7 +29,7 @@ object Tratify {
         // FIXME: in this case the first constructor must be a class->trait convertee
         val clazz = db(ctor.fun.syntax) match {
           case t: Inst.Class => t
-          case _             => throw new IllegalArgumentException("Must be a class converted into a trait")
+          case _             => abort("Must be a class converted into a trait")
         }
 
         val members = clazz.ctorMembers.zip(ctor.args).map {

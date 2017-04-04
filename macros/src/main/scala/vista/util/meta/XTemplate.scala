@@ -2,9 +2,6 @@ package vista.util.meta
 
 import scala.meta._
 
-/**
-  * Created by Crembo on 2017-03-21.
-  */
 trait XTemplate {
 
   implicit class XTemplate(self: Template) {

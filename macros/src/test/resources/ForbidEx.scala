@@ -1,11 +1,3 @@
-package examples
-
-import vista.lib._
-
-/**
-  * @author paulius
-  */
-@vista.enable
 object ForbidEx {
   class A {
     def sum(items: Seq[Int]): Int = items.sum

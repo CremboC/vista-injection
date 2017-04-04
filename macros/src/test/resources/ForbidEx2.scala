@@ -1,11 +1,3 @@
-package examples
-
-import vista.lib._
-
-/**
-  * @author paulius
-  */
-@vista.enable
 object ForbidEx2 {
   class A {
     def one: Int   = 1
@@ -30,11 +22,10 @@ object ForbidEx2 {
 
     val result = mkForbid2(a, af)
     println(result.one)
+    af.one // compiler error
+    af.two // compiler error
 
-//    af.one // compiler error
-//    af.two // compiler error
-
-//    val partial = af.one _ // compiler error
+    val partial = af.one _ // compiler error
 
     println(af.isInstanceOf[A])
 

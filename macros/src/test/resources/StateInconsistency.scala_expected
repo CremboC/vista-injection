@@ -1,0 +1,27 @@
+object StateInconsistency {
+  object gen$vista {
+    trait AB extends A with B {
+      override def x: Int = super[A].x
+      override def y: Int = super[B].y
+    }
+  }
+  trait A {
+    val f: Int
+    private val xf = f + Random.nextInt(10)
+    def x: Int = 1 - xf
+  }
+  trait B {
+    val g: Int
+    def y: Int = 2
+  }
+  def main(args: Array[String]): Unit = {
+    val a = new A { override val f: Int = 1 }
+    val b = new B { override val g: Int = 2 }
+    val ab = new gen$vista.AB {
+      override val f: Int = a.f
+      override val g: Int = b.g
+    }
+    require(ab.x == a.x, () => "ab.x is not a.x")
+    require(ab.f == a.f, () => "ab.f is not a.f")
+  }
+}

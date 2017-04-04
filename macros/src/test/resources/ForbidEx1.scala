@@ -1,8 +1,3 @@
-package examples
-
-import vista.lib._
-
-@vista.enable
 object ForbidEx1 {
   class A {
     def one: Int = 1
@@ -21,8 +16,8 @@ object ForbidEx1 {
       def two: Int = ???
     })
 
-//    af.one // compiler error
-//    af.two // compiler error
+    af.one // compiler error
+    af.two // compiler error
 
     println(af.isInstanceOf[A])
 

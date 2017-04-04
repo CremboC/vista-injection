@@ -5,17 +5,12 @@ import vista.util.Extractable._
 
 import scala.meta._
 
-/**
-  * @author Paulius Imbrasas
-  */
 object OpHelpers {
-  private final val opVistasR = """.\[.+, .+, .+\]""".r
-  private final val overloadR = """.\[.+, .+\]""".r
 
   def extractor(char: String): Extractable1[Term.Apply] = new Extractable1[Term.Apply] {
     override def unapply[A <: Tree](arg: A): Option[Term.Apply] = arg match {
-      case arg: Term.Apply if arg.syntax.contains(char) => Option(arg)
-      case _                                            => None
+      case arg: Term.Apply if arg.syntax.startsWith(char) => Option(arg)
+      case _                                              => None
     }
   }
 
@@ -32,8 +27,15 @@ object OpHelpers {
     }
   }
 
-  val OpVistas: Extractable   = (arg: Tree) => opVistasR.findFirstMatchIn(arg.syntax).isDefined
-  val OpOverload: Extractable = (arg: Tree) => overloadR.findFirstMatchIn(arg.syntax).isDefined
+  val OpVistas: Extractable = {
+    case q"$_[$_, $_, $_]($_, $_)" => true
+    case _                         => false
+  }
+
+  val OpOverload: Extractable = {
+    case q"$_[$_, $_]($_, $_)" => true
+    case _                     => false
+  }
 
   val HasOp: Extractable1[Term.Apply] = new Extractable1[Term.Apply] {
     override def unapply[A <: Tree](arg: A): Option[Term.Apply] = arg match {
@@ -46,11 +48,6 @@ object OpHelpers {
   def isForbid(expr: Tree): Boolean    = Forbid.asPartial(expr)
   def isIntersect(expr: Tree): Boolean = Intersect.asPartial(expr)
   def isProduct(expr: Tree): Boolean   = Product.asPartial(expr)
-
-  def isSubset(expr: Tree): Boolean = Subset.asPartial(expr)
-
-  def isOpVistas(tree: Tree): Boolean   = OpVistas.asPartial(tree)
-  def isOpOverload(tree: Tree): Boolean = OpOverload.asPartial(tree)
 
   def hasOp(expr: Tree): Boolean =
     isUnion(expr) || isForbid(expr) || isIntersect(expr) || isProduct(expr)

@@ -1,9 +1,4 @@
-package examples
-
-import vista.lib._
-
-@vista.enable
-object IntersectEx1 extends ExampleBase {
+object IntersectEx1 {
   class Ap {
     def zero: Int = -0
   }
@@ -41,8 +36,8 @@ object IntersectEx1 extends ExampleBase {
       println("ab.one is not allowed")
     }
 
-//    ab.one()   // compiler error
-    ab.two() // valid
-//    ab.three() // compiler error
+    ab.one()   // compiler error
+    ab.two()   // valid
+    ab.three() // compiler error
   }
 }
