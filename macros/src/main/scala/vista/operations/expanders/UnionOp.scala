@@ -1,6 +1,6 @@
 package vista.operations.expanders
 
-import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
+import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics
 import vista.semantics.Database.ClassName
 import vista.util.Equalities.defEquality
@@ -10,9 +10,6 @@ import vista.util.meta.xtensions.XDefn
 import scala.collection.immutable.Seq
 import scala.meta._
 
-/**
-  * Internal API implementation
-  */
 object UnionOp {
   type Union = Op[UnionOp.type]
 
@@ -23,7 +20,7 @@ object UnionOp {
       case input: OpVistas =>
         ctorMembersDefns(db(input.lclass), input.lvar) ++
           ctorMembersDefns(db(input.rclass), input.rvar)
-      case input: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+      case _ => abort("Union is cannot be overridden")
     }
   }
 
@@ -36,6 +33,15 @@ object UnionOp {
 
       val common = commonMethods(inp).to[Seq]
 
+      /** Ensures we get the correct methods when we have
+        * {{{
+        *   trait A { def a; def b }
+        *   trait Aa = forbid(def a)
+        *   trait Ab = forbid(def b)
+        *   trait UnionA = Aa union Ab
+        * }}}
+        * Without this, both a and b would be forbidden.
+        */
       val methods = {
         def methodsFromSide(methods: Set[Defn.Def], className: ClassName): Set[Defn.Def] = {
           val map  = db.get(className).visibilities.map(m => m.signature.syntax -> m).toMap

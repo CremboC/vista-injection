@@ -2,9 +2,6 @@ package examples
 
 import vista.lib._
 
-/**
-  * @author paulius
-  */
 @vista.enable
 object ForbidEx1 {
   class A {

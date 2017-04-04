@@ -9,7 +9,6 @@ sealed trait OpInput {
   def lclass: String
   def lvar: String
   def newtype: String
-  def newvar: Option[String] = None
 }
 
 case class OpVistas(
@@ -17,14 +16,12 @@ case class OpVistas(
     rclass: String,
     lvar: String,
     rvar: String,
-    newtype: String,
-    override val newvar: Option[String] = None
+    newtype: String
 ) extends OpInput
 
 case class OpOverload(
     lclass: String,
     lvar: String,
     newtype: String,
-    methods: Seq[Defn.Def],
-    override val newvar: Option[String] = None
+    methods: Seq[Defn.Def]
 ) extends OpInput

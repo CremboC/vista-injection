@@ -1,6 +1,6 @@
 package vista.operations.expanders
 
-import vista.operations.parsers.{OpInput, OpOverload, OpVistas}
+import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics
 import vista.util.meta.xtensions._
 
@@ -21,7 +21,7 @@ object ProductOp {
       case input: OpVistas =>
         ctorMembersDefns(db(input.lclass), input.lvar) ++
           ctorMembersDefns(db(input.rclass), input.rvar)
-      case input: OpOverload => ctorMembersDefns(db(input.lclass), input.lvar)
+      case _ => abort("Product is cannot be overridden")
     }
   }
 

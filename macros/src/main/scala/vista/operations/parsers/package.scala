@@ -6,13 +6,13 @@ import scala.meta._
 package object parsers {
   @implicitNotFound("No parser found from ${I} to ${O}")
   trait Parser[I <: Tree, O <: OpInput] {
-    def parse(defn: I): Option[O]
+    def parse(defn: I): O
   }
 
   object Parser {
 
     implicit object TermApplyOverloadParser extends Parser[Term.Apply, OpOverload] {
-      override def parse(defn: Term.Apply): Option[OpOverload] = {
+      override def parse(defn: Term.Apply): OpOverload = {
         val q"$_[$source, $result](${lvar: Term.Name}, $defs)" = defn
 
         val methods = {
@@ -22,21 +22,20 @@ package object parsers {
           }
         }
 
-        Option(OpOverload(source.syntax, lvar.syntax, result.syntax, methods))
+        OpOverload(source.syntax, lvar.syntax, result.syntax, methods)
       }
     }
 
     implicit object TermApplyVistasParser extends Parser[Term.Apply, OpVistas] {
-      override def parse(defn: Term.Apply): Option[OpVistas] = {
+      override def parse(defn: Term.Apply): OpVistas = {
         val q"$_[$leftType, $rightType, $newType](${leftVar: Term.Name}, ${rightVar: Term.Name})" =
           defn
 
-        Option(
-          OpVistas(leftType.syntax,
-                   rightType.syntax,
-                   leftVar.syntax,
-                   rightVar.syntax,
-                   newType.syntax))
+        OpVistas(leftType.syntax,
+                 rightType.syntax,
+                 leftVar.syntax,
+                 rightVar.syntax,
+                 newType.syntax)
       }
     }
 

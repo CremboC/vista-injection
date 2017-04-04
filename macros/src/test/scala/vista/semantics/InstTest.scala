@@ -1,11 +1,11 @@
 package vista.semantics
 
 import vista.WordSpecBase
+import vista.util.Pipe._
 import vista.util.meta.xtensions.XSet
 
 import scala.meta._
 import scala.meta.contrib._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas

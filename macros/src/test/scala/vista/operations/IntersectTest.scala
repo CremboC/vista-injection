@@ -3,10 +3,10 @@ package vista.operations
 import vista.FlatSpecBase
 import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.parsers.OpVistas
+import vista.util.Pipe._
 import vista.util.meta.xtensions._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas

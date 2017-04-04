@@ -4,10 +4,10 @@ import vista.WordSpecBase
 import vista.operations.expanders.Expander
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.parsers.{OpOverload, OpVistas}
+import vista.util.Pipe._
 import vista.util.meta.xtensions._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
@@ -103,7 +103,7 @@ class ForbidTest extends WordSpecBase {
         classes |> addInsts
 
         val expanded =
-          Expander[OpVistas, Forbid].expand(OpVistas("A", "B", "a", "b", "AB", Some("ab")))
+          Expander[OpVistas, Forbid].expand(OpVistas("A", "B", "a", "b", "AB"))
         expanded |> addInsts
 
         db("AB").visibilities.signatures should contain only q"def a: Int = {}".signature

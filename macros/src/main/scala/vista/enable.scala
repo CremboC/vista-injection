@@ -94,8 +94,7 @@ class enable extends StaticAnnotation {
                 case OpHelpers.OpOverload() => Parser[Term.Apply, OpOverload]
               }
 
-              val op =
-                parser.parse(t).getOrElse { abort("Fatal error occurred when parsing an op") }
+              val op = parser.parse(t)
 
               val ctorable = t match {
                 case OpHelpers.Forbid(_)    => Constructable[ForbidOp.Forbid]

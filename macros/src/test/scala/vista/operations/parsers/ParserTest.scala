@@ -8,22 +8,15 @@ import scala.meta._
 class ParserTest extends FlatSpecBase with Inside with OptionValues {
   behavior of "Parser"
 
-//  private val valParser          = Parser[Defn.Val, OpVistas].parse _
-//  private val valOverloadParser  = Parser[Defn.Val, OpOverload].parse _
-//  private val defnParser         = Parser[Defn.Def, OpVistas].parse _
-//  private val defnOverloadParser = Parser[Defn.Def, OpOverload].parse _
-
   it should "parse a method application of two vistas" in {
     val parsed = Parser[Term.Apply, OpVistas].parse(q"∪[A, B, AB](a, b)")
-    parsed should not be empty
-    inside(parsed.get) {
-      case OpVistas(lclass, rclass, lvar, rvar, newtype, nvar) =>
+    inside(parsed) {
+      case OpVistas(lclass, rclass, lvar, rvar, newtype) =>
         lclass should be("A")
         rclass should be("B")
         lvar should be("a")
         rvar should be("b")
         newtype should be("AB")
-        nvar shouldBe empty
     }
   }
 
@@ -41,9 +34,8 @@ class ParserTest extends FlatSpecBase with Inside with OptionValues {
 
   it should "parse a method application of a vista and a set of names" in {
     val parsed = Parser[Term.Apply, OpOverload].parse(q"∖[A, Af](a, { def a: Int = ??? })")
-    parsed should not be empty
-    inside(parsed.get) {
-      case OpOverload(lclass, lvar, newtype, methods, nvar) =>
+    inside(parsed) {
+      case OpOverload(lclass, lvar, newtype, methods) =>
         lclass should be("A")
         lvar should be("a")
         newtype should be("Af")

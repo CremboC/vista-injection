@@ -30,11 +30,10 @@ lazy val macros = (project in file("macros")).settings(
   // A dependency on scala.meta is required to write new-style macros, but not
   // to expand such macros.  This is similar to how it works for old-style
   // macros and a dependency on scala.reflect.
-  libraryDependencies += "org.scalameta" %% "scalameta"   % "1.6.0",
-  libraryDependencies += "org.scalameta" %% "contrib"     % "1.7.0-385-2c036181",
-  libraryDependencies += "org.scalactic" %% "scalactic"   % "3.0.1",
-  libraryDependencies += "org.scalatest" %% "scalatest"   % "3.0.1" % "test",
-  libraryDependencies += "org.scalaz"    %% "scalaz-core" % "7.2.10",
+  libraryDependencies += "org.scalameta" %% "scalameta" % "1.6.0",
+  libraryDependencies += "org.scalameta" %% "contrib"   % "1.7.0-385-2c036181",
+  libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.1",
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   scalacOptions += "-feature"
 )
 

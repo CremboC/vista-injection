@@ -2,9 +2,9 @@ package vista.operations.expanders
 
 import vista.FlatSpecBase
 import vista.operations.parsers.OpVistas
+import vista.util.Pipe._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * Created by Crembo on 2017-03-22.

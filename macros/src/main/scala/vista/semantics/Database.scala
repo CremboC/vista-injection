@@ -35,7 +35,6 @@ object Database {
 
   def add(c: Defn.Class): Unit = add(c, generated = false)
 
-  // FIXME: add "generated" parameter
   def add(c: Defn.Class, generated: Boolean): Unit = {
     import vista.util.meta.xtensions.{XDeclVal, XDeclVar}
 
@@ -63,7 +62,7 @@ object Database {
   def exists(name: ClassName): Boolean = store.get(name).isDefined
 
   def ctor(name: ClassName): Ctor.Name =
-    if (this(name).generated) Ctor.Name(s"${Constants.GenName}.$name")
+    if (get(name).generated) Ctor.Name(s"${Constants.GenName}.$name")
     else Ctor.Name(name)
 
   def classes: Set[Inst] = store.classes

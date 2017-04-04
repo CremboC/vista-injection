@@ -4,9 +4,9 @@ import vista.FlatSpecBase
 import vista.operations.expanders.Constructable
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.{OpVistas, Parser}
+import vista.util.Pipe._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
@@ -22,7 +22,7 @@ class UnionTest extends FlatSpecBase {
     q"""class A; class B""" |> addInsts
 
     val result = parseAndExpand[Term.Apply, OpVistas, Union](source)
-    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    val parsed = Parser[Term.Apply, OpVistas].parse(source)
     Constructable[Union].members(parsed) shouldBe empty
     result should equal(expected)
   }
@@ -61,7 +61,7 @@ class UnionTest extends FlatSpecBase {
     val expanded = parseAndExpand[Term.Apply, OpVistas, Union](source)
     expanded.syntax should equal(expected.syntax)
 
-    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    val parsed = Parser[Term.Apply, OpVistas].parse(source)
     Constructable[Union].members(parsed) shouldBe empty
   }
 
@@ -93,7 +93,7 @@ class UnionTest extends FlatSpecBase {
     val expanded = parseAndExpand[Term.Apply, OpVistas, Union](source)
     expanded.syntax should equal(expected.syntax)
 
-    val parsed = Parser[Term.Apply, OpVistas].parse(source).get
+    val parsed = Parser[Term.Apply, OpVistas].parse(source)
     Constructable[Union].members(parsed) should contain only (
       q"override val a: Seq[Int] = a.a",
       q"override val f: () => Unit = b.f",

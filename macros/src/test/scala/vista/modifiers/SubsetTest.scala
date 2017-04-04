@@ -1,9 +1,9 @@
 package vista.modifiers
 
 import vista.FlatSpecBase
+import vista.util.Pipe._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 class SubsetTest extends FlatSpecBase {
   behavior of "Subset"

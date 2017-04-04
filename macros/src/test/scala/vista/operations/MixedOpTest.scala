@@ -4,10 +4,10 @@ import vista.FlatSpecBase
 import vista.operations.expanders.ForbidOp.Forbid
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.{OpOverload, OpVistas}
+import vista.util.Pipe._
 import vista.util.meta.xtensions._
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 class MixedOpTest extends FlatSpecBase {
   "Forbid and then union" should "produce the correct result" in {

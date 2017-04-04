@@ -11,9 +11,6 @@ import scala.meta._
 package object operations {
   def parseAndExpand[A <: Tree, B <: OpInput, C <: Op[_]](
       defn: A)(implicit parser: Parser[A, B], expander: Expander[B, C]): Defn.Trait = {
-    parser.parse(defn).map(d => expander.expand(d)).getOrElse {
-      throw new IllegalArgumentException
-    }
+    parser.parse _ andThen expander.expand apply defn
   }
-
 }

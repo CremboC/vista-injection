@@ -6,10 +6,10 @@ import vista.operations.expanders.IntersectOp.Intersect
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.expanders.UnionOp.Union
 import vista.operations.parsers.OpVistas
+import vista.util.Pipe._
 import vista.util.meta.xtensions.{XDefnIterable, XSet}
 
 import scala.meta._
-import scalaz.Scalaz.ToIdOps
 
 /**
   * @author Paulius Imbrasas
