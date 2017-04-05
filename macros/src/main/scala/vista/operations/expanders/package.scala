@@ -109,7 +109,7 @@ package object expanders {
     }
 
   def restrictAnnotation(funcName: String, ofType: String): Mod.Annot = {
-    val errorMsg = Lit(s"Method <$funcName> in type <$ofType> is forbidden.")
+    val errorMsg = Lit.String(s"Method <$funcName> in type <$ofType> is forbidden.")
     mod"""@scala.annotation.compileTimeOnly($errorMsg)"""
   }
 

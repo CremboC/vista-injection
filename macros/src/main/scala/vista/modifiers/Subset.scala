@@ -20,8 +20,8 @@ object Subset {
     db.getOption(className) match {
       case Some(clazz) if f.stats.head.is[Defn.Def] =>
         val defn = f.stats.head.asInstanceOf[Defn.Def]
-        if (clazz.visibilities.contains(defn)) q"true" else q"false"
-      case None => q"false"
+        if (clazz.visibilities.contains(defn)) Lit.Boolean(true) else Lit.Boolean(false)
+      case None => Lit.Boolean(false)
       case _ =>
         abort(
           s"A definition must be provided for the subset operator. Instead, ${f.stats} was given.")
