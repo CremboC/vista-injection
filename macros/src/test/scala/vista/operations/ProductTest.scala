@@ -20,14 +20,14 @@ class ProductTest extends FlatSpecBase {
         }
 
         class B {
-          def b(): Int = 3
+          def b: Int = 3
         }
       """ |> addInsts
 
     val expected =
       q"""
         trait AB extends A with B {
-          def ab()() = (a(), b())
+          def ab()() = (super[A].a(), super[B].b)
         }
       """
 
@@ -51,7 +51,7 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
           trait AB extends A with B {
-            def ab(p1: String)() = (a(p1), b())
+            def ab(p1: String)() = (super[A].a(p1), super[B].b())
           }
         """
 
@@ -75,7 +75,7 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
         trait AB extends A with B {
-          def ab[Tvista1, Tvista2, Tvista3](p1: Tvista1)(p2: Tvista3) = (a[Tvista1, Tvista2](p1), b[Tvista3](p2))
+          def ab[Tvista1, Tvista2, Tvista3](p1: Tvista1)(p2: Tvista3) = (super[A].a[Tvista1, Tvista2](p1), super[B].b[Tvista3](p2))
         }
       """
 
@@ -92,14 +92,14 @@ class ProductTest extends FlatSpecBase {
         }
 
         class B(p1: Int) {
-          def b(): Int = 3
+          def b: Int = 3
         }
       """ |> addInsts
 
     val expected =
       q"""
           trait AB extends A with B {
-            def ab(p1: String, p2: String)() = (a(p1, p2), b())
+            def ab(p1: String, p2: String)() = (super[A].a(p1, p2), super[B].b)
           }
         """
 

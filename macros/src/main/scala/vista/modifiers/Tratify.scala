@@ -24,7 +24,8 @@ object Tratify {
   def apply(term: Term.New): Term.New = {
     val ts = term.templ.ctorsWithArguments.filter(c => db.exists(c.fun.syntax))
     ts match {
-      case None       => term
+      case None =>
+        q"new ..${term.templ.parents} {}"
       case Some(ctor) =>
         // FIXME: in this case the first constructor must be a class->trait convertee
         val clazz = db(ctor.fun.syntax) match {

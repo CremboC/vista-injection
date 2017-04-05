@@ -2,6 +2,7 @@ package vista.operations.expanders
 
 import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics
+import vista.semantics.Inst
 import vista.util.meta.xtensions._
 
 import scala.collection.immutable.{Map, Seq}
@@ -55,11 +56,16 @@ object ProductOp {
             // merge into two separate param lists
             val paramss = Seq(newldefparams, newrdefparams)
 
-            val leftTerm = generateTerm(newldefparams, q"${ldef.name}()")
-            val nleft    = insertTypesToTerm(ltparams.values.to[Seq], leftTerm)
-
-            val rightTerm = generateTerm(newrdefparams, q"${rdef.name}()")
-            val nright    = insertTypesToTerm(rtparams.values.to[Seq], rightTerm)
+            val leftArgument = {
+              val first = generateTerm(newldefparams, ldef.name)
+              val inter = insertTypesToTerm(ltparams.values.to[Seq], first)
+              appendSupers(ldef, inter, lclazz)
+            }
+            val rightArgument = {
+              val first = generateTerm(newrdefparams, rdef.name)
+              val inter = insertTypesToTerm(rtparams.values.to[Seq], first)
+              appendSupers(rdef, inter, rclazz)
+            }
 
             Defn.Def(
               mods = Seq.empty,
@@ -67,7 +73,7 @@ object ProductOp {
               tparams = (ltparams.values ++ rtparams.values).to[Seq],
               paramss = paramss,
               decltpe = None,
-              body = Term.Tuple(nleft :: nright :: Nil)
+              body = Term.Tuple(leftArgument :: rightArgument :: Nil)
             )
         }
         .to[Seq]
@@ -77,11 +83,24 @@ object ProductOp {
       val leftTypeCtor  = db.ctor(inp.lclass)
       val rightTypeCtor = db.ctor(inp.rclass)
 
+      val common = commonMethods(inp).to[Seq]
+
       q"""
           trait $traitName extends $leftTypeCtor with $rightTypeCtor {
-            ..$pairDefs
+            ..${pairDefs ++ common.sortBy(_.name.value)}
           }
       """
+    }
+
+    private def appendSupers(source: Defn.Def, inter: Term, clazz: Inst): Term = {
+      val term = if (hasParenthesis(source, clazz)) {
+        val suffix = if (inter.syntax.matches("""^.+\(.+\)$""")) "" else "()"
+        s"super[${clazz.name}].${inter.syntax}$suffix".parse[Stat].get
+      } else {
+        val stripped = inter.syntax.stripSuffix("()")
+        s"super[${clazz.name}].$stripped".parse[Stat].get
+      }
+      term.asInstanceOf[Term]
     }
 
     private def generateTParams(tparams: Seq[Type.Param]): Map[String, Type.Param] =
@@ -106,12 +125,21 @@ object ProductOp {
       }
     }
 
-    private def generateTerm(params: Seq[Term.Param], seed: Term.Apply): Term.Apply =
-      params.foldLeft(seed) {
-        case (term, current) => term.copy(args = term.args :+ current.name.asTerm)
+    // builds a term-apply-like looking term, depending on number of parameters
+    private def generateTerm(params: Seq[Term.Param], seed: Term.Name): Term =
+      if (params.isEmpty) seed
+      else {
+        val ps = params.foldLeft(Seq.empty[Term.Arg]) {
+          case (current, t) =>
+            t match {
+              case t: Term.Param => current :+ t.name.asTerm
+            }
+        }
+        q"$seed(..$ps)"
       }
 
-    private def insertTypesToTerm(params: Seq[Type.Param], term: Term.Apply): Term.Apply =
+    // adds generic type parameters if necessary
+    private def insertTypesToTerm(params: Seq[Type.Param], term: Term): Term =
       if (params.isEmpty) term
       else {
         val q"$name(..$args)" = term
@@ -119,5 +147,20 @@ object ProductOp {
 
         q"$name[..$nparams](..$args)"
       }
+
+    // checks whether the provide defn originally had parenthesis or not
+    private def hasParenthesis(source: Defn.Def, clazz: Inst): Boolean = {
+      val defn = clazz.membersWithParents
+        .find {
+          case d: Defn.Def if d.signature isEqual source.signature => true
+          case _                                                   => false
+        }
+        .getOrElse(abort("Looking for a method which is not present in this class"))
+
+      defn match {
+        case q"..$_ def $_[..$_]: $_ = $_" => false
+        case _                             => true
+      }
+    }
   }
 }

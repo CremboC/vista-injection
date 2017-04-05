@@ -1,8 +1,10 @@
 object ForbidEx1 {
   object gen$vista {
     trait Af extends A {
-      @scala.annotation.compileTimeOnly("Method <one> in type <Af> is forbidden.") override def one: Int = throw new vista.lib.ForbiddenMethodException
-      @scala.annotation.compileTimeOnly("Method <two> in type <Af> is forbidden.") override def two: Int = throw new vista.lib.ForbiddenMethodException
+      @scala.annotation.compileTimeOnly("Method <one> in type <Af> is forbidden.")
+      override def one: Int = throw new vista.lib.ForbiddenMethodException
+      @scala.annotation.compileTimeOnly("Method <two> in type <Af> is forbidden.")
+      override def two: Int = throw new vista.lib.ForbiddenMethodException
     }
     trait AA extends A with gen$vista.Af {
       override def one: Int = super[A].one

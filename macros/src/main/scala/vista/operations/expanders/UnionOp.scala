@@ -58,7 +58,7 @@ object UnionOp {
         methodsFromSide(lmethods, inp.lclass) ++ methodsFromSide(rmethods, inp.rclass)
       }
 
-      val result = (common ++ methods).sortBy(_.name.syntax)
+      val result = (common ++ methods).sortBy(_.name.value)
 
       q"""
         trait $traitName extends ${db.ctor(inp.lclass)} with ${db.ctor(inp.rclass)} {

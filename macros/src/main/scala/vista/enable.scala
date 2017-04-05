@@ -5,8 +5,8 @@ import vista.helpers.OpHelpers
 import vista.modifiers._
 import vista.operations.expanders._
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas, Parser}
+import vista.semantics.Inst
 import vista.util.Pipe._
-import vista.util.meta.xtensions.XTemplate
 
 import scala.annotation.StaticAnnotation
 import scala.collection.immutable.{Queue, Seq}
@@ -14,7 +14,7 @@ import scala.meta.Term.Block
 import scala.meta._
 import scala.meta.contrib._
 
-private[vista] object EnableTools {
+object Vista {
   private val db = semantics.Database
 
   def expandOps(defn: Tree): Seq[Defn.Trait] = {
@@ -51,7 +51,7 @@ private[vista] object EnableTools {
       else {
         val (head, tail) = queue.dequeue
         val (input, expander) = head
-
+    
         val canExpand = input match {
           case OpVistas(lclass, rclass, _, _, newtype) =>
             db.exists(lclass) && db.exists(rclass)
@@ -69,15 +69,13 @@ private[vista] object EnableTools {
     evaluate(Queue(generated:_*))
   }
 
-  def execute(obj: Defn.Object): Defn.Object = {
+  def expand(obj: Defn.Object): Defn.Object = {
     def classIsRecorded(term: Term.New): Boolean =
       if (term.templ.parents.isEmpty) false
       else {
-        val className = term.templ.parents.head.syntax.takeWhile(_ != '(')
-        db.exists(className)
+        val className = term.templ.parents.head.syntax.takeWhile(_ != '(').trim
+        db.exists(className) && db.get(className).isInstanceOf[Inst.Class]
       }
-
-    def constructingTrait(term: Term.New): Boolean = term.templ.ctorsWithArguments.isDefined
 
     val template"{ ..$_ } with ..$_ { $_ => ..$stats }" = obj.templ
 
@@ -87,7 +85,7 @@ private[vista] object EnableTools {
       case t: Defn.Trait => db.add(t)
     }
 
-    val traits = EnableTools.expandOps(obj)
+    val traits = Vista.expandOps(obj)
     val generatedWrapper = q"object ${Term.Name(Constants.GenName)} { ..$traits }"
 
     val Block(nstats) = Block(stats)
@@ -102,7 +100,7 @@ private[vista] object EnableTools {
           Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
       }
       .transform {
-        case term: Term.New if classIsRecorded(term) && constructingTrait(term) =>
+        case term: Term.New if classIsRecorded(term) =>
           Tratify(term)
 
         case OpHelpers.Subset(t) =>
@@ -146,7 +144,7 @@ private[vista] object EnableTools {
 class enable extends StaticAnnotation {
   inline def apply(defn: Any): Any = meta {
     defn match {
-      case obj: Defn.Object => EnableTools.execute(obj)
+      case obj: Defn.Object => Vista.expand(obj)
       case _ => abort("This annotation must be placed on an object")
     }
   }

@@ -13,12 +13,14 @@ sealed trait Inst {
 
   protected val db = vista.semantics.Database
 
-  protected def members: Seq[Defn] =
+  def members: Seq[Defn] =
     body.templ.collect[Defn] {
       case defn: Defn.Def => defn
       case valf: Defn.Val => valf
       case varf: Defn.Var => varf
     }
+
+  def membersWithParents: Seq[Defn] = members ++ parents.flatMap(db.get(_).membersWithParents)
 
   def name: String = body.name.value
 
@@ -55,7 +57,7 @@ object Inst {
       extends Inst {
     val ctor: Ctor.Primary = body.ctor
 
-    override protected val members: Seq[Defn] = ctorMembers ++ super.members
+    override def members: Seq[Defn] = ctorMembers ++ super.members
   }
 
   case class Trait(tbody: Defn.Trait, generated: Boolean = false) extends Inst {

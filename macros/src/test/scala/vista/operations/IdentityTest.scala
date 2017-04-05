@@ -18,7 +18,7 @@ class IdentityTest extends FlatSpecBase {
 
   // commutativity
   // A ∪ B = B ∪ A
-  "Union" should "not be commutative" in {
+  "Union" should "be partially commutative" in {
     val classes =
       q"""
         class A {
@@ -59,7 +59,7 @@ class IdentityTest extends FlatSpecBase {
 
   // commutativity
   // A ∩ B = B ∩ A
-  "Intersection" should "not be commutative" in {
+  "Intersection" should "be partially commutative" in {
     val classes =
       q"""
         class A {
@@ -96,7 +96,7 @@ class IdentityTest extends FlatSpecBase {
 
   // associativity
   // (A ∪ B) ∪ C = A ∪ (B ∪ C)
-  "Union" should "be associative" in {
+  "Union" should "be partially associative" in {
     val classes =
       q"""
         class A {
@@ -142,7 +142,7 @@ class IdentityTest extends FlatSpecBase {
 
   // associativity
   // (A ∩ B) ∩ C = A ∩ (B ∩ C)
-  "Intersection" should "be associative" in {
+  "Intersection" should "be partially associative" in {
     val classes =
       q"""
         class A {
@@ -156,6 +156,7 @@ class IdentityTest extends FlatSpecBase {
         }
 
         class C {
+          def a: Int = 123
           def f: Int = 0xf
         }
       """
@@ -183,12 +184,12 @@ class IdentityTest extends FlatSpecBase {
 
     // we can compare by normalised defns
     val normalizedDiff = abcMethods.normalized <-> abc2Methods.normalized
-    normalizedDiff shouldBe empty
+    normalizedDiff should not be empty
   }
 
   // distributivity
   // A ∪ (B ∩ C) = (A ∪ B) ∩ (A ∪ C)
-  "Union and then intersection" should "be distributive" in {
+  "Union and then intersection" should "be partially distributive" in {
     val classes =
       q"""
         class A {
@@ -236,7 +237,7 @@ class IdentityTest extends FlatSpecBase {
 
   // distributivity
   // A ∩ (B ∪ C) = (A ∩ B) ∪ (A ∩ C)
-  "Intersection and then union" should "be distributive" in {
+  "Intersection and then union" should "be partially distributive" in {
     val classes =
       q"""
         class A {

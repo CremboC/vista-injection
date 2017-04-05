@@ -24,7 +24,7 @@ object IntersectEx1 {
 
     val ab = ∩[A, B, AuB](a, b)
 
-    if ({ def zero: Int = ??? }.⊆[Vista[AuB]](ab)) {
+    if ({ def zero: Int = ??? }.⊆[AuB](ab)) {
       ab.zero
     } else {
       println("ab.zero is not allowed")

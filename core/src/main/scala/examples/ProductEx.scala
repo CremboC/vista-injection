@@ -1,3 +1,8 @@
+package examples
+
+import vista.lib._
+
+@vista.enable
 object ProductEx {
   class Ap {
     def zero: Int = 0
@@ -21,7 +26,8 @@ object ProductEx {
 
     val ab = ⨯[A, B, AxB](a, b)
 
-    ab.onetwo()()
+    println(ab.onetwo()())
+//    ab.<one, two>
 
     println(b.s)
 

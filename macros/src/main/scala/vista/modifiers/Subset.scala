@@ -22,6 +22,9 @@ object Subset {
         val defn = f.stats.head.asInstanceOf[Defn.Def]
         if (clazz.visibilities.contains(defn)) q"true" else q"false"
       case None => q"false"
+      case _ =>
+        abort(
+          s"A definition must be provided for the subset operator. Instead, ${f.stats} was given.")
     }
   }
 }
