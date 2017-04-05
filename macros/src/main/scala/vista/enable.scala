@@ -1,6 +1,5 @@
 package vista
 
-import shapeless.{::, HNil}
 import vista.Constants.forbiddenMethodBody
 import vista.helpers.OpHelpers
 import vista.modifiers._
@@ -21,7 +20,7 @@ private[vista] object EnableTools {
   def expandOps(defn: Tree): Seq[Defn.Trait] = {
     val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
 
-    type Result = OpInput :: (OpInput => Defn.Trait) :: HNil
+    type Result = (OpInput, (OpInput => Defn.Trait))
     val generated = terms.map {
       case term@OpHelpers.OpVistas() =>
         val expander = term match {
@@ -31,13 +30,13 @@ private[vista] object EnableTools {
           case OpHelpers.Product(_) => Expander[OpVistas, ProductOp.Product]
         }
 
-        Parser[Term.Apply, OpVistas].parse(term) :: expander.expand _ :: HNil
+        (Parser[Term.Apply, OpVistas].parse(term), expander.expand _)
 
       case term@OpHelpers.OpOverload() =>
         val expander = term match {
           case OpHelpers.Forbid(_) => Expander[OpOverload, ForbidOp.Forbid]
         }
-        Parser[Term.Apply, OpOverload].parse(term) :: expander.expand _ :: HNil
+        (Parser[Term.Apply, OpOverload].parse(term), expander.expand _)
     }.asInstanceOf[List[Result]]
 
     val addGenerated = (g: Defn.Trait) => { db.add(g, generated = true); g }
@@ -47,11 +46,11 @@ private[vista] object EnableTools {
           d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
       }.asInstanceOf[Defn.Trait]
 
-    def evaluate(queue: Queue[Result]): Seq[Defn.Trait] = {
-      if (queue.isEmpty) Seq.empty
+    def evaluate(queue: Queue[Result]): List[Defn.Trait] = {
+      if (queue.isEmpty) List.empty
       else {
-        val (head +: tail) = queue
-        val (input :: expander :: HNil) = head
+        val (head, tail) = queue.dequeue
+        val (input, expander) = head
 
         val canExpand = input match {
           case OpVistas(lclass, rclass, _, _, newtype) =>
@@ -62,15 +61,13 @@ private[vista] object EnableTools {
 
         if (canExpand) {
           val expanded = input |> (expander andThen addGenerated andThen forbidMethods)
-          expanded +: evaluate(tail)
+          expanded :: evaluate(tail)
         } else evaluate(tail.enqueue(head))
       }
     }
 
     evaluate(Queue(generated:_*))
   }
-
-
 
   def execute(obj: Defn.Object): Defn.Object = {
     def classIsRecorded(term: Term.New): Boolean =

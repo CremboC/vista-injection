@@ -32,11 +32,11 @@ class EnableToolsTest extends FlatSpecBase {
     })
 
     all.foreach {
-      case (source, expected) =>
+      case (source, _) =>
         val parsedS =
           new File(source.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
-        val parsedE =
-          new File(expected.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
+//        val parsedE =
+//          new File(expected.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
 
         EnableTools.execute(parsedS)
     }

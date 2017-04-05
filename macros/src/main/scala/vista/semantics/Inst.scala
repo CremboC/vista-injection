@@ -24,7 +24,7 @@ sealed trait Inst {
 
   def parents: Seq[String] = body.templ.parents.map(_.syntax.takeWhile(_ != '('))
 
-  def methods: Set[Defn.Def] = {
+  def methods: EqualitySet[Defn.Def] = {
     val parentMethods = parents.flatMap(db.get(_).methods)
 
     val memberDefns = members.collect {
@@ -34,12 +34,12 @@ sealed trait Inst {
     EqualitySet(parentMethods ++ memberDefns)
   }
 
-  def visibilities: Set[Defn.Def] =
+  def visibilities: EqualitySet[Defn.Def] =
     methods.filterNot { d =>
       d.body isEqual forbiddenMethodBody
     }
 
-  def forbidden: Set[Defn.Def] =
+  def forbidden: EqualitySet[Defn.Def] =
     methods.filter { d =>
       d.body isEqual forbiddenMethodBody
     }

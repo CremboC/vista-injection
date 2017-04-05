@@ -2,9 +2,6 @@ package vista.modifiers
 
 import scala.meta._
 
-/**
-  * Created by Crembo on 2017-03-30.
-  */
 object Subset {
   private val db = vista.semantics.Database
 

@@ -71,6 +71,15 @@ sealed trait BaseTest extends Matchers with ResetsDatabase {
         }
     }
 
+  implicit val termApplyStructureEquality =
+    new Equality[Term.Apply] {
+      def areEqual(a: Term.Apply, b: Any): Boolean =
+        b match {
+          case bt: Term.Apply => a isEqual bt
+          case _              => false
+        }
+    }
+
   implicit val litStructureEquality =
     new Equality[Lit] {
       def areEqual(a: Lit, b: Any): Boolean =
