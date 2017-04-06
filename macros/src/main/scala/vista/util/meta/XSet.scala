@@ -48,10 +48,7 @@ trait XSet {
     def \(other: Set[A]): Set[A] = mdiff(other)
 
     def cross(other: Set[A]): Set[(A, A)] = {
-      val selfStr  = self.structurally
-      val otherStr = other.structurally
-
-      for { s <- selfStr; o <- otherStr } yield (s.tree, o.tree)
+      for { s <- self; o <- other } yield (s, o)
     }
 
     def ><(other: Set[A]): Set[(A, A)] = cross(other)

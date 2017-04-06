@@ -27,14 +27,18 @@ object OpHelpers {
     }
   }
 
-  val OpVistas: Extractable = {
-    case q"$_[$_, $_, $_]($_, $_)" => true
-    case _                         => false
+  val OpVistas: Extractable = new Extractable {
+    override def unapply(arg: Tree): Boolean = arg match {
+      case q"$_[$_, $_, $_]($_, $_)" => true
+      case _                         => false
+    }
   }
 
-  val OpOverload: Extractable = {
-    case q"$_[$_, $_]($_, $_)" => true
-    case _                     => false
+  val OpOverload: Extractable = new Extractable {
+    override def unapply(arg: Tree): Boolean = arg match {
+      case q"$_[$_, $_]($_, $_)" => true
+      case _                     => false
+    }
   }
 
   val HasOp: Extractable1[Term.Apply] = new Extractable1[Term.Apply] {

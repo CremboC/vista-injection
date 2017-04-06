@@ -28,13 +28,18 @@ object ProductOp {
 
   implicit object VistaExpander extends Expander[OpVistas, Product] {
     override def expand(inp: OpVistas): Defn.Trait = {
-      val lclazz = db(inp.lclass)
-      val rclazz = db(inp.rclass)
+      val leftClass  = db(inp.lclass)
+      val rightClass = db(inp.rclass)
 
-      val lsignatures = lclazz.visibilities.signatures
-      val rsignatures = rclazz.visibilities.signatures
+      val leftSignatures  = leftClass.visibilities.signatures
+      val rightSignatures = rightClass.visibilities.signatures
 
-      val pairs = lsignatures >< rsignatures
+      if (leftSignatures.exists(_.hasMultiParamList)
+          || rightSignatures.exists(_.hasMultiParamList))
+        abort(
+          "Product only supports classes which do not contain methods with multiple parameter lists.")
+
+      val pairs = leftSignatures >< rightSignatures
 
       val pairDefs = pairs
         .map {
@@ -59,12 +64,12 @@ object ProductOp {
             val leftArgument = {
               val first = generateTerm(newldefparams, ldef.name)
               val inter = insertTypesToTerm(ltparams.values.to[Seq], first)
-              appendSupers(ldef, inter, lclazz)
+              appendSupers(ldef, inter, leftClass)
             }
             val rightArgument = {
               val first = generateTerm(newrdefparams, rdef.name)
               val inter = insertTypesToTerm(rtparams.values.to[Seq], first)
-              appendSupers(rdef, inter, rclazz)
+              appendSupers(rdef, inter, rightClass)
             }
 
             Defn.Def(

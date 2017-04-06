@@ -43,6 +43,10 @@ trait XDefn {
       * requires solving the halting problem by evaluating it
       */
     def normalize: Defn.Def = defn.copy(mods = Seq.empty, decltpe = None)
+
+    def hasMultiParamList: Boolean = {
+      defn.paramss.size > 1
+    }
   }
 
   implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
