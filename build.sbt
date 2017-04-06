@@ -1,11 +1,18 @@
 import sbt.Keys.libraryDependencies
 
 name := "vista-injection"
-scalaVersion in ThisBuild := "2.12.1"
+organization := "eu.crembo"
+version := "1.0.0-SNAPSHOT"
 
-val paradiseVersion  = "3.0.0-300-0dbf9cb7"
-val scalametaVersion = "1.7.0-496-5f890293"
-val scalatestVersion = "3.0.1"
+scalaVersion in ThisBuild := "2.12.1"
+// uncomment when/if code is made scala 2.11 compatible
+// cross-publish via $ [sbt] + publishLocal -- note the plus
+// crossScalaVersions := Seq("2.11.9", "2.12.1")
+
+val paradiseVersion    = "3.0.0-300-0dbf9cb7"
+val scalametaVersion   = "1.7.0-496-5f890293"
+val scalatestVersion   = "3.0.1"
+val twitterEvalVersion = "6.42.0"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // New-style macro annotations are under active development.  As a result, in
@@ -36,11 +43,16 @@ lazy val macros = (project in file("macros")).settings(
   libraryDependencies += "org.scalameta" %% "contrib"   % scalametaVersion,
   libraryDependencies += "org.scalactic" %% "scalactic" % scalatestVersion,
   libraryDependencies += "org.scalatest" %% "scalatest" % scalatestVersion % "test",
-  libraryDependencies += "com.twitter"   %% "util-eval" % "6.42.0",
+  libraryDependencies += "com.twitter"   %% "util-eval" % twitterEvalVersion,
   scalacOptions += "-feature"
+)
+
+lazy val coreSettings: Seq[Def.Setting[_]] = Seq(
+  publishArtifact := false,
+  publishTo := Some(Resolver.file("Unused transient repository", file("target/unusedrepo")))
 )
 
 // Use macros in this project.
 lazy val core = (project in file("core"))
-  .settings(metaMacroSettings)
+  .settings(metaMacroSettings ++ coreSettings)
   .dependsOn(macros)
