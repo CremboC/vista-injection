@@ -81,11 +81,11 @@ sealed trait BaseTest extends Matchers with ResetsDatabase {
     }
 
   implicit val litStructureEquality =
-    new Equality[Lit] {
-      def areEqual(a: Lit, b: Any): Boolean =
+    new Equality[Lit.Boolean] {
+      def areEqual(a: Lit.Boolean, b: Any): Boolean =
         b match {
-          case bt: Lit => a isEqual bt
-          case _       => false
+          case bt: Lit.Boolean => a isEqual bt
+          case _               => false
         }
     }
 }

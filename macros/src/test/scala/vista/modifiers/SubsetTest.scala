@@ -12,42 +12,42 @@ class SubsetTest extends FlatSpecBase {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def a: Int = ??? } ⊆[A] a")
 
-    subset should equal(q"true")
+    subset should equal(Lit.Boolean(true))
   }
 
   it should "correctly detect the subset in a simple case (postfix, negative)" in {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def f: Int = ??? } ⊆[A] a")
 
-    subset should equal(q"false")
+    subset should equal(Lit.Boolean(false))
   }
 
   it should "correctly detect the subset in a simple case" in {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def a: Int = ??? }.⊆[A](a)")
 
-    subset should equal(q"true")
+    subset should equal(Lit.Boolean(true))
   }
 
   it should "correctly detect the subset in a simple case (negative)" in {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def f: Int = ??? }.⊆[A](a)")
 
-    subset should equal(q"false")
+    subset should equal(Lit.Boolean(false))
   }
 
   it should "correctly detect the subset in a simple case (partial postfix)" in {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def a: Int = ??? } ⊆[A](a)")
 
-    subset should equal(q"true")
+    subset should equal(Lit.Boolean(true))
   }
 
   it should "correctly detect the subset in a simple case (partial postfix, negative)" in {
     q"class A { def a: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def f: Int = ??? } ⊆[A](a)")
 
-    subset should equal(q"false")
+    subset should equal(Lit.Boolean(false))
   }
 
   it should "correctly detect the subset in a complex case (hierarchy)" in {
@@ -55,6 +55,6 @@ class SubsetTest extends FlatSpecBase {
     q"class B extends A { def f: Int = 1 }" |> addInsts
     val subset = Subset(q"{ def a: Int = ??? } ⊆[B] b")
 
-    subset should equal(q"true")
+    subset should equal(Lit.Boolean(true))
   }
 }

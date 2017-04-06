@@ -5,7 +5,7 @@ import scala.meta._
 object Subset {
   private val db = vista.semantics.Database
 
-  def apply(term: Term): Lit = {
+  def apply(term: Term): Lit.Boolean = {
     val (f, typ, _) = term match {
       case q"${f: Term.Block}.⊆[$typ]($par)" => (f, typ, par)
       case q"${f: Term.Block} ⊆[$typ]($par)" => (f, typ, par)
