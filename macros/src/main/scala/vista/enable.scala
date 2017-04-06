@@ -136,8 +136,9 @@ object Vista {
       case None    =>
     }
 
+    val reflectiveImport = q"import scala.language.reflectiveCalls"
     val ntemplate =
-      obj.templ.copy(stats = Option(generatedWrapper +: nstats))
+      obj.templ.copy(stats = Option(reflectiveImport +: generatedWrapper +: nstats))
     obj.copy(templ = ntemplate)
   }
 }

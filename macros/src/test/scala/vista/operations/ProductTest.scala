@@ -1,11 +1,13 @@
 package vista.operations
 
 import vista.FlatSpecBase
+import vista.operations.expanders.ProductOp
 import vista.operations.expanders.ProductOp.Product
 import vista.operations.parsers.OpVistas
 import vista.util.Pipe._
 
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
@@ -28,12 +30,12 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
         trait XY {
-          val left: Vista[X]
-          val right: Vista[Y]
+          val ${ProductOp.LeftName.asPat}: Vista[X]
+          val ${ProductOp.RightName.asPat}: Vista[Y]
 
-          def f(p1: Int) = new {
-            def g(p2: String) = left.f(p1) -> right.g(p2)
-            def r = left.f(p1) -> right.r
+         @vista.product.pair def f(p1: Int) = new {
+            def g(p2: String) = ${ProductOp.LeftName}.f(p1) -> ${ProductOp.RightName}.g(p2)
+            def r = ${ProductOp.LeftName}.f(p1) -> ${ProductOp.RightName}.r
           }
         }
       """
@@ -64,16 +66,16 @@ class ProductTest extends FlatSpecBase {
     val expected =
       q"""
         trait XYN {
-          val left: Vista[XY]
-          val right: Vista[N]
+          val ${ProductOp.LeftName.asPat}: Vista[XY]
+          val ${ProductOp.RightName.asPat}: Vista[N]
     
-          def f(i: Int) = new {
-            def g(s: String) = new {
-              def a(l: Double) = left.f(i).g(s) -> right.a(l)
+          @vista.product.pair def f(p1: Int) = new {
+            def g(p2: String) = new {
+              def a(p3: Double) = ${ProductOp.LeftName}.f(p1).g(p2) -> ${ProductOp.RightName}.a(p3)
             }
     
             def r = new {
-              def a(l: Double) = left.f(i).r -> right.a(l)
+              def a(p4: Double) = ${ProductOp.LeftName}.f(p1).r -> ${ProductOp.RightName}.a(p4)
             }
           }
         }
@@ -85,31 +87,7 @@ class ProductTest extends FlatSpecBase {
     expanded should equal(expected)
   }
 
-  it should "expand an example with parametrised methods" in {
-    q"""
-        class A {
-          def a(v: String): Int = v.toInt
-        }
-
-        class B {
-          def b(): Int = 3
-        }
-      """ |> addInsts
-
-    val expected =
-      q"""
-          trait AB extends A with B {
-            def ab(p1: String)() = (super[A].a(p1), super[B].b())
-          }
-        """
-
-    val input = q"x[A, B, AB](a, b)"
-
-    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
-    expanded should equal(expected)
-  }
-
-  it should "expand an example with type parameters" in {
+  it should "expand an methods with type parameters" in {
     q"""
       class A {
         def a[A, B](v: A): B = v.asInstanceOf[B]
@@ -122,8 +100,13 @@ class ProductTest extends FlatSpecBase {
 
     val expected =
       q"""
-        trait AB extends A with B {
-          def ab[Tvista1, Tvista2, Tvista3](p1: Tvista1)(p2: Tvista3) = (super[A].a[Tvista1, Tvista2](p1), super[B].b[Tvista3](p2))
+        trait AB {
+          val ${ProductOp.LeftName.asPat}: Vista[A]
+          val ${ProductOp.RightName.asPat}: Vista[B]
+
+         @vista.product.pair def a[Tvista1, Tvista2](p1: Tvista1) = new {
+           def b[Tvista3](p2: Tvista3) = ${ProductOp.LeftName}.a[Tvista1, Tvista2](p1) -> ${ProductOp.RightName}.b[Tvista3](p2)
+         }
         }
       """
 
@@ -133,21 +116,26 @@ class ProductTest extends FlatSpecBase {
     expanded should equal(expected)
   }
 
-  it should "expand classes with constructors" in {
+  it should "expand methods with multiple parameters" in {
     q"""
-        class A(p: Int) {
+        class A {
           def a(v: String, m: String): Int = v.toInt
         }
 
-        class B(p1: Int) {
+        class B {
           def b: Int = 3
         }
       """ |> addInsts
 
     val expected =
       q"""
-          trait AB extends A with B {
-            def ab(p1: String, p2: String)() = (super[A].a(p1, p2), super[B].b)
+          trait AB {
+            val ${ProductOp.LeftName.asPat}: Vista[A]
+            val ${ProductOp.RightName.asPat}: Vista[B]
+
+            @vista.product.pair def a(p1: String, p2: String) = new {
+              def b = ${ProductOp.LeftName}.a(p1, p2) -> ${ProductOp.RightName}.b
+            }
           }
         """
 

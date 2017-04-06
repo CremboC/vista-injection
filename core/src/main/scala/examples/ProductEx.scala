@@ -4,33 +4,37 @@ import vista.lib._
 
 @vista.enable
 object ProductEx {
-  class Ap {
-    def zero: Int = 0
+  class X {
+    def f(i: Int): Int = i * 2
   }
 
-  class A extends Ap {
-    def one(): Int = 1
-    def two(): Int = 2
+  class Y {
+    def g(s: String): Char = s.head
   }
 
-  class B(val s: String) {
-    def two(): Int   = 2
-    def three(): Int = 3
+  class N {
+    def a(l: Double): Double = l
   }
 
-  def mkProduct(a: A, b: B) = ⨯[A, B, mkAxB](a, b)
+  class M {
+    def b(l: Double): Double = l
+  }
 
   def main(args: Array[String]): Unit = {
-    val a = new A
-    val b = new B("hi")
+    val x = new X
+    val y = new Y
+    val m = new M
+    val n = new N
 
-    val ab = ⨯[A, B, AxB](a, b)
+    val xy = ⨯[X, Y, XY](x, y)
 
-    println(ab.onetwo()())
-//    ab.<one, two>
+    println(xy.f(5).g("hi"))
 
-    println(b.s)
+    val nm = ⨯[N, M, NM](n, m)
 
-    val mkAxB = mkProduct(a, b)
+    println(nm.a(1.0).b(0.1))
+
+//    val xynm = ⨯[Vista[NM], Vista[XY], NMXY](nm, xy) // infinite loop?
+//    println(xynm.f(5).g("hi").a(1.0).b(0.1))
   }
 }
