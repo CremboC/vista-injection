@@ -96,8 +96,9 @@ object Vista {
         case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
           require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
           val clazzName = t.args.head.syntax
-          if (db(clazzName).notGenerated) abort("The Vista[A] operator must be used with a generated vista type.")
-          Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
+
+          if (db(clazzName).notGenerated) Type.Name(clazzName)
+          else Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
       }
       .transform {
         case term: Term.New if classIsRecorded(term) =>

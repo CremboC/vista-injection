@@ -15,23 +15,71 @@ class ProductTest extends FlatSpecBase {
 
   it should "expand two simple classes" in {
     q"""
-        class A {
-          def a(): Int = 5
-        }
+         class X {
+           def f(i: Int): Int = i * 2
+         }
 
-        class B {
-          def b: Int = 3
-        }
+         class Y {
+           def g(s: String): Char = s.head
+           def r: Boolean = true
+         }
       """ |> addInsts
 
     val expected =
       q"""
-        trait AB extends A with B {
-          def ab()() = (super[A].a(), super[B].b)
+        trait XY {
+          val left: Vista[X]
+          val right: Vista[Y]
+
+          def f(p1: Int) = new {
+            def g(p2: String) = left.f(p1) -> right.g(p2)
+            def r = left.f(p1) -> right.r
+          }
         }
       """
 
-    val input = q"x[A, B, AB](a, b)"
+    val input = q"x[X, Y, XY](x, y)"
+
+    val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
+    expanded should equal(expected)
+  }
+
+  it should "expand product of product and normal class" in {
+    q"""
+        trait XY {
+          val left: Vista[X]
+          val right: Vista[Y]
+
+          def f(p1: Int) = new {
+            def g(p2: String) = left.f(p1) -> right.g(p2)
+            def r = left.f(p1) -> right.r
+          }
+        }
+
+        trait N {
+          def a(l: Double): Double = l
+        }
+    """ |> addInsts
+
+    val expected =
+      q"""
+        trait XYN {
+          val left: Vista[XY]
+          val right: Vista[N]
+    
+          def f(i: Int) = new {
+            def g(s: String) = new {
+              def a(l: Double) = left.f(i).g(s) -> right.a(l)
+            }
+    
+            def r = new {
+              def a(l: Double) = left.f(i).r -> right.a(l)
+            }
+          }
+        }
+      """
+
+    val input = q"x[XY, N, XYN](xy, n)"
 
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)

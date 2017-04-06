@@ -13,12 +13,7 @@ sealed trait Inst {
 
   protected val db = vista.semantics.Database
 
-  def members: Seq[Defn] =
-    body.templ.collect[Defn] {
-      case defn: Defn.Def => defn
-      case valf: Defn.Val => valf
-      case varf: Defn.Var => varf
-    }
+  def members: Seq[Defn] = body.templ.extract[Defn].to
 
   def membersWithParents: Seq[Defn] = members ++ parents.flatMap(db.get(_).membersWithParents)
 

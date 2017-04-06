@@ -1,6 +1,6 @@
 package vista.util.meta
 
-import vista.util.EqualitySet
+import vista.util.{Counter, EqualitySet}
 
 import scala.collection.immutable.Seq
 import scala.meta._
@@ -11,17 +11,15 @@ trait XDefn {
     * Defn.Def extensions
     */
   implicit class XDefn(defn: Defn.Def) {
-    def signature: Defn.Def = {
+    def signature(implicit counter: Counter = new Counter()): Defn.Def = {
       // ensures that def g() === def g
-      val name    = "p"
-      var current = 0
+      val name = "p"
 
       val paramss =
         if (defn.paramss.isEmpty) Seq(Seq.empty)
         else
           defn.paramss.map(_.map { p =>
-            current += 1
-            p.copy(name = Term.Name(s"$name$current"))
+            p.copy(name = Term.Name(s"$name${counter.next}"))
           })
 
       defn.copy(mods = Seq.empty, body = Term.Block(Seq.empty), decltpe = None, paramss = paramss)
@@ -47,6 +45,8 @@ trait XDefn {
     def hasMultiParamList: Boolean = {
       defn.paramss.size > 1
     }
+
+    def hasParenthesis: Boolean = defn.paramss.nonEmpty
   }
 
   implicit class XDefnIterable[A <: Defn.Def](self: Iterable[A]) {
