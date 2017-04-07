@@ -11,7 +11,7 @@ trait XDefn {
     * Defn.Def extensions
     */
   implicit class XDefn(defn: Defn.Def) {
-    def signature(implicit counter: Counter = new Counter()): Defn.Def = {
+    def signature(implicit counter: Counter[Defn.Def] = new Counter()): Defn.Def = {
       // ensures that def g() === def g
       val name = "p"
 

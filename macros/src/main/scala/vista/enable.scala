@@ -92,14 +92,6 @@ object Vista {
       .transform { // first convert all classes into traits
         case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
       }
-      .transform { // then ensure all Vista checks are expanded
-        case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
-          require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
-          val clazzName = t.args.head.syntax
-
-          if (db(clazzName).notGenerated) Type.Name(clazzName)
-          else Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
-      }
       .transform {
         case term: Term.New if classIsRecorded(term) =>
           Tratify(term)
@@ -136,9 +128,23 @@ object Vista {
       case None    =>
     }
 
+    // converts all Vista[A] to gen$vista.A or A depending on whether type was generated or not
+    val expandVistaCheck: PartialFunction[Tree, Tree] = {
+      case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
+        require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
+        val clazzName = t.args.head.syntax
+
+        if (db(clazzName).notGenerated) Type.Name(clazzName)
+        else Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
+    }
+
     val reflectiveImport = q"import scala.language.reflectiveCalls"
-    val ntemplate =
-      obj.templ.copy(stats = Option(reflectiveImport +: generatedWrapper +: nstats))
+    val ntemplate = obj
+      .templ
+      .copy(stats = Option(reflectiveImport +: generatedWrapper +: nstats))
+      .transform(expandVistaCheck) // transform all Vista[A] to either gen$vista.A or A
+      .asInstanceOf[Template]
+
     obj.copy(templ = ntemplate)
   }
 }

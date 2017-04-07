@@ -144,4 +144,48 @@ class ProductTest extends FlatSpecBase {
     val expanded = parseAndExpand[Term.Apply, OpVistas, Product](input)
     expanded should equal(expected)
   }
+
+  it should "expand a product of two product results" in {
+    q"""
+        class X {
+          def f[A <: Int](i: A): Int = i * 2
+        }
+        
+        class Y {
+          def g[A <: String](s: A): Char = s.head
+        }
+        
+        class N {
+          def a(l: Double): Double = l
+        }
+        
+        class M {
+          def b(l: Double): Double = l
+        }
+    """ |> addInsts
+
+    val f = parseAndExpand[Term.Apply, OpVistas, Product] _
+
+    q"⨯[X, Y, XY](x, y)" |> f |> addInsts
+    q"⨯[N, M, NM](n, m)" |> f |> addInsts
+    val result = q"⨯[NM, XY, NMXY](nm, xy) " |> f
+
+    val expected = q"""
+      trait NMXY {
+        val ${ProductOp.LeftName.asPat}: Vista[NM]  
+        val ${ProductOp.RightName.asPat}: Vista[XY]
+
+        @vista.product.pair
+        def a(p1: Double) = new {
+          def b(p2: Double) = new {
+            def f[A <: Int](p3: A) = new {
+              def g[A <: String](p4: A) = ${ProductOp.LeftName}.a(p1).b(p2) -> ${ProductOp.RightName}.f(p3).g(p4)
+            }
+          }
+        }  
+      }
+      """
+
+    result should equal(expected)
+  }
 }

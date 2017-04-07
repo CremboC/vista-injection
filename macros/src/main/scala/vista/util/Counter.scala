@@ -1,6 +1,6 @@
 package vista.util
 
-class Counter(private var _current: Int = 0) {
+class Counter[A](private var _current: Int = 0) {
   def current: Int = _current
 
   def next: Int = {

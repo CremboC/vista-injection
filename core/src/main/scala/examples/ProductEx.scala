@@ -5,11 +5,11 @@ import vista.lib._
 @vista.enable
 object ProductEx {
   class X {
-    def f(i: Int): Int = i * 2
+    def f[A <: Int](i: A): Int = i * 2
   }
 
   class Y {
-    def g(s: String): Char = s.head
+    def g[A <: String](s: A): Char = s.head
   }
 
   class N {
@@ -18,6 +18,10 @@ object ProductEx {
 
   class M {
     def b(l: Double): Double = l
+  }
+
+  class A {
+    def m: Int = 1
   }
 
   def main(args: Array[String]): Unit = {
@@ -34,7 +38,13 @@ object ProductEx {
 
     println(nm.a(1.0).b(0.1))
 
-//    val xynm = ⨯[Vista[NM], Vista[XY], NMXY](nm, xy) // infinite loop?
-//    println(xynm.f(5).g("hi").a(1.0).b(0.1))
+    val nmxy = ⨯[NM, XY, NMXY](nm, xy)
+
+    val g: ((Double, Double), (Int, Char)) = nmxy.a(1.0).b(0.1).f(5).g("hi")
+    println(g)
+
+    val a     = new A
+    val anmxy = ∪[A, NMXY, AuNMXY](a, nmxy)
+
   }
 }
