@@ -80,7 +80,7 @@ private[vista] object Enable {
           q"new ${db.ctor(op.newtype)} { ..$members }"
       }
       .transform {
-        case s @ q"$t.invoke[$typ](..$funs)(..$args)" if db.exists(typ.syntax) =>
+        case q"$t.invoke[$typ](..$funs)(..$args)" if db.exists(typ.syntax) =>
           // FIXME: this is really bad, I am truly sorry
           val reduce = funs.map(_.syntax).reduce(_ + _)
           val argss = args

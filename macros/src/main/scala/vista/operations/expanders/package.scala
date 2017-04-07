@@ -81,15 +81,10 @@ package object expanders {
     val tparams = m.tparams.map(typ => targ"${typ.name.asType}")
     val paramss = m.paramss.map(_.map(arg => arg"${arg.name.asTerm}"))
 
-    // FIXME: there must be a better way...
-    if (tparams.nonEmpty && paramss.nonEmpty) {
+    if (tparams.nonEmpty) {
       q"super[${Type.Name(className)}].${m.name}[..$tparams](...$paramss)"
-    } else if (tparams.nonEmpty) {
-      q"super[${Type.Name(className)}].${m.name}[..$tparams]"
-    } else if (paramss.nonEmpty) {
-      q"super[${Type.Name(className)}].${m.name}(...$paramss)"
     } else {
-      q"super[${Type.Name(className)}].${m.name}"
+      q"super[${Type.Name(className)}].${m.name}(...$paramss)"
     }
   }
 

@@ -387,7 +387,6 @@ class IdentityTest extends FlatSpecBase {
 
     // we can compare by normalised defns
     val normalizedDiff = aMethods.normalized <-> aaMethods.normalized
-    // FIXME: technically produces the same thing so should be "not empty"
     normalizedDiff should not be empty
   }
 
