@@ -26,6 +26,8 @@ object ProductEx {
     val m = new M
     val n = new N
 
+    val xy = ⨯[X, Y, XY](x, y)
+
     println(xy.invoke[XY](f, g)(Seq(5), Seq("hi")))
 
     val nm = ⨯[N, M, NM](n, m)

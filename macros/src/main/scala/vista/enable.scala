@@ -18,7 +18,7 @@ import scala.meta.contrib._
 object Vista {
   private val db = semantics.Database
 
-  def expandOps(defn: Tree): Seq[Defn.Trait] = {
+  private def expandOps(defn: Tree): Seq[Defn.Trait] = {
     val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
 
     type Result = (OpInput, (OpInput => Defn.Trait))
@@ -47,7 +47,7 @@ object Vista {
           d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
       }.asInstanceOf[Defn.Trait]
 
-    case class EvalUnit(r: Result, seen: Int)
+    case class EvalUnit(r: Result, seen: Boolean)
 
     def evaluate(queue: Queue[EvalUnit]): List[Defn.Trait] = {
       if (queue.isEmpty) List.empty
@@ -56,27 +56,31 @@ object Vista {
         val (input, expander) = head.r
         val canExpand = input match {
           case OpVistas(lclass, rclass, _, _, newtype) =>
-
-            if (head.seen == 2) {
-              val error: ClassName => String =
-                c => if (!db.exists(c)) s"$c was never declared or generated" else ""
-
-              abort(s"Attempted to evaluate $input. Errors are: ${Seq(error(lclass), error(rclass)).mkString("")}")
-            }
-
             db.exists(lclass) && db.exists(rclass)
           case OpOverload(lclass, _, newtype, _) =>
             db.exists(lclass)
         }
 
+        if (head.seen && !canExpand) {
+          val error: ClassName => String =
+            c => if (!db.exists(c)) s"$c was never declared or generated" else ""
+
+          val errors = input match {
+            case OpVistas(lclass, rclass, _, _, _) => Seq(error(lclass), error(rclass))
+            case OpOverload(lclass, _, _, _) => Seq(error(lclass))
+          }
+
+          abort(s"Attempted to evaluate $input. Errors are: ${errors.mkString("")}")
+        }
+
         if (canExpand) {
           val expanded = input |> (expander andThen addGenerated andThen forbidMethods)
           expanded :: evaluate(tail)
-        } else evaluate(tail.enqueue(head.copy(seen = head.seen + 1)))
+        } else evaluate(tail.enqueue(head.copy(seen = true)))
       }
     }
 
-    evaluate(generated.map(EvalUnit(_, 0)).to)
+    evaluate(generated.map(EvalUnit(_, seen = false)).to)
   }
 
   def expand(obj: Defn.Object): Defn.Object = {
