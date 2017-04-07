@@ -24,18 +24,6 @@ object IntersectEx1 {
 
     val ab = ∩[A, B, AuB](a, b)
 
-    if ({ def zero: Int = ??? }.⊆[AuB](ab)) {
-      ab.zero
-    } else {
-      println("ab.zero is not allowed")
-    }
-
-    if ({ def one: Int = ??? }.⊆[AuB](ab)) {
-      ab.one()
-    } else {
-      println("ab.one is not allowed")
-    }
-
     ab.one()   // compiler error
     ab.two()   // valid
     ab.three() // compiler error

@@ -30,14 +30,4 @@ package object lib {
   // product
   def ⨯[A, B, T](left: A, right: B): Product =
     throw new RuntimeException("Should be compiled out")
-
-  implicit class VistaOpsUnit(private val f: {}) extends AnyVal {
-    def ⊆[A](a: A): Boolean =
-      throw new RuntimeException("Should be compiled out")
-  }
-
-  implicit class VistaOpsRef(private val f: AnyRef) extends AnyVal {
-    def ⊆[_, A](a: A): Boolean =
-      throw new RuntimeException("Should be compiled out")
-  }
 }

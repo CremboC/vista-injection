@@ -18,11 +18,25 @@ import scala.meta.contrib._
 object Vista {
   private val db = semantics.Database
 
+  // 1. make trait as normal
+  // 2. make companion object for trait
+  // 3. for main constructor:
+  //    def apply(_arg: ?*): T = new T { override ... }
+  // 4. for auxiliary
+  //    def apply(<copy of aux>): T = {
+  //      val self = s/self/this(...)
+  //      ...$stats
+  //      self
+  //    }
+
   private def expandOps(defn: Tree): Seq[Defn.Trait] = {
+    // collect all terms that have a vista operator
     val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
 
-    type Result = (OpInput, (OpInput => Defn.Trait))
-    val generated = terms.map {
+    type Operation = (OpInput, (OpInput => Defn.Trait))
+
+    // parse all terms and get their respective expander
+    val results = terms.map {
       case term@OpHelpers.OpVistas() =>
         val expander = term match {
           case OpHelpers.Forbid(_) => Expander[OpVistas, ForbidOp.Forbid]
@@ -38,16 +52,19 @@ object Vista {
           case OpHelpers.Forbid(_) => Expander[OpOverload, ForbidOp.Forbid]
         }
         (Parser[Term.Apply, OpOverload].parse(term), expander.expand _)
-    }.asInstanceOf[List[Result]]
+    }.asInstanceOf[List[Operation]]
 
+    // function to easily add generated types into semdb
     val addGenerated = (g: Defn.Trait) => { db.add(g, generated = true); g }
+
+    // function to add compile-time error annotation to forbidden methods
     val forbidMethods = (g: Defn.Trait) =>
       g.transform {
         case d: Defn.Def if d.body isEqual forbiddenMethodBody =>
           d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
       }.asInstanceOf[Defn.Trait]
 
-    case class EvalUnit(r: Result, seen: Boolean)
+    case class EvalUnit(r: Operation, seen: Boolean)
 
     def evaluate(queue: Queue[EvalUnit]): List[Defn.Trait] = {
       if (queue.isEmpty) List.empty
@@ -55,9 +72,9 @@ object Vista {
         val (head, tail) = queue.dequeue
         val (input, expander) = head.r
         val canExpand = input match {
-          case OpVistas(lclass, rclass, _, _, newtype) =>
+          case OpVistas(lclass, rclass, _, _, _) =>
             db.exists(lclass) && db.exists(rclass)
-          case OpOverload(lclass, _, newtype, _) =>
+          case OpOverload(lclass, _, _, _) =>
             db.exists(lclass)
         }
 
@@ -80,7 +97,7 @@ object Vista {
       }
     }
 
-    evaluate(generated.map(EvalUnit(_, seen = false)).to)
+    evaluate(results.map(EvalUnit(_, seen = false)).to)
   }
 
   def expand(obj: Defn.Object): Defn.Object = {
@@ -109,9 +126,6 @@ object Vista {
       .transform {
         case term: Term.New if classIsRecorded(term) =>
           Tratify(term)
-
-        case OpHelpers.Subset(t) =>
-          Subset(t)
 
         case OpHelpers.HasOp(t) =>
           val parser = t match {

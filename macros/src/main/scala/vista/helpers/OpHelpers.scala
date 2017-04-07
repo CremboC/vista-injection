@@ -19,14 +19,6 @@ object OpHelpers {
   val Union: Extractable1[Term.Apply]     = extractor(Constants.Union)
   val Product: Extractable1[Term.Apply]   = extractor(Constants.Product)
 
-  val Subset = new Extractable1[Term] {
-    override def unapply[A <: Tree](arg: A): Option[Term] = arg match {
-      case arg: Term.Apply if arg.syntax.contains(Constants.Subset)      => Option(arg)
-      case arg: Term.ApplyInfix if arg.syntax.contains(Constants.Subset) => Option(arg)
-      case _                                                             => None
-    }
-  }
-
   val OpVistas: Extractable = new Extractable {
     override def unapply(arg: Tree): Boolean = arg match {
       case q"$_[$_, $_, $_]($_, $_)" => true

@@ -12,7 +12,6 @@ private[vista] object Constants {
   final val Intersect = "∩"
   final val Union     = "∪"
   final val Product   = "⨯"
-  final val Subset    = "⊆"
 
   final val forbiddenMethodBody = q"throw new vista.lib.ForbiddenMethodException"
 }
