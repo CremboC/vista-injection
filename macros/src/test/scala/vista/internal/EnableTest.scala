@@ -1,4 +1,4 @@
-package vista
+package vista.internal
 
 import java.io.File
 import java.nio.file.{Files, Paths}
@@ -6,14 +6,15 @@ import java.util.stream.Collectors
 
 import com.twitter.util.Eval
 import com.twitter.util.Eval.CompilerException
+import vista.FlatSpecBase
 
 import scala.collection.JavaConverters._
 import scala.meta._
 
-class VistaTest extends FlatSpecBase {
-  behavior of "EnableToolsTest"
+class EnableTest extends FlatSpecBase {
+  behavior of "Enabler"
 
-  it should "execute" in {
+  it should "parse correctly" in {
     val dummy = getClass.getClassLoader.getResource(".empty")
     val tests = Paths.get(dummy.toURI).getParent
 
@@ -41,7 +42,7 @@ class VistaTest extends FlatSpecBase {
 //        val parsedE =
 //          new File(expected.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
 
-        Vista.expand(parsedS)
+        Enable(parsedS)
     }
   }
 
@@ -49,7 +50,7 @@ class VistaTest extends FlatSpecBase {
     val s      = getClass.getClassLoader.getResource("ForbidEx1.scala").toURI
     val parsed = new File(s).parse[Source].get.children.head.asInstanceOf[Defn.Object]
 
-    val result = Vista.expand(parsed)
+    val result = Enable(parsed)
 
     assertThrows[CompilerException] {
       new Eval()(result.syntax)
@@ -60,7 +61,7 @@ class VistaTest extends FlatSpecBase {
     val s      = getClass.getClassLoader.getResource("ProductEx.scala").toURI
     val parsed = new File(s).parse[Source].get.children.head.asInstanceOf[Defn.Object]
 
-    val result = Vista.expand(parsed)
+    val result = Enable(parsed)
 
     val eval: Any = new Eval()(result.syntax)
   }

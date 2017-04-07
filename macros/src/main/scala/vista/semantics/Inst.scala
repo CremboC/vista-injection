@@ -44,8 +44,8 @@ sealed trait Inst {
       d.body isEqual forbiddenMethodBody
     }
 
-  def generated: Boolean
-  def notGenerated: Boolean = !generated
+  def isGenerated: Boolean
+  def nonGenerated: Boolean = !isGenerated
 
   def isResultOf[A <: Op[_]: ResultOf]: Boolean = ResultOf[A].check(this)
 }
@@ -53,14 +53,14 @@ sealed trait Inst {
 object Inst {
   case class Class(override val body: Defn.Class,
                    ctorMembers: Seq[Defn] = Seq.empty,
-                   generated: Boolean = false)
+                   isGenerated: Boolean = false)
       extends Inst {
     val ctor: Ctor.Primary = body.ctor
 
     override def members: Seq[Defn] = ctorMembers ++ super.members
   }
 
-  case class Trait(tbody: Defn.Trait, generated: Boolean = false) extends Inst {
+  case class Trait(tbody: Defn.Trait, isGenerated: Boolean = false) extends Inst {
     override val body: Defn.Class =
       q"..${tbody.mods} class ${tbody.name}[..${tbody.tparams}] extends ${tbody.templ}"
   }

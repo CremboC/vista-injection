@@ -15,6 +15,7 @@ object ForbidEx3 {
     val af = ∖[A, Af](a, { def x = ??? })
 //    af.x // compiler error
     f(af)
+
 //    g(af)
   }
 }

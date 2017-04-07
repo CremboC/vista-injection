@@ -62,7 +62,7 @@ object Database {
   def exists(name: ClassName): Boolean = getOption(name).isDefined
 
   def ctor(name: ClassName): Ctor.Name =
-    if (get(name).generated) Ctor.Name(s"${Constants.GenName}.$name")
+    if (get(name).isGenerated) Ctor.Name(s"${Constants.GenName}.$name")
     else Ctor.Name(name)
 
   def classes: Set[Inst] = store.classes

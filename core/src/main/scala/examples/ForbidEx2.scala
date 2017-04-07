@@ -20,8 +20,8 @@ object ForbidEx2 {
       def two: Int = ???
     })
 
-//    aone.one
-//    atwo.two
+//    println(aone.one)
+//    println(atwo.two)
 //    af.one // compiler error
 //    af.two // compiler error
 //
