@@ -22,7 +22,7 @@ trait XDefn {
             p.copy(name = Term.Name(s"$name${counter.next}"))
           })
 
-      defn.copy(mods = Seq.empty, body = Term.Block(Seq.empty), decltpe = None, paramss = paramss)
+      defn.copy(mods = Seq.empty, body = Term.Block(Nil), decltpe = None, paramss = paramss)
     }
 
     /**

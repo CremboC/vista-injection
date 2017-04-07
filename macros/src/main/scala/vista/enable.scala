@@ -5,6 +5,7 @@ import vista.helpers.OpHelpers
 import vista.modifiers._
 import vista.operations.expanders._
 import vista.operations.parsers.{OpInput, OpOverload, OpVistas, Parser}
+import vista.semantics.Database.ClassName
 import vista.semantics.Inst
 import vista.util.Pipe._
 
@@ -46,14 +47,23 @@ object Vista {
           d.copy(mods = restrictAnnotation(d.name.value, g.name.value) +: d.mods)
       }.asInstanceOf[Defn.Trait]
 
-    def evaluate(queue: Queue[Result]): List[Defn.Trait] = {
+    case class EvalUnit(r: Result, seen: Int)
+
+    def evaluate(queue: Queue[EvalUnit]): List[Defn.Trait] = {
       if (queue.isEmpty) List.empty
       else {
         val (head, tail) = queue.dequeue
-        val (input, expander) = head
-    
+        val (input, expander) = head.r
         val canExpand = input match {
           case OpVistas(lclass, rclass, _, _, newtype) =>
+
+            if (head.seen == 2) {
+              val error: ClassName => String =
+                c => if (!db.exists(c)) s"$c was never declared or generated" else ""
+
+              abort(s"Attempted to evaluate $input. Errors are: ${Seq(error(lclass), error(rclass)).mkString("")}")
+            }
+
             db.exists(lclass) && db.exists(rclass)
           case OpOverload(lclass, _, newtype, _) =>
             db.exists(lclass)
@@ -62,11 +72,11 @@ object Vista {
         if (canExpand) {
           val expanded = input |> (expander andThen addGenerated andThen forbidMethods)
           expanded :: evaluate(tail)
-        } else evaluate(tail.enqueue(head))
+        } else evaluate(tail.enqueue(head.copy(seen = head.seen + 1)))
       }
     }
 
-    evaluate(Queue(generated:_*))
+    evaluate(generated.map(EvalUnit(_, 0)).to)
   }
 
   def expand(obj: Defn.Object): Defn.Object = {

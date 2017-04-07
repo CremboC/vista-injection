@@ -1,30 +1,37 @@
 object ProductEx {
-  class Ap {
-    def zero: Int = 0
+  class X {
+    def f(i: Int): Int = i * 2
   }
 
-  class A extends Ap {
-    def one(): Int = 1
-    def two(): Int = 2
+  class Y {
+    def g(s: String): Char = s.head
   }
 
-  class B(val s: String) {
-    def two(): Int   = 2
-    def three(): Int = 3
+  class N {
+    def a(l: Double): Double = l
   }
 
-  def mkProduct(a: A, b: B) = ⨯[A, B, mkAxB](a, b)
+  class M {
+    def b(l: Double): Double = l
+  }
 
   def main(args: Array[String]): Unit = {
-    val a = new A
-    val b = new B("hi")
+    val x = new X
+    val y = new Y
+    val m = new M
+    val n = new N
 
-    val ab = ⨯[A, B, AxB](a, b)
+    val xy = ⨯[X, Y, XY](x, y)
 
-    ab.onetwo()()
+    println(xy.invoke[XY](f, g)(Seq(5), Seq("hi")))
 
-    println(b.s)
+    val nm = ⨯[N, M, NM](n, m)
 
-    val mkAxB = mkProduct(a, b)
+    println(nm.invoke[NM](a, b)(Seq(1.0), Seq(0.1)))
+
+    // endless loop
+    val nmxy = ⨯[NM, XY, NMXY](nm, xy)
+
+    println(nmxy.invoke[NMXY](a, b, f, g)(Seq(1.0), Seq(0.1), Seq(5), Seq("hi")))
   }
 }

@@ -31,19 +31,10 @@ object ProductEx {
     val nm = ⨯[N, M, NM](n, m)
 
     println(nm.invoke[NM](a, b)(Seq(1.0), Seq(0.1)))
-//
-//    println(nm.a(1.0).b(0.1))
-//
-    val nmxy = ⨯[NM, XY, NMXY](nm, xy)
 
     // endless loop
-    println(nmxy.invoke[NMXY](a, b, f, g)(Seq(1.0), Seq(0.1), Seq(5), Seq("hi")))
-//
-//    val g: ((Double, Double), (Int, Char)) = nmxy.a(1.0).b(0.1).f(5).g("hi")
-//    println(g)
-//
-//    val a     = new A
-//    val anmxy = ∪[A, NMXY, AuNMXY](a, nmxy)
+    val nmxy = ⨯[NM, XY, NMXY](nm, xy)
 
+    println(nmxy.invoke[NMXY](a, b, f, g)(Seq(1.0), Seq(0.1), Seq(5), Seq("hi")))
   }
 }
