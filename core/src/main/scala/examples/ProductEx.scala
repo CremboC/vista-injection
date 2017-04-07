@@ -4,33 +4,46 @@ import vista.lib._
 
 @vista.enable
 object ProductEx {
-  class Ap {
-    def zero: Int = 0
+  class X {
+    def f(i: Int): Int = i * 2
   }
 
-  class A extends Ap {
-    def one(): Int = 1
-    def two(): Int = 2
+  class Y {
+    def g(s: String): Char = s.head
   }
 
-  class B(val s: String) {
-    def two(): Int   = 2
-    def three(): Int = 3
+  class N {
+    def a(l: Double): Double = l
   }
 
-  def mkProduct(a: A, b: B) = ⨯[A, B, mkAxB](a, b)
+  class M {
+    def b(l: Double): Double = l
+  }
 
   def main(args: Array[String]): Unit = {
-    val a = new A
-    val b = new B("hi")
+    val x = new X
+    val y = new Y
+    val m = new M
+    val n = new N
 
-    val ab = ⨯[A, B, AxB](a, b)
+    println(xy.invoke[XY](f, g)(Seq(5), Seq("hi")))
 
-    println(ab.onetwo()())
-//    ab.<one, two>
+    val nm = ⨯[N, M, NM](n, m)
 
-    println(b.s)
+    println(nm.invoke[NM](a, b)(Seq(1.0), Seq(0.1)))
+//
+//    println(nm.a(1.0).b(0.1))
+//
+    val nmxy = ⨯[NM, XY, NMXY](nm, xy)
 
-    val mkAxB = mkProduct(a, b)
+    // endless loop
+    println(nmxy.invoke[NMXY](a, b, f, g)(Seq(1.0), Seq(0.1), Seq(5), Seq("hi")))
+//
+//    val g: ((Double, Double), (Int, Char)) = nmxy.a(1.0).b(0.1).f(5).g("hi")
+//    println(g)
+//
+//    val a     = new A
+//    val anmxy = ∪[A, NMXY, AuNMXY](a, nmxy)
+
   }
 }

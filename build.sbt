@@ -10,9 +10,10 @@ scalaVersion in ThisBuild := "2.12.1"
 crossScalaVersions := Seq("2.11.9", "2.12.1")
 
 val paradiseVersion    = "3.0.0-300-0dbf9cb7"
-val scalametaVersion   = "1.7.0-496-5f890293"
+val scalametaVersion   = "1.7.0-497-afcdd324"
 val scalatestVersion   = "3.0.1"
 val twitterEvalVersion = "6.42.0"
+val shapelessVersion   = "2.3.2"
 
 lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // New-style macro annotations are under active development.  As a result, in
@@ -44,6 +45,7 @@ lazy val macros = (project in file("macros")).settings(
   libraryDependencies += "org.scalactic" %% "scalactic" % scalatestVersion,
   libraryDependencies += "org.scalatest" %% "scalatest" % scalatestVersion % "test",
   libraryDependencies += "com.twitter"   %% "util-eval" % twitterEvalVersion,
+  libraryDependencies += "com.chuusai"   %% "shapeless" % shapelessVersion,
   scalacOptions += "-feature"
 )
 

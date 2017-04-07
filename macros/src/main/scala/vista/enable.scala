@@ -92,13 +92,6 @@ object Vista {
       .transform { // first convert all classes into traits
         case classdefn: Defn.Class if !OpHelpers.hasCaseMod(classdefn) => Tratify(classdefn)
       }
-      .transform { // then ensure all Vista checks are expanded
-        case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
-          require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
-          val clazzName = t.args.head.syntax
-          if (db(clazzName).notGenerated) abort("The Vista[A] operator must be used with a generated vista type.")
-          Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
-      }
       .transform {
         case term: Term.New if classIsRecorded(term) =>
           Tratify(term)
@@ -124,6 +117,19 @@ object Vista {
           val members = ctorable.members(op)
           q"new ${db.ctor(op.newtype)} { ..$members }"
       }
+      .transform {
+        case s@q"$t.invoke[$typ](..$funs)(..$args)" if db.exists(typ.syntax) =>
+          // FIXME: this is really bad, I am truly sorry
+          val reduce = funs.map(_.syntax).reduce(_ + _)
+          val argss = args.map(_.syntax).reduce(_ + _)
+            .replace("Seq", "")
+            .replace("Nil", "()")
+            .replace("((", "(")
+            .replace("))", ")")
+            .replace(", ", "")
+
+          s"${t.syntax}.$reduce$argss".parse[Term].get
+      }
 
     val unparsed = nstats.find {
       case s: Stat if OpHelpers.hasOp(s) => true
@@ -135,8 +141,23 @@ object Vista {
       case None    =>
     }
 
-    val ntemplate =
-      obj.templ.copy(stats = Option(generatedWrapper +: nstats))
+    // converts all Vista[A] to gen$vista.A or A depending on whether type was generated or not
+    val expandVistaCheck: PartialFunction[Tree, Tree] = {
+      case t: Type.Apply if t.syntax.matches(Constants.VistaTypeR) =>
+        require(t.args.size == 1, () => "Must provide a single argument to Vista[A]")
+        val clazzName = t.args.head.syntax
+
+        if (db(clazzName).notGenerated) Type.Name(clazzName)
+        else Type.Select(Term.Name(Constants.GenName), Type.Name(clazzName))
+    }
+
+//    val reflectiveImport = q"import scala.language.reflectiveCalls"
+    val ntemplate = obj
+      .templ
+      .copy(stats = Option(generatedWrapper +: nstats))
+      .transform(expandVistaCheck) // transform all Vista[A] to either gen$vista.A or A
+      .asInstanceOf[Template]
+
     obj.copy(templ = ntemplate)
   }
 }

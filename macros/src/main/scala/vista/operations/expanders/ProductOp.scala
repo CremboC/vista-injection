@@ -3,11 +3,11 @@ package vista.operations.expanders
 import vista.operations.parsers.{OpInput, OpVistas}
 import vista.semantics
 import vista.semantics.Inst
+import vista.util.Counter
 import vista.util.meta.xtensions._
 
 import scala.collection.immutable.{Map, Seq}
 import scala.meta._
-import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas
@@ -31,45 +31,40 @@ object ProductOp {
       val leftClass  = db(inp.lclass)
       val rightClass = db(inp.rclass)
 
-      val leftSignatures  = leftClass.visibilities.signatures
-      val rightSignatures = rightClass.visibilities.signatures
+      implicit val paramCounter = new Counter[Defn.Def]()
+      implicit val typeCounter  = new Counter[Type]()
 
-      if (leftSignatures.exists(_.hasMultiParamList)
-          || rightSignatures.exists(_.hasMultiParamList))
-        abort(
-          "Product only supports classes which do not contain methods with multiple parameter lists.")
+      val leftSignatures  = leftClass.visibilities.map(m => m.signature  -> m)
+      val rightSignatures = rightClass.visibilities.map(m => m.signature -> m)
 
-      val pairs = leftSignatures >< rightSignatures
+      val pairs = for (l <- leftSignatures; r <- rightSignatures) yield (l, r)
 
       val pairDefs = pairs
         .map {
-          case (ldef, rdef) =>
+          case ((lsig, ldef), (rsig, rdef)) =>
             // create new def name
-            val name = Term.Name(s"${ldef.name.value}${rdef.name.value}")
+            val name = Term.Name(s"${lsig.name.value}${rsig.name.value}")
 
             // regenerate all generic params
-            val ltparams = generateTParams(ldef.tparams)
-            val rtparams = generateTParams(rdef.tparams)
+            val ltparams = generateTParams(lsig.tparams)
+            val rtparams = generateTParams(rsig.tparams)
 
             // generate the list of params for the left def
-            val newldefparams = extractParams(ldef.paramss.head, ltparams, start = 0)
+            val newldefparams = extractParams(lsig.paramss, ltparams, 0)
 
             // generate the list of params for the right def
-            val newrdefparams =
-              extractParams(rdef.paramss.head, rtparams, start = newldefparams.size)
+            val newrdefparams = extractParams(rsig.paramss, rtparams, newldefparams.size)
 
             // merge into two separate param lists
-            val paramss = Seq(newldefparams, newrdefparams)
+            val paramss = newldefparams ++ newrdefparams
 
             val leftArgument = {
-              val first = generateTerm(newldefparams, ldef.name)
-              val inter = insertTypesToTerm(ltparams.values.to[Seq], first)
-              appendSupers(ldef, inter, leftClass)
+              val term = generateTerm(newldefparams, lsig.name)
+              appendSupers(ldef, term, leftClass)
             }
             val rightArgument = {
-              val first = generateTerm(newrdefparams, rdef.name)
-              val inter = insertTypesToTerm(rtparams.values.to[Seq], first)
-              appendSupers(rdef, inter, rightClass)
+              val term = generateTerm(newrdefparams, rsig.name)
+              appendSupers(rdef, term, rightClass)
             }
 
             Defn.Def(
@@ -91,81 +86,56 @@ object ProductOp {
       val common = commonMethods(inp).to[Seq]
 
       q"""
+          @vista.product
           trait $traitName extends $leftTypeCtor with $rightTypeCtor {
             ..${pairDefs ++ common.sortBy(_.name.value)}
           }
       """
     }
 
-    private def appendSupers(source: Defn.Def, inter: Term, clazz: Inst): Term = {
-      val term = if (hasParenthesis(source, clazz)) {
-        val suffix = if (inter.syntax.matches("""^.+\(.+\)$""")) "" else "()"
-        s"super[${clazz.name}].${inter.syntax}$suffix".parse[Stat].get
-      } else {
-        val stripped = inter.syntax.stripSuffix("()")
-        s"super[${clazz.name}].$stripped".parse[Stat].get
-      }
+    private def appendSupers(defn: Defn.Def, inter: Term, clazz: Inst): Term = {
+      val term =
+        if (defn.hasParenthesis) {
+          val suffix = if (inter.syntax.matches("""^.+\((.+)?\)$""")) "" else "()"
+          s"super[${clazz.name}].${inter.syntax}$suffix".parse[Stat].get
+        } else {
+          val stripped = inter.syntax.stripSuffix("()")
+          s"super[${clazz.name}].$stripped".parse[Stat].get
+        }
       term.asInstanceOf[Term]
     }
 
-    private def generateTParams(tparams: Seq[Type.Param]): Map[String, Type.Param] =
-      tparams.map(t => (t.name.value, t.copy(name = Type.fresh("Tvista")))).toMap
+    private def generateTParams(tparams: Seq[Type.Param])(
+        implicit cntr: Counter[Type]): Map[String, Type.Param] =
+      tparams.map(t => (t.name.value, t.copy(name = Type.Name(s"Tvista${cntr.next}")))).toMap
 
-    private def extractParams(params: Seq[Term.Param],
+    private def extractParams(paramss: Seq[Seq[Term.Param]],
                               tparams: Map[String, Type.Param],
-                              start: Int): Seq[Term.Param] = {
+                              start: Int): Seq[Seq[Term.Param]] = {
       var current = start
-      params.map { param =>
-        param.decltpe match {
-          case None => param
-          case Some(typ) =>
-            tparams.get(typ.syntax) match {
-              case None => param
-              case Some(newtype) =>
+      if (paramss.head.isEmpty) paramss
+      else {
+        paramss.map {
+          _.map { param =>
+            val typ = param.decltpe.getOrElse(abort("Definition parameter didn't have a decltpe"))
+            tparams
+              .get(typ.syntax)
+              .map { newtype =>
                 current += 1
                 param.copy(name = Term.Name(s"p$current"),
                            decltpe = Option(Type.Name(newtype.name.value)))
-            }
+              }
+              .getOrElse(param)
+          }
         }
       }
     }
 
     // builds a term-apply-like looking term, depending on number of parameters
-    private def generateTerm(params: Seq[Term.Param], seed: Term.Name): Term =
-      if (params.isEmpty) seed
+    private def generateTerm(paramss: Seq[Seq[Term.Param]], seed: Term.Name): Term =
+      if (paramss.isEmpty) seed
       else {
-        val ps = params.foldLeft(Seq.empty[Term.Arg]) {
-          case (current, t) =>
-            t match {
-              case t: Term.Param => current :+ t.name.asTerm
-            }
-        }
-        q"$seed(..$ps)"
+        q"$seed(...${paramss.asTermArg})"
       }
-
-    // adds generic type parameters if necessary
-    private def insertTypesToTerm(params: Seq[Type.Param], term: Term): Term =
-      if (params.isEmpty) term
-      else {
-        val q"$name(..$args)" = term
-        val nparams           = params.map(p => s"${p.name.value}".parse[Type].get)
-
-        q"$name[..$nparams](..$args)"
-      }
-
-    // checks whether the provide defn originally had parenthesis or not
-    private def hasParenthesis(source: Defn.Def, clazz: Inst): Boolean = {
-      val defn = clazz.membersWithParents
-        .find {
-          case d: Defn.Def if d.signature isEqual source.signature => true
-          case _                                                   => false
-        }
-        .getOrElse(abort("Looking for a method which is not present in this class"))
-
-      defn match {
-        case q"..$_ def $_[..$_]: $_ = $_" => false
-        case _                             => true
-      }
-    }
   }
 }

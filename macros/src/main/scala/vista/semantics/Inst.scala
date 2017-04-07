@@ -1,6 +1,8 @@
 package vista.semantics
 
 import vista.Constants.forbiddenMethodBody
+import vista.operations.ResultOf
+import vista.operations.expanders.{Op, ProductOp}
 import vista.util.Equalities.defEquality
 import vista.util.EqualitySet
 
@@ -13,12 +15,7 @@ sealed trait Inst {
 
   protected val db = vista.semantics.Database
 
-  def members: Seq[Defn] =
-    body.templ.collect[Defn] {
-      case defn: Defn.Def => defn
-      case valf: Defn.Val => valf
-      case varf: Defn.Var => varf
-    }
+  def members: Seq[Defn] = body.templ.extract[Defn].to
 
   def membersWithParents: Seq[Defn] = members ++ parents.flatMap(db.get(_).membersWithParents)
 
@@ -33,7 +30,8 @@ sealed trait Inst {
       case d: Defn.Def if !d.mods.exists(_.is[Mod.Private]) => d
     }
 
-    EqualitySet(parentMethods ++ memberDefns)
+    if (isResultOf[ProductOp.Product]) EqualitySet(memberDefns)
+    else EqualitySet(parentMethods ++ memberDefns)
   }
 
   def visibilities: EqualitySet[Defn.Def] =
@@ -48,6 +46,8 @@ sealed trait Inst {
 
   def generated: Boolean
   def notGenerated: Boolean = !generated
+
+  def isResultOf[A <: Op[_]: ResultOf]: Boolean = ResultOf[A].check(this)
 }
 
 object Inst {
