@@ -12,14 +12,14 @@ trait XDefn {
     */
   implicit class XDefn(defn: Defn.Def) {
     def signature(implicit counter: Counter[Defn.Def] = new Counter()): Defn.Def = {
-      // ensures that def g() === def g
-      val name = "p"
+      val nextName = () => Term.Name(s"p${counter.next}")
 
+      // ensures that def g() === def g
       val paramss =
         if (defn.paramss.isEmpty) Seq(Seq.empty)
         else
           defn.paramss.map(_.map { p =>
-            p.copy(name = Term.Name(s"$name${counter.next}"))
+            p.copy(name = nextName())
           })
 
       defn.copy(mods = Seq.empty, body = Term.Block(Nil), decltpe = None, paramss = paramss)

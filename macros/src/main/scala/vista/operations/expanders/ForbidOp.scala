@@ -17,7 +17,6 @@ object ForbidOp {
 
   private val db = semantics.Database
 
-  // FIXME: are you sure?
   implicit object ForbidCtor extends Constructable[Forbid] {
     override def members(input: OpInput): Seq[Defn] = input match {
       case _: OpVistas   => ctorMembersDefns(db(input.lclass), input.lvar)

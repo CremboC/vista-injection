@@ -7,7 +7,7 @@ version := "1.0.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.1"
 // uncomment when/if code is made scala 2.11 compatible
 // cross-publish via $ [sbt] + publishLocal -- note the plus
-crossScalaVersions := Seq("2.11.9", "2.12.1")
+crossScalaVersions := Seq("2.11.10", "2.12.1")
 
 val paradiseVersion    = "3.0.0-300-0dbf9cb7"
 val scalametaVersion   = "1.7.0-497-afcdd324"
