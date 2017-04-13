@@ -6,7 +6,7 @@ import scala.collection.immutable.Seq
 import scala.meta._
 import scala.meta.contrib._
 
-private[vista] object TranslateCtors {
+private[internal] object TranslateCtors {
 
   // 3. for main constructor:
   //    def apply(_arg: ?*): T = new T { override ... }

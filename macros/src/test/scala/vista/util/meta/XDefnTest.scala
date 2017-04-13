@@ -1,7 +1,7 @@
 package vista.util.meta
 
 import vista.FlatSpecBase
-import vista.util.meta.xtensions.XDefn
+import vista.util.meta.xtensions.{XDefn => XXDefn}
 
 import scala.meta._
 

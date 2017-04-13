@@ -7,10 +7,10 @@ version := "1.0.0-SNAPSHOT"
 scalaVersion in ThisBuild := "2.12.1"
 // uncomment when/if code is made scala 2.11 compatible
 // cross-publish via $ [sbt] + publishLocal -- note the plus
-crossScalaVersions := Seq("2.11.10", "2.12.1")
+crossScalaVersions := Seq("2.11.8", "2.12.1")
 
-val paradiseVersion    = "3.0.0-300-0dbf9cb7"
-val scalametaVersion   = "1.7.0-497-afcdd324"
+val paradiseVersion    = "3.0.0-M8"
+val scalametaVersion   = "1.7.0"
 val scalatestVersion   = "3.0.1"
 val twitterEvalVersion = "6.42.0"
 val shapelessVersion   = "2.3.2"
@@ -19,7 +19,7 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   // New-style macro annotations are under active development.  As a result, in
   // this build we'll be referring to snapshot versions of both scala.meta and
   // macro paradise.
-  resolvers += Resolver.bintrayRepo("scalameta", "maven"),
+  // resolvers += Resolver.bintrayRepo("scalameta", "maven"),
   // A dependency on macro paradise 3.x is required to both write and expand
   // new-style macros.  This is similar to how it works for old-style macro
   // annotations and a dependency on macro paradise 2.x.
@@ -29,8 +29,6 @@ lazy val metaMacroSettings: Seq[Def.Setting[_]] = Seq(
   scalacOptions += "-feature",
   // temporary workaround for https://github.com/scalameta/paradise/issues/10
   scalacOptions in (Compile, console) := Seq(), // macroparadise plugin doesn't work in repl yet.
-  // temporary workaround for https://github.com/scalameta/paradise/issues/55
-  sources in (Compile, doc) := Nil, // macroparadise doesn't work with scaladoc yet.
   libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 )
 

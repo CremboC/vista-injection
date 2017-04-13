@@ -11,7 +11,7 @@ import scala.meta.contrib._
 /**
   * @author Paulius Imbrasas
   */
-object Tratify {
+private[vista] object Tratify {
   private val db = semantics.Database
 
   // val a = new A("hi")

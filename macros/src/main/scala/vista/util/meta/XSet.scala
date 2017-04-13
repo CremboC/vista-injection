@@ -1,7 +1,7 @@
 package vista.util.meta
 
 import scala.meta.Tree
-import scala.meta.contrib.{Structurally, Syntactically}
+import scala.meta.contrib._
 
 trait XSet {
 
@@ -12,12 +12,6 @@ trait XSet {
     * @tparam A anything that is a tree
     */
   implicit class XSet[A <: Tree](self: Set[A]) {
-
-    @inline
-    def structurally: Set[Structurally[A]] = self.map(new Structurally(_))
-
-    @inline
-    def syntactically: Set[Syntactically[A]] = self.map(new Syntactically(_))
 
     def mintersect(other: Set[A]): Set[A] = {
       val selfStr  = self.structurally

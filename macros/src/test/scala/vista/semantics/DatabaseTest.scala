@@ -1,9 +1,9 @@
 package vista.semantics
 
 import vista.WordSpecBase
-import vista.util.meta.xtensions._
 
 import scala.meta._
+import scala.meta.contrib._
 
 /**
   * @author Paulius Imbrasas

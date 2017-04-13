@@ -11,11 +11,22 @@ import scala.collection.immutable.{Queue, Seq}
 import scala.meta._
 import scala.meta.contrib._
 
-private[vista] object ExpandOp {
+private[internal] object ExpandOp {
+
   private val db = vista.semantics.Database
 
   private type Operation = (OpInput, (OpInput => Defn.Trait))
   private case class EvalUnit(r: Operation, seen: Boolean)
+
+  def apply(defn: Tree): Seq[Defn.Trait] = {
+    // collect all terms that have a vista operator
+    val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
+
+    // parse all terms and get their respective expander
+    val results = terms.map(termToOp).asInstanceOf[List[Operation]]
+
+    evaluate(results.map(EvalUnit(_, seen = false)).to)
+  }
 
   private def termToOp(t: Term.Apply) = t match {
     case term @ OpHelpers.OpVistas() =>
@@ -78,15 +89,5 @@ private[vista] object ExpandOp {
         expanded :: evaluate(tail)
       } else evaluate(tail.enqueue(head.copy(seen = true)))
     }
-  }
-
-  def apply(defn: Tree): Seq[Defn.Trait] = {
-    // collect all terms that have a vista operator
-    val terms = defn.collect(OpHelpers.HasOp.asResultingPartial).flatten
-
-    // parse all terms and get their respective expander
-    val results = terms.map(termToOp).asInstanceOf[List[Operation]]
-
-    evaluate(results.map(EvalUnit(_, seen = false)).to)
   }
 }

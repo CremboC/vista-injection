@@ -6,7 +6,7 @@ import vista.semantics.Inst
 import scala.meta._
 import scala.meta.contrib._
 
-object TransformClass {
+private[internal] object TransformClass {
 
   private val db = vista.semantics.Database
 
