@@ -44,7 +44,8 @@ lazy val macros = (project in file("macros")).settings(
   libraryDependencies += "org.scalatest" %% "scalatest" % scalatestVersion % "test",
   libraryDependencies += "com.twitter"   %% "util-eval" % twitterEvalVersion,
   libraryDependencies += "com.chuusai"   %% "shapeless" % shapelessVersion,
-  scalacOptions += "-feature"
+  scalacOptions += "-feature",
+  parallelExecution in Test := false
 )
 
 lazy val coreSettings: Seq[Def.Setting[_]] = Seq(

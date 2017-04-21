@@ -6,9 +6,6 @@ import vista.util.Pipe._
 
 import scala.meta._
 
-/**
-  * Created by Crembo on 2017-03-22.
-  */
 class ExpandersTest extends FlatSpecBase {
   behavior of "expanders"
 

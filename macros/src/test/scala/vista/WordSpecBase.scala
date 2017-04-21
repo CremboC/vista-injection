@@ -6,9 +6,6 @@ import org.scalatest._
 import scala.meta._
 import scala.meta.contrib._
 
-/**
-  * Created by Crembo on 2017-03-22.
-  */
 sealed trait BaseTest extends Matchers with ResetsDatabase {
   protected val db = vista.semantics.Database
 

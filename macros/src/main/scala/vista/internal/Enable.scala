@@ -122,16 +122,9 @@ private[vista] object Enable {
       .asInstanceOf[Template]
   }
 
-  private def buildDatabase(tree: Tree): Unit = {
+  private def buildDatabase(tree: Tree): Unit =
     tree.traverse {
       case c: Defn.Class => db.add(c)
       case t: Defn.Trait => db.add(t)
     }
-  }
-
-  private def buildConstructors(tree: Tree): Unit = {
-    db.classes.map { inst =>
-      inst.body
-    }
-  }
 }
