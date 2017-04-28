@@ -10,6 +10,7 @@ import vista.FlatSpecBase
 
 import scala.collection.JavaConverters._
 import scala.meta._
+import scala.meta.contrib._
 
 class EnableTest extends FlatSpecBase {
   behavior of "Enabler"
@@ -23,26 +24,10 @@ class EnableTest extends FlatSpecBase {
       .filter(_.getFileName.toString.matches("""(.+)\.scala$"""))
       .collect(Collectors.toList())
       .asScala
-    val expected = Files
-      .walk(tests)
-      .filter(_.getFileName.toString.matches("""(.+)\.scala_expected$"""))
-      .collect(Collectors.toList())
-      .asScala
 
-    val all = sources zip expected
-    all.ensuring(items =>
-      items.forall {
-        case (l, r) => r.toString.startsWith(l.toString)
-    })
-
-    all.foreach {
-      case (source, _) =>
-        val parsedS =
-          new File(source.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
-//        val parsedE =
-//          new File(expected.toString).parse[Source].get.children.head.asInstanceOf[Defn.Object]
-
-        Enable(parsedS)
+    sources foreach { s =>
+      val parsed = new File(s.toString).parse[Source].get.extract[Defn.Object].head
+      Enable(parsed)
     }
   }
 
