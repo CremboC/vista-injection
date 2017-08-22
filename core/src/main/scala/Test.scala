@@ -51,7 +51,7 @@ object Test extends App {
     val b = new B
 
     val b1 = ∖[B, Bf](b, {
-      def multi(a: Int)(b: Int): Int = ???
+      def multi(a: Int)(b: Int): Int = a * b
     })
 
     println(b1.isInstanceOf[B])
